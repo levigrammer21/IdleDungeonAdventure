@@ -251,6 +251,17 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .loot-note,.tier-explainer { color:var(--muted); font-size:.62rem; line-height:1.5; }
 .loot-preview { width:100%; border:1px solid #cfb15e; text-align:left; cursor:pointer; }
 .resource-tier.locked { opacity:.62; background:#edf0e9; }
+.combat-party-preview { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; margin:2px 0 8px; }
+.combat-party-preview > div { min-width:0; padding:10px 6px; border:1px solid var(--line); border-radius:12px; background:white; text-align:center; }
+.combat-party-preview span,.combat-party-preview strong,.combat-party-preview small { display:block; }
+.combat-party-preview span { font-size:1.15rem; }
+.combat-party-preview strong { overflow:hidden; margin-top:3px; color:var(--forest-900); font:800 .8rem "Fraunces",serif; text-overflow:ellipsis; white-space:nowrap; }
+.combat-party-preview small { margin-top:2px; color:var(--muted); font-size:.49rem; font-weight:800; line-height:1.25; text-transform:uppercase; }
+.combat-party-preview.empty { opacity:.62; }
+.combat-party-preview[data-risk="high"] > div:first-child { border-color:#7faa78; background:#edf6e7; }
+.combat-party-preview[data-risk="medium"] > div:first-child { border-color:#d1ae58; background:#fff5d4; }
+.combat-party-preview[data-risk="low"] > div:first-child { border-color:#cf8879; background:#fff0e9; }
+.combat-preview-note { margin:0 0 11px; color:var(--muted); font-size:.61rem; line-height:1.45; }
 
 .capacity-ring { display:grid; min-width:92px; padding:9px 13px; border:1px solid var(--line); border-radius:14px; background:var(--paper); text-align:center; }
 .capacity-ring strong { font:800 1.1rem "Fraunces",serif; }
@@ -457,6 +468,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
   .drawer.open .drawer-sheet { transform:translateY(0); }
   .drawer-grip { display:block; }
   .combat-stat-grid,.hero-record-grid { grid-template-columns:repeat(2,1fr); }
+  .combat-party-preview { grid-template-columns:repeat(2,1fr); }
 }
 
 @media (max-width: 410px) {

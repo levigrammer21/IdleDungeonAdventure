@@ -10,16 +10,17 @@ Adventure Town is a mobile-first, persistent idle RPG built around six permanent
 - Full hero character pages with renaming, combat stats, four equipment slots, special effects, and lifetime records
 - Timed work, combat, recovery, and supplies with a 12-hour offline progress cap
 - Four-hero combat cap with 6 Expeditions, 5 solo/duo Dungeons, and 3 four-person Raids
+- Live party previews showing exact success chance, total power, Food cost, and power-adjusted clear time
 - Clickable loot chests with exact reward ranges and per-victory drop rates
 - Eight tiers each of Food, Metal, and Wood from Starter through Divine
 - Food, Sanity, defeat, Inn, Tavern, durability, repairs, Essence, and Raid Keys
-- Complete 12-item class sets in every Dungeon and Raid, with transparent rare-table rates
+- Complete, individually named 12-item class sets in every Dungeon and Raid, with transparent rare-table rates
 - Account-bound pets, raid-boss eggs, Dungeon trinkets, equipping, repairs, and salvage
 - Firebase Google and email/password accounts with cloud saves
 - Firestore player marketplace, delayed seller payouts, and leaderboards
 - Building upgrades, milestones, town reports, save export, and installable PWA support
 
-The visible game version is `1.2.0`.
+The visible game version is `1.3.0`.
 
 New towns begin with zero Gold, Food, Metal, Wood, Essence, Raid Keys, and Repair Kits. Existing saves are preserved; use **Account → Begin a new town** to test the new starting experience.
 
