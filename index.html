@@ -24,7 +24,7 @@
     <header class="topbar">
       <button class="brand" data-action="open-view" data-view="town" aria-label="Return to town">
         <span class="brand-crest">🏰</span>
-        <span><strong>Adventure Town</strong><small id="versionLabel">v1.0.0</small></span>
+        <span><strong>Adventure Town</strong><small id="versionLabel">v1.1.0</small></span>
       </button>
       <div class="top-actions">
         <button id="syncButton" class="status-pill" data-action="sync" aria-label="Cloud save status">
@@ -52,40 +52,35 @@
 
         <div id="townMapFrame" class="town-map-frame">
           <div id="townMap" class="town-map" aria-label="Interactive top-down town map">
-            <div class="terrain terrain-mountains"></div>
-            <div class="terrain terrain-river"></div>
-            <div class="terrain terrain-road road-main"></div>
-            <div class="terrain terrain-road road-cross"></div>
-            <div class="map-label wilds-label">THE WILDS</div>
-            <button class="location combat-gate gate-raid" data-action="open-combat" data-combat="raid" style="--x:14;--y:10">
-              <span class="location-icon">🐲</span><strong>Raids</strong><small>Level 30+</small>
+            <button class="location combat-gate gate-raid" data-action="open-combat-category" data-category="raid" style="--x:18;--y:11">
+              <span class="location-icon">🐲</span><strong>Raids</strong><small>3 milestone battles</small>
             </button>
-            <button class="location combat-gate gate-dungeon" data-action="open-combat" data-combat="dungeon" style="--x:42;--y:9">
-              <span class="location-icon">🗝️</span><strong>Dungeons</strong><small>Essence runs</small>
+            <button class="location combat-gate gate-dungeon" data-action="open-combat-category" data-category="dungeon" style="--x:50;--y:10">
+              <span class="location-icon">🗝️</span><strong>Dungeons</strong><small>5 Essence delves</small>
             </button>
-            <button class="location combat-gate gate-expedition" data-action="open-combat" data-combat="expedition" style="--x:72;--y:10">
-              <span class="location-icon">🧭</span><strong>Expeditions</strong><small>Open wilds</small>
+            <button class="location combat-gate gate-expedition" data-action="open-combat-category" data-category="expedition" style="--x:82;--y:11">
+              <span class="location-icon">🧭</span><strong>Expeditions</strong><small>6 open-world routes</small>
             </button>
 
-            <button class="location building farm" data-action="open-building" data-building="farm" style="--x:10;--y:35">
+            <button class="location building farm" data-action="open-building" data-building="farm" style="--x:20;--y:37">
               <span class="level-badge" data-level-for="farm">1</span><span class="location-icon">🌾</span><strong>Farm</strong><small>Food</small>
             </button>
-            <button class="location building forest" data-action="open-building" data-building="forest" style="--x:12;--y:65">
+            <button class="location building forest" data-action="open-building" data-building="forest" style="--x:15;--y:62">
               <span class="level-badge" data-level-for="forest">1</span><span class="location-icon">🌲</span><strong>Forest</strong><small>Wood</small>
             </button>
-            <button class="location building market" data-action="open-view" data-view="market" style="--x:37;--y:39">
+            <button class="location building market" data-action="open-view" data-view="market" style="--x:39;--y:44">
               <span class="level-badge" data-level-for="market">1</span><span class="location-icon">⚖️</span><strong>Marketplace</strong><small>Player trade</small>
             </button>
-            <button class="location building warehouse" data-action="open-view" data-view="warehouse" style="--x:60;--y:37">
+            <button class="location building warehouse" data-action="open-view" data-view="warehouse" style="--x:61;--y:41">
               <span class="level-badge" data-level-for="warehouse">1</span><span class="location-icon">📦</span><strong>Warehouse</strong><small id="warehouseMapCount">0 / 60</small>
             </button>
-            <button class="location building tavern" data-action="open-building" data-building="tavern" style="--x:31;--y:69">
+            <button class="location building tavern" data-action="open-building" data-building="tavern" style="--x:35;--y:70">
               <span class="level-badge" data-level-for="tavern">1</span><span class="location-icon">🍲</span><strong>Tavern</strong><small>Restore sanity</small>
             </button>
-            <button class="location building smith" data-action="open-building" data-building="smith" style="--x:57;--y:66">
+            <button class="location building smith" data-action="open-building" data-building="smith" style="--x:60;--y:70">
               <span class="level-badge" data-level-for="smith">1</span><span class="location-icon">⚒️</span><strong>Blacksmith</strong><small>Gear &amp; repair</small>
             </button>
-            <button class="location building inn" data-action="open-building" data-building="inn" style="--x:78;--y:62">
+            <button class="location building inn" data-action="open-building" data-building="inn" style="--x:79;--y:66">
               <span class="level-badge" data-level-for="inn">1</span><span class="location-icon">🛏️</span><strong>Inn</strong><small>Defeat recovery</small>
             </button>
             <button class="location building mine" data-action="open-building" data-building="mine" style="--x:80;--y:34">
@@ -124,7 +119,7 @@
       </section>
 
       <section id="combatView" class="view" data-view-panel="combat">
-        <div class="section-heading"><div><span class="eyebrow">Expedition → Dungeon → Raid</span><h2>Combat Hall</h2><p>Prepare supplies, choose a party, and let the run continue while you are away.</p></div><div class="combat-cap"><span id="combatSlotCount">0</span>/4 slots</div></div>
+        <div class="section-heading"><div><span class="eyebrow">6 Expeditions → 5 Dungeons → 3 Raids</span><h2>Combat Hall</h2><p>Prepare supplies, inspect exact loot chances, choose a party, and let the run continue while you are away.</p></div><div class="combat-cap"><span id="combatSlotCount">0</span>/4 slots</div></div>
         <div id="activeRuns" class="active-runs"></div>
         <div id="combatCatalog" class="combat-catalog"></div>
       </section>
