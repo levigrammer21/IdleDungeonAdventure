@@ -1,0 +1,13 @@
+{
+  "name": "Adventure Town",
+  "short_name": "Adventure Town",
+  "description": "A living, persistent idle RPG with six permanent adventurers.",
+  "start_url": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#15251c",
+  "theme_color": "#243b2d",
+  "icons": [
+    { "src": "img/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
