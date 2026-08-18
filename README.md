@@ -7,17 +7,19 @@ Adventure Town is a mobile-first, persistent idle RPG built around six permanent
 - Hand-painted responsive fantasy town map in portrait and landscape
 - Six fixed classes: Warrior, Wizard, Archer, Druid, Assassin, and Summoner
 - Per-hero Combat Level and independent Farming, Mining, Woodcutting, and Smithing levels
-- Offline and over-time progress for work, combat, recovery, and supplies
+- Full hero character pages with renaming, combat stats, four equipment slots, special effects, and lifetime records
+- Timed work, combat, recovery, and supplies with a 12-hour offline progress cap
 - Four-hero combat cap with 6 Expeditions, 5 solo/duo Dungeons, and 3 four-person Raids
 - Clickable loot chests with exact reward ranges and per-victory drop rates
 - Eight tiers each of Food, Metal, and Wood from Starter through Divine
 - Food, Sanity, defeat, Inn, Tavern, durability, repairs, Essence, and Raid Keys
-- Warehouse, class weapons/armor, dungeon gear, raid gear, equipping, repairs, and salvage
+- Complete 12-item class sets in every Dungeon and Raid, with transparent rare-table rates
+- Account-bound pets, raid-boss eggs, Dungeon trinkets, equipping, repairs, and salvage
 - Firebase Google and email/password accounts with cloud saves
 - Firestore player marketplace, delayed seller payouts, and leaderboards
 - Building upgrades, milestones, town reports, save export, and installable PWA support
 
-The visible game version is `1.1.0`.
+The visible game version is `1.2.0`.
 
 New towns begin with zero Gold, Food, Metal, Wood, Essence, Raid Keys, and Repair Kits. Existing saves are preserved; use **Account → Begin a new town** to test the new starting experience.
 
@@ -53,4 +55,4 @@ The game currently uses emoji and CSS illustration. Put future hero, equipment, 
 - Signed-out play uses a local device save.
 - Signed-in play keeps a Firebase cloud save and local fallback.
 - The account panel downloads a readable JSON backup.
-- Offline progress is simulated for up to seven days.
+- Offline progress is simulated for up to 12 hours.
