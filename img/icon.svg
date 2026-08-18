@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Adventure Town castle crest">
+  <rect width="512" height="512" rx="112" fill="#243b2d"/>
+  <circle cx="256" cy="250" r="190" fill="#f3d782"/>
+  <path d="M124 222h264v174H124z" fill="#fff3cf" stroke="#1d3226" stroke-width="18"/>
+  <path d="M154 126h58v114h-58zm146 0h58v114h-58z" fill="#fff3cf" stroke="#1d3226" stroke-width="18"/>
+  <path d="m140 132 43-54 43 54zm146 0 43-54 43 54z" fill="#bc633f" stroke="#1d3226" stroke-width="18" stroke-linejoin="round"/>
+  <path d="M218 396V285c0-44 76-44 76 0v111" fill="#9b553d" stroke="#1d3226" stroke-width="18"/>
+  <path d="M112 222h288M256 222v-64" fill="none" stroke="#1d3226" stroke-width="18" stroke-linecap="round"/>
+  <path d="m256 158 72 28-72 28z" fill="#bc633f" stroke="#1d3226" stroke-width="12" stroke-linejoin="round"/>
+</svg>
