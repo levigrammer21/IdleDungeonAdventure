@@ -1,7 +1,7 @@
-const CACHE="adventure-town-v1.5.4";
+const CACHE="adventure-town-v1.5.5";
 const CORE=[
   "./","./index.html","./styles.css","./game.js","./manifest.webmanifest",
-  "./img/icon.svg","./img/fantasy-town-map.webp","./img/loot-chest.svg",
+  "./img/icon.svg","./img/fantasy-town-map.webp","./img/loot-chest.svg","./img/ui-icon-atlas.webp",
   "./img/hero-warrior-bram.webp","./img/hero-wizard-elowen.webp","./img/hero-archer-rowan.webp","./img/hero-druid-mira.webp","./img/hero-assassin-vex.webp","./img/hero-summoner-orin.webp",
   "./img/enemy-ashscale-drake.webp","./img/enemy-basilisk-crown.webp","./img/enemy-bone-sentinel.webp","./img/enemy-cinder-golem.webp","./img/enemy-cinderdeep-forgelord.webp","./img/enemy-crownscale-guard.webp","./img/enemy-crypt-sovereign.webp","./img/enemy-dungeon-rat.webp","./img/enemy-duskborn-knight.webp","./img/enemy-eclipse-wyrm.webp","./img/enemy-ember-imp.webp","./img/enemy-glacier-yeti.webp","./img/enemy-gloom-stalker.webp","./img/enemy-grainback-boar.webp","./img/enemy-hollow-treant.webp","./img/enemy-hollow-warden.webp","./img/enemy-hollow-wyrm.webp","./img/enemy-icebound-raider.webp","./img/enemy-meadow-bandit.webp","./img/enemy-moon-eater-spawn.webp","./img/enemy-moss-goblin.webp","./img/enemy-reef-stalker.webp","./img/enemy-rime-wolf.webp","./img/enemy-sanctum-leviathan.webp","./img/enemy-storm-harpy.webp","./img/enemy-stormbound-colossus.webp","./img/enemy-tanglehare.webp","./img/enemy-tempest-titan.webp","./img/enemy-thorn-wolf.webp","./img/enemy-thornroot-matriarch.webp","./img/enemy-thunder-herald.webp","./img/enemy-thunder-roc.webp","./img/enemy-umbral-giant.webp","./img/enemy-venom-oracle.webp","./img/enemy-void-revenant.webp",
   "./img/egg-basilisk-crown.webp","./img/egg-eclipse-wyrm.webp","./img/egg-tempest-titan.webp",

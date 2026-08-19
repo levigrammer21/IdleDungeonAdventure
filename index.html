@@ -25,7 +25,7 @@
     <header class="topbar">
       <button class="brand" data-action="open-view" data-view="town" aria-label="Return to town">
         <span class="brand-crest"><img src="img/icon.svg" alt="" aria-hidden="true"></span>
-        <span><strong>Adventure Town</strong><small id="versionLabel">v1.5.4</small></span>
+        <span><strong>Adventure Town</strong><small id="versionLabel">v1.5.5</small></span>
       </button>
       <div class="top-actions">
         <button id="syncButton" class="status-pill" data-action="sync" aria-label="Cloud save status">
@@ -54,42 +54,42 @@
         <div id="townMapFrame" class="town-map-frame">
           <div id="townMap" class="town-map" aria-label="Interactive top-down town map">
             <button class="location combat-gate gate-raid" data-action="open-combat-category" data-category="raid" style="--x:18;--y:11">
-              <span class="location-icon">🐲</span><strong>Raids</strong><small>3 milestone battles</small>
+              <span class="location-icon game-icon icon-raid" aria-hidden="true"></span><strong>Raids</strong><small>3 milestone battles</small>
             </button>
             <button class="location combat-gate gate-dungeon" data-action="open-combat-category" data-category="dungeon" style="--x:50;--y:10">
-              <span class="location-icon">🗝️</span><strong>Dungeons</strong><small>5 Essence delves</small>
+              <span class="location-icon game-icon icon-dungeon" aria-hidden="true"></span><strong>Dungeons</strong><small>5 Essence delves</small>
             </button>
             <button class="location combat-gate gate-expedition" data-action="open-combat-category" data-category="expedition" style="--x:82;--y:11">
-              <span class="location-icon">🧭</span><strong>Expeditions</strong><small>6 open-world routes</small>
+              <span class="location-icon game-icon icon-expedition" aria-hidden="true"></span><strong>Expeditions</strong><small>6 open-world routes</small>
             </button>
 
             <button class="location building farm" data-action="open-building" data-building="farm" style="--x:20;--y:37">
-              <span class="level-badge" data-level-for="farm">1</span><span class="location-icon">🌾</span><strong>Farm</strong><small>Stored food</small>
+              <span class="level-badge" data-level-for="farm">1</span><span class="location-icon game-icon icon-farm" aria-hidden="true"></span><strong>Farm</strong><small>Stored food</small>
             </button>
             <button class="location building forest" data-action="open-building" data-building="forest" style="--x:15;--y:62">
-              <span class="level-badge" data-level-for="forest">1</span><span class="location-icon">🌲</span><strong>Forest</strong><small>Stored wood</small>
+              <span class="level-badge" data-level-for="forest">1</span><span class="location-icon game-icon icon-forest" aria-hidden="true"></span><strong>Forest</strong><small>Stored wood</small>
             </button>
             <button class="location building market" data-action="open-view" data-view="market" style="--x:39;--y:44">
-              <span class="level-badge" data-level-for="market">1</span><span class="location-icon">⚖️</span><strong>Marketplace</strong><small>Player trade</small>
+              <span class="level-badge" data-level-for="market">1</span><span class="location-icon game-icon icon-market" aria-hidden="true"></span><strong>Marketplace</strong><small>Player trade</small>
             </button>
             <button class="location building warehouse" data-action="open-view" data-view="warehouse" style="--x:61;--y:41">
-              <span class="level-badge" data-level-for="warehouse">1</span><span class="location-icon">📦</span><strong>Warehouse</strong><small id="warehouseMapCount">0 / 60</small>
+              <span class="level-badge" data-level-for="warehouse">1</span><span class="location-icon game-icon icon-warehouse" aria-hidden="true"></span><strong>Warehouse</strong><small id="warehouseMapCount">0 / 60</small>
             </button>
             <button class="location building tavern" data-action="open-building" data-building="tavern" style="--x:35;--y:70">
-              <span class="level-badge" data-level-for="tavern">1</span><span class="location-icon">🍲</span><strong>Tavern</strong><small>Restore sanity</small>
+              <span class="level-badge" data-level-for="tavern">1</span><span class="location-icon game-icon icon-tavern" aria-hidden="true"></span><strong>Tavern</strong><small>Restore sanity</small>
             </button>
             <button class="location building smith" data-action="open-building" data-building="smith" style="--x:60;--y:70">
-              <span class="level-badge" data-level-for="smith">1</span><span class="location-icon">⚒️</span><strong>Blacksmith</strong><small>Gear &amp; repair</small>
+              <span class="level-badge" data-level-for="smith">1</span><span class="location-icon game-icon icon-smith" aria-hidden="true"></span><strong>Blacksmith</strong><small>Gear &amp; repair</small>
             </button>
             <button class="location building inn" data-action="open-building" data-building="inn" style="--x:79;--y:66">
-              <span class="level-badge" data-level-for="inn">1</span><span class="location-icon">🛏️</span><strong>Inn</strong><small>Defeat recovery</small>
+              <span class="level-badge" data-level-for="inn">1</span><span class="location-icon game-icon icon-inn" aria-hidden="true"></span><strong>Inn</strong><small>Defeat recovery</small>
             </button>
             <button class="location building mine" data-action="open-building" data-building="mine" style="--x:80;--y:34">
-              <span class="level-badge" data-level-for="mine">1</span><span class="location-icon">⛏️</span><strong>Mine</strong><small>Stored metal</small>
+              <span class="level-badge" data-level-for="mine">1</span><span class="location-icon game-icon icon-mine" aria-hidden="true"></span><strong>Mine</strong><small>Stored metal</small>
             </button>
 
             <div id="heroLayer" class="hero-layer" aria-live="polite"></div>
-            <div class="town-square"><span>✦</span><small>Town Square</small></div>
+            <div class="town-square"><span class="game-icon icon-town" aria-hidden="true"></span><small>Town Square</small></div>
           </div>
         </div>
 
@@ -161,13 +161,13 @@
     </main>
 
     <nav class="bottom-nav" aria-label="Primary navigation">
-      <button class="active" data-action="open-view" data-view="town"><span>🏰</span><small>Town</small></button>
-      <button data-action="open-view" data-view="heroes"><span>🛡️</span><small>Heroes</small></button>
-      <button data-action="open-view" data-view="assign"><span>📋</span><small>Assign</small></button>
-      <button data-action="open-view" data-view="combat"><span>⚔️</span><small>Combat</small></button>
-      <button data-action="open-view" data-view="warehouse"><span>📦</span><small>Storage</small></button>
-      <button data-action="open-view" data-view="market"><span>⚖️</span><small>Market</small></button>
-      <button data-action="open-view" data-view="progress"><span>🏆</span><small>Progress</small></button>
+      <button class="active" data-action="open-view" data-view="town"><span class="game-icon icon-town" aria-hidden="true"></span><small>Town</small></button>
+      <button data-action="open-view" data-view="heroes"><span class="game-icon icon-heroes" aria-hidden="true"></span><small>Heroes</small></button>
+      <button data-action="open-view" data-view="assign"><span class="game-icon icon-assign" aria-hidden="true"></span><small>Assign</small></button>
+      <button data-action="open-view" data-view="combat"><span class="game-icon icon-combat" aria-hidden="true"></span><small>Combat</small></button>
+      <button data-action="open-view" data-view="warehouse"><span class="game-icon icon-warehouse" aria-hidden="true"></span><small>Storage</small></button>
+      <button data-action="open-view" data-view="market"><span class="game-icon icon-market" aria-hidden="true"></span><small>Market</small></button>
+      <button data-action="open-view" data-view="progress"><span class="game-icon icon-progress" aria-hidden="true"></span><small>Progress</small></button>
     </nav>
   </div>
 

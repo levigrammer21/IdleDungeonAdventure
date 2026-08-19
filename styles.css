@@ -131,7 +131,26 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .location { position:absolute; left:calc(var(--x) * 1%); top:calc(var(--y) * 1%); z-index:5; width:112px; min-height:58px; transform:translate(-50%,-50%); display:grid; justify-items:center; align-content:center; gap:1px; padding:7px 8px; border:1px solid rgba(255,244,205,.7); border-radius:14px; color:#fff8df; background:linear-gradient(145deg,rgba(27,49,35,.92),rgba(18,34,25,.88)); box-shadow:0 5px 0 rgba(37,30,20,.36),0 9px 22px rgba(14,25,17,.35); backdrop-filter:blur(5px); transition:transform .16s ease,filter .16s ease; }
 .location:hover { transform:translate(-50%,-54%) scale(1.035); filter:brightness(1.05); }
 .location:active { transform:translate(-50%,-48%) scale(.98); box-shadow:0 4px 0 rgba(86,77,52,.24); }
+.game-icon { display:inline-block; flex:0 0 auto; background-image:url("img/ui-icon-atlas.webp"); background-repeat:no-repeat; background-size:400% 400%; background-position:var(--icon-x) var(--icon-y); image-rendering:auto; }
+.icon-town { --icon-x:0%; --icon-y:0%; }
+.icon-heroes { --icon-x:33.333%; --icon-y:0%; }
+.icon-assign { --icon-x:66.667%; --icon-y:0%; }
+.icon-progress { --icon-x:100%; --icon-y:0%; }
+.icon-raid { --icon-x:0%; --icon-y:33.333%; }
+.icon-dungeon { --icon-x:33.333%; --icon-y:33.333%; }
+.icon-expedition { --icon-x:66.667%; --icon-y:33.333%; }
+.icon-combat { --icon-x:100%; --icon-y:33.333%; }
+.icon-farm { --icon-x:0%; --icon-y:66.667%; }
+.icon-mine { --icon-x:33.333%; --icon-y:66.667%; }
+.icon-forest { --icon-x:66.667%; --icon-y:66.667%; }
+.icon-smith { --icon-x:100%; --icon-y:66.667%; }
+.icon-warehouse { --icon-x:0%; --icon-y:100%; }
+.icon-market { --icon-x:33.333%; --icon-y:100%; }
+.icon-tavern { --icon-x:66.667%; --icon-y:100%; }
+.icon-inn { --icon-x:100%; --icon-y:100%; }
 .location-icon { font-size:1.25rem; line-height:1.1; filter:drop-shadow(0 2px 1px rgba(0,0,0,.2)); }
+.location-icon.game-icon { width:30px; height:30px; font-size:0; filter:drop-shadow(0 3px 2px rgba(0,0,0,.35)); }
+.location.combat-gate .location-icon.game-icon { width:34px; height:34px; }
 .location strong { font:700 .77rem/1.05 "Fraunces",serif; }
 .location small { color:#d4dfcc; font-size:.5rem; font-weight:700; }
 .location.combat-gate { width:136px; min-height:64px; color:#fff4cf; background:linear-gradient(150deg,rgba(49,54,51,.94),rgba(19,29,24,.92)); border-color:#d6b35c; box-shadow:0 6px 0 rgba(60,43,25,.7),0 12px 24px rgba(12,19,14,.4); }
@@ -139,6 +158,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .level-badge { position:absolute; top:-8px; right:-7px; display:grid; width:25px; height:25px; place-items:center; border:2px solid #fff5d3; border-radius:50%; color:white; background:var(--forest-800); font-size:.64rem; font-weight:800; box-shadow:0 3px 8px rgba(0,0,0,.2); }
 .town-square { position:absolute; left:50%; top:56%; z-index:1; transform:translate(-50%,-50%); display:grid; place-items:center; padding:4px 7px; border-radius:9px; color:#fff4ce; background:rgba(26,43,31,.72); text-shadow:0 1px 2px #18291d; }
 .town-square span { font-size:2rem; }
+.town-square .game-icon { width:42px; height:42px; font-size:0; filter:drop-shadow(0 3px 3px rgba(0,0,0,.35)); }
 .town-square small { font:700 .6rem "Fraunces",serif; text-transform:uppercase; }
 .hero-layer { position:absolute; inset:0; z-index:8; pointer-events:none; }
 .map-hero { position:absolute; left:calc(var(--x) * 1%); top:calc(var(--y) * 1%); transform:translate(-50%,-50%); display:grid; justify-items:center; pointer-events:auto; transition:left 1.2s ease,top 1.2s ease; }
@@ -423,6 +443,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .bottom-nav { position:fixed; left:0; right:0; bottom:0; z-index:100; height:calc(var(--safe-bottom) + var(--nav-h)); display:grid; grid-template-columns:repeat(7,1fr); padding:6px max(6px,env(safe-area-inset-right)) var(--safe-bottom) max(6px,env(safe-area-inset-left)); border-top:1px solid rgba(255,255,255,.1); color:#cddacf; background:rgba(24,45,32,.97); backdrop-filter:blur(18px); }
 .bottom-nav button { position:relative; display:grid; place-content:center; justify-items:center; gap:2px; min-width:0; padding:3px; border:0; border-radius:12px; color:inherit; background:transparent; }
 .bottom-nav button span { font-size:1.18rem; line-height:1; transition:transform .16s ease; }
+.bottom-nav button .game-icon { width:28px; height:28px; font-size:0; filter:drop-shadow(0 2px 2px rgba(0,0,0,.35)); }
 .bottom-nav button small { font-size:.55rem; font-weight:800; }
 .bottom-nav button.active { color:var(--gold-light); background:rgba(255,255,255,.07); }
 .bottom-nav button.active span { transform:translateY(-2px); }
@@ -541,6 +562,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
   .bottom-nav { top:0; right:auto; width:84px; height:100dvh; grid-template-columns:1fr; grid-template-rows:repeat(7,74px); align-content:center; padding:calc(var(--safe-top) + 10px) 8px calc(var(--safe-bottom) + 10px); border-top:0; border-right:1px solid rgba(255,255,255,.1); }
   .bottom-nav button small { font-size:.58rem; }
   .bottom-nav button span { font-size:1.35rem; }
+  .bottom-nav button .game-icon { width:32px; height:32px; }
   .town-map { min-height:0; }
   .town-map-frame.expanded { left:84px; bottom:0; }
 }
