@@ -1,4 +1,4 @@
-const VERSION = "1.5.1";
+const VERSION = "1.5.2";
 const SAVE_KEY = "adventure-town-save-v1";
 const SETTINGS_KEY = "adventure-town-settings-v1";
 const OFFLINE_LIMIT = 12 * 60 * 60;
@@ -26,7 +26,7 @@ const BUILDINGS = {
   farm:{name:"Farm",icon:"🌾",description:"Produces named food items stored in the Warehouse.",baseCost:650,position:[20,36],skill:"farming"},
   mine:{name:"Mine",icon:"⛏️",description:"Produces named metals stored in the Warehouse.",baseCost:700,position:[80,34],skill:"mining"},
   forest:{name:"Forest",icon:"🌲",description:"Produces named woods stored in the Warehouse.",baseCost:625,position:[15,63],skill:"woodcutting"},
-  smith:{name:"Blacksmith",icon:"⚒️",description:"Turns Metal and Wood into Repair Kits.",baseCost:900,position:[60,70],skill:"smithing"},
+  smith:{name:"Blacksmith",icon:"⚒️",description:"Uses exact named metals and woods for equipment and Repair Kits.",baseCost:900,position:[60,70],skill:"smithing"},
   warehouse:{name:"Warehouse",icon:"📦",description:"Stores all loot, resources, and equipment.",baseCost:1100,position:[61,41]},
   market:{name:"Marketplace",icon:"⚖️",description:"Trades player goods and equipment for Gold.",baseCost:1200,position:[39,44]},
   inn:{name:"Inn",icon:"🛏️",description:"Physically restores heroes after defeat.",baseCost:850,position:[79,66]},
@@ -38,7 +38,7 @@ const ASSIGNMENTS = {
   farm:{name:"Farming",icon:"🌾",detail:"Produces your selected food item for the Warehouse."},
   mine:{name:"Mining",icon:"⛏️",detail:"Produces your selected metal for the Warehouse."},
   forest:{name:"Woodcutting",icon:"🌲",detail:"Produces your selected wood for the Warehouse."},
-  smith:{name:"Smithing",icon:"⚒️",detail:"Consumes Metal + Wood to make Repair Kits."},
+  smith:{name:"Smithing",icon:"⚒️",detail:"Uses Scrap Metal + Fallen Branches to make Repair Kits."},
   tavern:{name:"At Tavern",icon:"🍲",detail:"Restoring Sanity to full."},
   inn:{name:"At Inn",icon:"🛏️",detail:"Recovering from defeat."},
   combat:{name:"Fighting",icon:"⚔️",detail:"Away on a combat run."},
@@ -71,7 +71,6 @@ const CLASS_COMBAT = {
   Assassin:{speed:1.65,crit:.15,style:"shadow",verb:"slashes"},
   Summoner:{speed:2.65,crit:.06,style:"summon",verb:"commands"},
 };
-const FOOD_HEAL_PER_SUPPLY=8;
 const combatRoom=(name,icon,hp=1,attack=1,defense=1,speed=2.7,boss=false)=>({type:"combat",name,icon,hp,attack,defense,speed,boss});
 const skillRoom=(name,icon,skill,baseSeconds,description)=>({type:"skill",name,icon,skill,baseSeconds,description});
 
@@ -167,9 +166,9 @@ for(const set of LOOT_SET_SPECS){
 }
 
 Object.assign(ITEMS,{
-  beaverPet:{name:"Beaver",type:"pet",icon:"🦫",tier:"Pet",value:0,soulbound:true,effects:{combatStrength:3,woodDoubleChance:.20},effectText:"+3 combat strength · 20% chance to double Wood"},
+  beaverPet:{name:"Beaver",type:"pet",icon:"🦫",tier:"Pet",value:0,soulbound:true,effects:{combatStrength:3,woodDoubleChance:.20},effectText:"+3 combat strength · 20% chance to double the selected Woodcutting item"},
   cowPet:{name:"Cow",type:"pet",icon:"🐄",tier:"Pet",value:0,soulbound:true,effects:{combatStrength:2,foodEfficiency:2},effectText:"+2 combat strength · combat food heals +8 HP"},
-  molePet:{name:"Mole",type:"pet",icon:"🐾",tier:"Pet",value:0,soulbound:true,effects:{combatStrength:2,metalDoubleChance:.15},effectText:"+2 combat strength · 15% chance to double Metal"},
+  molePet:{name:"Mole",type:"pet",icon:"🐾",tier:"Pet",value:0,soulbound:true,effects:{combatStrength:2,metalDoubleChance:.15},effectText:"+2 combat strength · 15% chance to double the selected Mining item"},
   forgeSpritePet:{name:"Forge Sprite",type:"pet",icon:"🔥",tier:"Pet",value:0,soulbound:true,effects:{combatStrength:3,smithDoubleChance:.10},effectText:"+3 combat strength · 10% chance to double Repair Kits"},
   basiliskPet:{name:"Basilisk Hatchling",type:"pet",icon:"🐍",tier:"Raid Pet",value:0,soulbound:true,effects:{combatStrength:9,poisonDamage:2},effectText:"+9 combat strength · +2 poison damage"},
   tempestPet:{name:"Tempest Whelp",type:"pet",icon:"⚡",tier:"Raid Pet",value:0,soulbound:true,effects:{combatStrength:10,lightningDamage:2},effectText:"+10 combat strength · +2 lightning damage"},
@@ -186,34 +185,34 @@ Object.assign(ITEMS,{
 
 const RESOURCE_TIERS = {
   food:[
-    {id:"starter",tier:"Starter",name:"Foraged Rations",icon:"🥕",level:1,building:1,value:1},
-    {id:"weak",tier:"Weak",name:"Simple Meals",icon:"🥣",level:5,building:1,value:2},
-    {id:"average",tier:"Average",name:"Hearty Meals",icon:"🍲",level:12,building:2,value:4},
-    {id:"good",tier:"Good",name:"Trail Feasts",icon:"🥘",level:25,building:3,value:7},
-    {id:"great",tier:"Great",name:"Adventurer Feasts",icon:"🍗",level:40,building:4,value:11},
-    {id:"epic",tier:"Epic",name:"Hero's Feasts",icon:"🍖",level:60,building:5,value:16},
-    {id:"legendary",tier:"Legendary",name:"Legendary Banquets",icon:"🍱",level:80,building:6,value:22},
-    {id:"divine",tier:"Divine",name:"Divine Banquets",icon:"✨",level:100,building:8,value:30},
+    {id:"starter",tier:"Starter",name:"Foraged Rations",icon:"🥕",level:1,building:1,rank:1,heal:8},
+    {id:"weak",tier:"Weak",name:"Simple Meals",icon:"🥣",level:5,building:1,rank:2,heal:16},
+    {id:"average",tier:"Average",name:"Hearty Meals",icon:"🍲",level:12,building:2,rank:4,heal:32},
+    {id:"good",tier:"Good",name:"Trail Feasts",icon:"🥘",level:25,building:3,rank:7,heal:56},
+    {id:"great",tier:"Great",name:"Adventurer Feasts",icon:"🍗",level:40,building:4,rank:11,heal:88},
+    {id:"epic",tier:"Epic",name:"Hero's Feasts",icon:"🍖",level:60,building:5,rank:16,heal:128},
+    {id:"legendary",tier:"Legendary",name:"Legendary Banquets",icon:"🍱",level:80,building:6,rank:22,heal:176},
+    {id:"divine",tier:"Divine",name:"Divine Banquets",icon:"✨",level:100,building:8,rank:30,heal:240},
   ],
   metal:[
-    {id:"starter",tier:"Starter",name:"Scrap Metal",icon:"🔩",level:1,building:1,value:1},
-    {id:"weak",tier:"Weak",name:"Copper",icon:"🟠",level:5,building:1,value:2},
-    {id:"average",tier:"Average",name:"Iron",icon:"⚙️",level:12,building:2,value:4},
-    {id:"good",tier:"Good",name:"Steel",icon:"⛓️",level:25,building:3,value:7},
-    {id:"great",tier:"Great",name:"Mithril",icon:"🔷",level:40,building:4,value:11},
-    {id:"epic",tier:"Epic",name:"Adamant",icon:"💠",level:60,building:5,value:16},
-    {id:"legendary",tier:"Legendary",name:"Starsteel",icon:"🌠",level:80,building:6,value:22},
-    {id:"divine",tier:"Divine",name:"Divine Metal",icon:"✨",level:100,building:8,value:30},
+    {id:"starter",tier:"Starter",name:"Scrap Metal",icon:"🔩",level:1,building:1,rank:1},
+    {id:"weak",tier:"Weak",name:"Copper",icon:"🟠",level:5,building:1,rank:2},
+    {id:"average",tier:"Average",name:"Iron",icon:"⚙️",level:12,building:2,rank:4},
+    {id:"good",tier:"Good",name:"Steel",icon:"⛓️",level:25,building:3,rank:7},
+    {id:"great",tier:"Great",name:"Mithril",icon:"🔷",level:40,building:4,rank:11},
+    {id:"epic",tier:"Epic",name:"Adamant",icon:"💠",level:60,building:5,rank:16},
+    {id:"legendary",tier:"Legendary",name:"Starsteel",icon:"🌠",level:80,building:6,rank:22},
+    {id:"divine",tier:"Divine",name:"Divine Metal",icon:"✨",level:100,building:8,rank:30},
   ],
   wood:[
-    {id:"starter",tier:"Starter",name:"Fallen Branches",icon:"🪵",level:1,building:1,value:1},
-    {id:"weak",tier:"Weak",name:"Pine",icon:"🌲",level:5,building:1,value:2},
-    {id:"average",tier:"Average",name:"Oak",icon:"🟤",level:12,building:2,value:4},
-    {id:"good",tier:"Good",name:"Ironwood",icon:"🪓",level:25,building:3,value:7},
-    {id:"great",tier:"Great",name:"Elderwood",icon:"🌳",level:40,building:4,value:11},
-    {id:"epic",tier:"Epic",name:"Moonwood",icon:"🌙",level:60,building:5,value:16},
-    {id:"legendary",tier:"Legendary",name:"Worldwood",icon:"🌐",level:80,building:6,value:22},
-    {id:"divine",tier:"Divine",name:"Divine Timber",icon:"✨",level:100,building:8,value:30},
+    {id:"starter",tier:"Starter",name:"Fallen Branches",icon:"🪵",level:1,building:1,rank:1},
+    {id:"weak",tier:"Weak",name:"Pine",icon:"🌲",level:5,building:1,rank:2},
+    {id:"average",tier:"Average",name:"Oak",icon:"🟤",level:12,building:2,rank:4},
+    {id:"good",tier:"Good",name:"Ironwood",icon:"🪓",level:25,building:3,rank:7},
+    {id:"great",tier:"Great",name:"Elderwood",icon:"🌳",level:40,building:4,rank:11},
+    {id:"epic",tier:"Epic",name:"Moonwood",icon:"🌙",level:60,building:5,rank:16},
+    {id:"legendary",tier:"Legendary",name:"Worldwood",icon:"🌐",level:80,building:6,rank:22},
+    {id:"divine",tier:"Divine",name:"Divine Timber",icon:"✨",level:100,building:8,rank:30},
   ],
 };
 const RESOURCE_ASSIGNMENTS={farm:"food",mine:"metal",forest:"wood"};
@@ -224,6 +223,7 @@ const UTILITY_RESOURCE_STACKS=[
 ];
 const emptyResourceTiers=()=>Object.fromEntries(Object.entries(RESOURCE_TIERS).map(([resource,tiers])=>[resource,Object.fromEntries(tiers.map(t=>[t.id,0]))]));
 const TIER_ACTION_SECONDS={starter:10,weak:12,average:15,good:18,great:22,epic:28,legendary:35,divine:45};
+const REPAIR_KIT_RECIPE={metalTier:"starter",metalCost:4,woodTier:"starter",woodCost:3};
 const SKILL_PETS={farm:"cowPet",mine:"molePet",forest:"beaverPet",smith:"forgeSpritePet"};
 const SKILL_PET_CHANCE=1/250000;
 const HERO_RECORD_DEFAULTS={kills:0,expeditions:0,dungeons:0,raids:0,raidBosses:0,dungeonBosses:0,goldEarned:0,beers:0,defeats:0,itemsFound:0,foodGathered:0,metalMined:0,woodGathered:0,kitsForged:0,workActions:0,secondsActive:0};
@@ -270,13 +270,11 @@ const itemData = item => ({...ITEMS[item.key],...item});
 const xpForLevel = level => Math.floor(55 * Math.pow(level,1.62));
 const heroImage = (h,className="hero-image") => `<img class="${className}" src="${h.portrait}" alt="" aria-hidden="true" draggable="false">`;
 
-function recalculateTieredTotal(resource){state.resources[resource]=RESOURCE_TIERS[resource].reduce((total,tier)=>total+(state.resourceTiers[resource][tier.id]||0)*tier.value,0);}
+function recalculateTieredTotal(resource){state.resources[resource]=RESOURCE_TIERS[resource].reduce((total,tier)=>total+Math.floor(state.resourceTiers[resource][tier.id]||0),0);}
 function addTieredResource(resource,tierId,units){state.resourceTiers[resource][tierId]=(state.resourceTiers[resource][tierId]||0)+units;recalculateTieredTotal(resource);}
-function spendTieredResource(resource,amount){
-  amount=Math.max(0,Number(amount)||0);if(state.resources[resource]+1e-6<amount)return false;let remaining=amount;
-  for(const tier of RESOURCE_TIERS[resource]){const available=Math.floor(state.resourceTiers[resource][tier.id]||0),take=Math.min(available,Math.ceil(remaining/tier.value));state.resourceTiers[resource][tier.id]-=take;remaining-=take*tier.value;if(remaining<=0)break;}
-  recalculateTieredTotal(resource);return remaining<=1e-6;
-}
+function resourceTierData(resource,tierId){return RESOURCE_TIERS[resource]?.find(tier=>tier.id===tierId)||null;}
+function resourceTierCount(resource,tierId){return Math.floor(state.resourceTiers?.[resource]?.[tierId]||0);}
+function spendSpecificResource(resource,tierId,amount){amount=Math.max(0,Math.floor(Number(amount)||0));if(resourceTierCount(resource,tierId)<amount)return false;state.resourceTiers[resource][tierId]-=amount;recalculateTieredTotal(resource);return true;}
 function unlockedResourceTiers(h,assignment){const resource=RESOURCE_ASSIGNMENTS[assignment],skill=BUILDINGS[assignment]?.skill,buildingLevel=state.buildings[assignment]||1;return resource?RESOURCE_TIERS[resource].filter(t=>(h.skills[skill]?.level||1)>=t.level&&buildingLevel>=t.building):[];}
 function resourceTierForHero(h,assignment){const unlocked=unlockedResourceTiers(h,assignment),selected=h.workTiers?.[assignment]||"starter";return unlocked.find(t=>t.id===selected)||unlocked[0]||RESOURCE_TIERS[RESOURCE_ASSIGNMENTS[assignment]]?.[0];}
 function workTierPickerHTML(h,assignment){const tiers=unlockedResourceTiers(h,assignment),selected=resourceTierForHero(h,assignment)?.id;return tiers.length?`<label class="work-tier-picker"><span>Exact task</span><select data-work-tier data-hero="${h.id}" data-assignment="${assignment}" aria-label="${escapeHTML(h.name)} ${ASSIGNMENTS[assignment].name} task">${tiers.map(t=>`<option value="${t.id}" ${t.id===selected?"selected":""}>${t.icon} ${escapeHTML(t.name)} · ${TIER_ACTION_SECONDS[t.id]}s base</option>`).join("")}</select></label>`:"";}
@@ -306,11 +304,11 @@ function migrate(raw){
   const merged={...base,...raw,version:VERSION,resources:{...base.resources,...raw.resources},buildings:{...base.buildings,...raw.buildings},stats:{...base.stats,...raw.stats},pendingFractions:{...base.pendingFractions,...raw.pendingFractions}};
   merged.resourceTiers=emptyResourceTiers();
   for(const [resource,tiers] of Object.entries(RESOURCE_TIERS)){
-    let fractionalSupply=0;
-    if(raw.resourceTiers?.[resource])for(const tier of tiers){const amount=Math.max(0,Number(raw.resourceTiers[resource][tier.id])||0);merged.resourceTiers[resource][tier.id]=Math.floor(amount);fractionalSupply+=(amount-Math.floor(amount))*tier.value;}
+    let fractionalItems=0;
+    if(raw.resourceTiers?.[resource])for(const tier of tiers){const amount=Math.max(0,Number(raw.resourceTiers[resource][tier.id])||0);merged.resourceTiers[resource][tier.id]=Math.floor(amount);fractionalItems+=amount-Math.floor(amount);}
     else merged.resourceTiers[resource].starter=Math.floor(Math.max(0,Number(raw.resources?.[resource])||0));
-    merged.resourceTiers[resource].starter+=Math.round(fractionalSupply);
-    merged.resources[resource]=tiers.reduce((total,tier)=>total+merged.resourceTiers[resource][tier.id]*tier.value,0);
+    merged.resourceTiers[resource].starter+=Math.round(fractionalItems);
+    merged.resources[resource]=tiers.reduce((total,tier)=>total+merged.resourceTiers[resource][tier.id],0);
   }
   merged.heroes=base.heroes.map(b=>{const h=raw.heroes.find(x=>x.id===b.id)||{},skills=Object.fromEntries(Object.entries(b.skills).map(([key,value])=>[key,{...value,...(h.skills?.[key]||{})}]));return {...b,...h,portrait:b.portrait,workProgress:Math.max(0,Number(h.workProgress)||0),workTiers:{...b.workTiers,...(h.workTiers||{})},records:{...HERO_RECORD_DEFAULTS,...(h.records||{})},skills,equipment:{...b.equipment,...(h.equipment||{})}}});
   merged.inventory=Array.isArray(raw.inventory)?raw.inventory:[];
@@ -334,7 +332,7 @@ function addXP(target,amount,max=100){
 
 function warehouseCapacity(){ return 50 + state.buildings.warehouse*25; }
 function warehouseResourceStacks(){
-  const tiered=Object.entries(RESOURCE_TIERS).flatMap(([resource,tiers])=>tiers.map(tier=>{const quantity=Math.floor(state.resourceTiers?.[resource]?.[tier.id]||0);return {kind:"tiered",resource,tier,quantity,name:tier.name,icon:tier.icon,category:`${tier.tier} ${resource[0].toUpperCase()+resource.slice(1)}`,detail:`${tier.value} ${resource} supply each · ${quantity*tier.value} total supply`};}).filter(stack=>stack.quantity>0));
+  const tiered=Object.entries(RESOURCE_TIERS).flatMap(([resource,tiers])=>tiers.map(tier=>{const quantity=Math.floor(state.resourceTiers?.[resource]?.[tier.id]||0),detail=resource==="food"?`Heals ${tier.heal} HP when eaten in combat`:`Unique ${resource} item · Used by ${tier.tier} crafting recipes`;return {kind:"tiered",resource,tier,quantity,name:tier.name,icon:tier.icon,category:`${tier.tier} ${resource[0].toUpperCase()+resource.slice(1)}`,detail};}).filter(stack=>stack.quantity>0));
   const utility=UTILITY_RESOURCE_STACKS.map(resource=>({...resource,kind:"utility",quantity:Math.floor(state.resources[resource.key]||0),category:resource.tier})).filter(stack=>stack.quantity>0);
   return [...tiered,...utility];
 }
@@ -359,7 +357,7 @@ function partyPower(party){return party.reduce((total,h)=>total+heroPower(h),0);
 function estimatedPartyDPS(party,cfg){if(!party.length)return 0;const preview=createEnemy(cfg,COMBAT_LAYOUTS[cfg.id].find(r=>r.type==="combat"));return party.reduce((total,h)=>{const hit=clamp(.25+(heroAttack(h)/(heroAttack(h)+preview.defense))*.7,.25,.98),average=heroMaxHit(h)*.5*(1+heroCritChance(h)*.6)+equipmentDamageBonus(h);return total+hit*average/heroAttackSpeed(h);},0);}
 function heroSpecials(h){return ["weapon","armor","pet","trinket"].map(slot=>activeEquipment(h,slot)).filter(Boolean).flatMap(d=>[d.element,d.effectText].filter(Boolean));}
 function workActionTime(h,assignment,tier=null){const skillKey=BUILDINGS[assignment]?.skill,skill=h.skills[skillKey]?.level||1,building=state.buildings[assignment]||1,base=assignment==="smith"?15:TIER_ACTION_SECONDS[tier?.id||"starter"];return base/(1+(skill-1)*.01+(building-1)*.08);}
-function workActionStatus(h){if(!["farm","mine","forest","smith"].includes(h.assignment))return "";const tier=RESOURCE_ASSIGNMENTS[h.assignment]?resourceTierForHero(h,h.assignment):null,seconds=Math.max(0,workActionTime(h,h.assignment,tier)-(h.workProgress||0));return `${tier?`${tier.icon} ${tier.name}`:"🧰 Repair Kit"} in ${Math.max(1,Math.ceil(seconds))}s`;}
+function workActionStatus(h){if(!["farm","mine","forest","smith"].includes(h.assignment))return "";if(h.assignment==="smith"&&(resourceTierCount("metal",REPAIR_KIT_RECIPE.metalTier)<REPAIR_KIT_RECIPE.metalCost||resourceTierCount("wood",REPAIR_KIT_RECIPE.woodTier)<REPAIR_KIT_RECIPE.woodCost)){const metal=resourceTierData("metal",REPAIR_KIT_RECIPE.metalTier),wood=resourceTierData("wood",REPAIR_KIT_RECIPE.woodTier);return `Waiting for ${REPAIR_KIT_RECIPE.metalCost} ${metal.name} + ${REPAIR_KIT_RECIPE.woodCost} ${wood.name}`;}const tier=RESOURCE_ASSIGNMENTS[h.assignment]?resourceTierForHero(h,h.assignment):null,seconds=Math.max(0,workActionTime(h,h.assignment,tier)-(h.workProgress||0));return `${tier?`${tier.icon} ${tier.name}`:"🧰 Repair Kit"} in ${Math.max(1,Math.ceil(seconds))}s`;}
 
 function notify(title,text,icon="✦"){
   if(quietSimulation) return;
@@ -426,11 +424,11 @@ function processWork(h,seconds){
     while(loops++<50000){
       const tier=resourceTierForHero(h,h.assignment),actionTime=workActionTime(h,h.assignment,tier);if(h.workProgress+1e-8<actionTime)break;h.workProgress-=actionTime;
       const doubleKey=resource==="food"?"foodDoubleChance":resource==="metal"?"metalDoubleChance":"woodDoubleChance",units=random()<equipmentEffect(h,doubleKey)?2:1;
-      addTieredResource(resource,tier.id,units);addXP(h.skills[skill],5*Math.sqrt(tier.value));h.records.workActions++;h.records[resource==="food"?"foodGathered":resource==="metal"?"metalMined":"woodGathered"]+=units*tier.value;rollSkillPet(h.assignment,h);
+      addTieredResource(resource,tier.id,units);addXP(h.skills[skill],5*Math.sqrt(tier.rank));h.records.workActions++;h.records[resource==="food"?"foodGathered":resource==="metal"?"metalMined":"woodGathered"]+=units;rollSkillPet(h.assignment,h);
     }
   }else if(h.assignment==="smith"){
     const skill=h.skills.smithing;h.workProgress=(h.workProgress||0)+seconds;let loops=0;
-    while(loops++<50000){const actionTime=workActionTime(h,"smith");if(h.workProgress+1e-8<actionTime)break;if(state.resources.metal<4||state.resources.wood<3){h.workProgress=Math.min(h.workProgress,actionTime);break;}h.workProgress-=actionTime;spendTieredResource("metal",4);spendTieredResource("wood",3);const kits=random()<equipmentEffect(h,"smithDoubleChance")?2:1;state.resources.repairKits+=kits;addXP(skill,28);h.records.kitsForged+=kits;h.records.workActions++;rollSkillPet("smith",h);}
+    while(loops++<50000){const actionTime=workActionTime(h,"smith");if(h.workProgress+1e-8<actionTime)break;if(resourceTierCount("metal",REPAIR_KIT_RECIPE.metalTier)<REPAIR_KIT_RECIPE.metalCost||resourceTierCount("wood",REPAIR_KIT_RECIPE.woodTier)<REPAIR_KIT_RECIPE.woodCost){h.workProgress=Math.min(h.workProgress,actionTime);break;}h.workProgress-=actionTime;spendSpecificResource("metal",REPAIR_KIT_RECIPE.metalTier,REPAIR_KIT_RECIPE.metalCost);spendSpecificResource("wood",REPAIR_KIT_RECIPE.woodTier,REPAIR_KIT_RECIPE.woodCost);const kits=random()<equipmentEffect(h,"smithDoubleChance")?2:1;state.resources.repairKits+=kits;addXP(skill,28);h.records.kitsForged+=kits;h.records.workActions++;rollSkillPet("smith",h);}
   }
 }
 
@@ -474,7 +472,7 @@ function performEnemyAttack(run,offline=false){
   for(const h of targets){const hitChance=clamp(.22+(enemy.attack/(enemy.attack+heroDefense(h)*1.8))*.68,.18,.95),base=random()<hitChance?Math.floor(random()*(enemy.maxHit+1)):0,damage=targets.length>1?Math.ceil(base*.6):base;h.hp=Math.max(0,(h.hp??heroMaxHP(h))-damage);run.damageTaken+=damage;pushCombatEvent(run,damage?`${enemy.name} hits ${h.name} for ${damage}.`:`${enemy.name} misses ${h.name}.`,damage?"enemy":"miss",h.id,damage,"enemy",offline);if(h.hp<=0)defeatHero(run,h,offline);}
 }
 function consumeCombatFood(run,h,offline=false){
-  if((h.hp||0)>heroMaxHP(h)*.45||state.resources.food<=0)return false;const deficit=heroMaxHP(h)-h.hp,bonus=equipmentEffect(h,"foodEfficiency")*4,available=RESOURCE_TIERS.food.filter(t=>(state.resourceTiers.food[t.id]||0)>0).map(t=>({...t,heal:t.value*FOOD_HEAL_PER_SUPPLY+bonus}));if(!available.length)return false;const tier=available.find(t=>t.heal>=deficit)||available[available.length-1];state.resourceTiers.food[tier.id]--;recalculateTieredTotal("food");const healed=Math.min(deficit,tier.heal);h.hp+=healed;run.foodEaten++;pushCombatEvent(run,`${h.name} eats ${tier.name} and heals ${healed} HP.`,"heal",h.id,healed,h.id,offline);return true;
+  if((h.hp||0)>heroMaxHP(h)*.45||state.resources.food<=0)return false;const deficit=heroMaxHP(h)-h.hp,bonus=equipmentEffect(h,"foodEfficiency")*4,available=RESOURCE_TIERS.food.filter(t=>(state.resourceTiers.food[t.id]||0)>0).map(t=>({...t,actualHeal:t.heal+bonus}));if(!available.length)return false;const tier=available.find(t=>t.actualHeal>=deficit)||available[available.length-1];state.resourceTiers.food[tier.id]--;recalculateTieredTotal("food");const healed=Math.min(deficit,tier.actualHeal);h.hp+=healed;run.foodEaten++;pushCombatEvent(run,`${h.name} eats ${tier.name} and heals ${healed} HP.`,"heal",h.id,healed,h.id,offline);return true;
 }
 function processSkillRoom(run,cfg,dt,offline=false){
   const room=COMBAT_LAYOUTS[cfg.id][run.roomIndex],s=run.roomState;s.remaining-=dt;if(s.remaining>0)return;const party=run.heroIds.map(heroById).filter(Boolean),leader=heroById(s.leaderId);for(const h of party){addXP(h.skills[room.skill],h.id===s.leaderId?room.baseSeconds*.45:room.baseSeconds*.16);h.records.workActions++;}if(leader)rollSkillPet({farming:"farm",mining:"mine",woodcutting:"forest",smithing:"smith"}[room.skill],leader);pushCombatEvent(run,`${room.name} cleared by ${leader?.name||"the party"} at effective ${Math.floor(s.effective)} ${room.skill}.`,"skill","room",null,s.leaderId,offline);advanceCombatRoom(run,cfg,offline);
@@ -676,15 +674,16 @@ function openHero(id){
 
 function resourceTierHTML(id){
   const resource=RESOURCE_ASSIGNMENTS[id];if(!resource)return "";const b=BUILDINGS[id],buildingLevel=state.buildings[id],bestSkill=Math.max(...state.heroes.map(h=>h.skills[b.skill].level));
-  return `<div class="drawer-section"><h3>${resource[0].toUpperCase()+resource.slice(1)} Tiers</h3><p class="tier-explainer">Every item is a timed action. Starter actions take 10 seconds at Skill 1 and Building 1; skill and building levels make actions faster. Choose each hero's exact task on the Assignment Board—they will stay on it until you change it.</p><div class="resource-tier-list">${RESOURCE_TIERS[resource].map(t=>{const unlocked=bestSkill>=t.level&&buildingLevel>=t.building,amount=Math.floor(state.resourceTiers[resource][t.id]||0);return `<div class="resource-tier ${unlocked?"unlocked":"locked"}"><span>${unlocked?t.icon:"🔒"}</span><div><strong>${t.tier} · ${t.name}</strong><small>${unlocked?`${fmt(amount)} stored · ${t.value} supply each · ${TIER_ACTION_SECONDS[t.id]}s base`:`Requires skill ${t.level} + building ${t.building}`}</small></div><b>${unlocked?`×${t.value}`:"Locked"}</b></div>`}).join("")}</div></div>`;
+  const title=resource==="food"?"Food Items":resource==="metal"?"Metal Ores":"Wood Types",explanation=resource==="food"?"Every completed action creates one meal item. Higher meals restore more HP when a hero auto-eats in combat; they never convert into generic Food.":`Every completed action creates one distinct ${resource} item. Each stack is its own crafting material and cannot substitute for another tier.`;return `<div class="drawer-section"><h3>${title}</h3><p class="tier-explainer">${explanation} Skill and building levels make actions faster; heroes stay on the exact task you select.</p><div class="resource-tier-list">${RESOURCE_TIERS[resource].map(t=>{const unlocked=bestSkill>=t.level&&buildingLevel>=t.building,amount=Math.floor(state.resourceTiers[resource][t.id]||0),detail=resource==="food"?`${fmt(amount)} stored · Heals ${t.heal} HP each · ${TIER_ACTION_SECONDS[t.id]}s base`:`${fmt(amount)} stored · ${t.tier} recipe material · ${TIER_ACTION_SECONDS[t.id]}s base`,badge=resource==="food"?`${t.heal} HP`:"Item";return `<div class="resource-tier ${unlocked?"unlocked":"locked"}"><span>${unlocked?t.icon:"🔒"}</span><div><strong>${t.tier} · ${t.name}</strong><small>${unlocked?detail:`Requires skill ${t.level} + building ${t.building}`}</small></div><b>${unlocked?badge:"Locked"}</b></div>`}).join("")}</div></div>`;
 }
 function openBuilding(id){const b=BUILDINGS[id],level=state.buildings[id],cost=Math.floor(b.baseCost*Math.pow(1.55,level-1));const workers=state.heroes.filter(h=>h.assignment===id);openDrawer(b.name,`Building level ${level}`,`<div class="drawer-section"><div class="info-grid"><div class="info-tile"><small>Assigned heroes</small><strong>${workers.length} / 6</strong></div><div class="info-tile"><small>Action speed</small><strong>+${(level-1)*8}%</strong></div><div class="info-tile"><small>Next upgrade</small><strong>🪙 ${fmt(cost)}</strong></div><div class="info-tile"><small>Role</small><strong>${escapeHTML(b.description)}</strong></div></div></div>${resourceTierHTML(id)}${id==="smith"?smithCraftHTML():""}<div class="drawer-section"><h3>Heroes here</h3><div class="action-list">${workers.length?workers.map(h=>`<button data-action="open-hero" data-hero="${h.id}"><span class="inline-hero">${heroImage(h)} ${escapeHTML(h.name)}</span><small data-work-timer="${h.id}">${escapeHTML(workActionStatus(h))}</small></button>`).join(""):`<div class="empty-state">No heroes are assigned here.</div>`}</div></div><div class="drawer-footer"><button class="soft-button" data-action="open-view" data-view="assign">Assignments</button><button class="primary-button" data-action="upgrade-building" data-building="${id}">Upgrade · 🪙 ${fmt(cost)}</button></div>`);}
-function smithCraftHTML(){const keys=["goodSword","goodWand","goodBow","goodStaff","goodDaggers","goodTome","warriorArmor","wizardArmor","archerArmor","druidArmor","assassinArmor","summonerArmor"];return `<div class="drawer-section"><h3>Normal Equipment Recipes</h3><div class="action-list">${keys.map(key=>{const d=ITEMS[key];return `<button data-action="craft-item" data-key="${key}"><span>${d.icon} ${d.name}</span><small>${d.metalCost} Metal · ${d.woodCost} Wood</small></button>`}).join("")}</div></div>`;}
-function craftItem(key){const d=ITEMS[key];if(!d?.metalCost)return;if(occupiedSlots()>=warehouseCapacity())return toast("📦","Warehouse is full");if(state.resources.metal<d.metalCost||state.resources.wood<d.woodCost)return toast("⚒️","Not enough crafting materials",`Need ${d.metalCost} Metal and ${d.woodCost} Wood.`);spendTieredResource("metal",d.metalCost);spendTieredResource("wood",d.woodCost);state.inventory.push({id:uid(),key,durability:100,acquiredAt:Date.now()});notify("Equipment crafted",`${d.name} was delivered to the Warehouse.`,d.icon);markDirty();renderAll();openBuilding("smith");}
+function itemCraftingRecipe(d){const tierId=d.recipeTier||String(d.tier||"starter").toLowerCase(),metal=resourceTierData("metal",tierId)||RESOURCE_TIERS.metal[0],wood=resourceTierData("wood",tierId)||RESOURCE_TIERS.wood[0];return {metal,wood,metalCost:d.metalCost||0,woodCost:d.woodCost||0};}
+function smithCraftHTML(){const keys=["goodSword","goodWand","goodBow","goodStaff","goodDaggers","goodTome","warriorArmor","wizardArmor","archerArmor","druidArmor","assassinArmor","summonerArmor"],repairMetal=resourceTierData("metal",REPAIR_KIT_RECIPE.metalTier),repairWood=resourceTierData("wood",REPAIR_KIT_RECIPE.woodTier);return `<div class="drawer-section"><h3>Repair Kit Work Recipe</h3><div class="notice">Each timed Smithing action uses ${repairMetal.icon} ${REPAIR_KIT_RECIPE.metalCost} ${repairMetal.name} + ${repairWood.icon} ${REPAIR_KIT_RECIPE.woodCost} ${repairWood.name}.</div></div><div class="drawer-section"><h3>Good Equipment Recipes</h3><p class="tier-explainer">Good equipment requires Good-tier materials. Lower metals and woods cannot substitute.</p><div class="action-list">${keys.map(key=>{const d=ITEMS[key],r=itemCraftingRecipe(d);return `<button data-action="craft-item" data-key="${key}"><span>${d.icon} ${d.name}</span><small>${r.metal.icon} ${r.metalCost} ${r.metal.name} (${fmt(resourceTierCount("metal",r.metal.id))}) · ${r.wood.icon} ${r.woodCost} ${r.wood.name} (${fmt(resourceTierCount("wood",r.wood.id))})</small></button>`}).join("")}</div></div>`;}
+function craftItem(key){const d=ITEMS[key];if(!d?.metalCost)return;const r=itemCraftingRecipe(d),metalOwned=resourceTierCount("metal",r.metal.id),woodOwned=resourceTierCount("wood",r.wood.id);if(occupiedSlots()>=warehouseCapacity())return toast("📦","Warehouse is full");if(metalOwned<r.metalCost||woodOwned<r.woodCost)return toast("⚒️","Not enough exact materials",`Need ${r.metalCost} ${r.metal.name} and ${r.woodCost} ${r.wood.name}. You have ${metalOwned} and ${woodOwned}.`);spendSpecificResource("metal",r.metal.id,r.metalCost);spendSpecificResource("wood",r.wood.id,r.woodCost);state.inventory.push({id:uid(),key,durability:100,acquiredAt:Date.now()});notify("Equipment crafted",`${d.name} used ${r.metalCost} ${r.metal.name} and ${r.woodCost} ${r.wood.name}.`,d.icon);markDirty();renderAll();openBuilding("smith");}
 
 function openCombat(combatId){
   const c=COMBAT[combatId];if(!c)return;const available=state.heroes.filter(h=>h.assignment!=="combat"&&h.assignment!=="inn"&&h.sanity>0&&(h.hp||0)>0),max=c.maxParty,entry=[c.keys?`${c.keys} Key${c.keys===1?"":"s"}`:"",c.essence?`${c.essence} Essence`:""].filter(Boolean).join(" + ")||"Free entry",layout=COMBAT_LAYOUTS[c.id];
-  openDrawer(c.name,c.eyebrow,`<div class="drawer-section"><p>${c.description}</p><div class="info-grid"><div class="info-tile"><small>Route</small><strong>${combatRoomsFor(c).length} fights · ${layout.filter(r=>r.type==="skill").length} skill rooms</strong></div><div class="info-tile"><small>Required level</small><strong>Combat ${c.minLevel}+</strong></div><div class="info-tile"><small>Party size</small><strong>Up to ${max}</strong></div><div class="info-tile"><small>Auto-healing</small><strong>Eat below 45% HP</strong></div><div class="info-tile"><small>Entry per clear</small><strong>${entry}</strong></div><button class="info-tile loot-preview" data-action="open-loot" data-combat="${c.id}"><small>Possible rewards</small><strong><span class="loot-chest-icon" aria-hidden="true"></span> View loot & rates</strong></button></div></div><div class="drawer-section"><h3>Rooms in this route</h3><div class="route-preview">${layout.map((r,i)=>`<div><span>${r.icon}</span><div><strong>${i+1}. ${escapeHTML(r.name)}</strong><small>${r.type==="skill"?`${r.skill} obstacle · time scales with party skill`:r.boss?"Boss fight":"Enemy fight"}</small></div></div>`).join("")}</div></div><div class="drawer-section"><h3>Choose the party</h3><div class="choice-grid" id="partyChoices">${available.map(h=>`<button class="choice-card hero-choice ${h.level<c.minLevel?"locked":""}" data-action="toggle-party" data-hero="${h.id}" data-max="${max}" data-combat="${c.id}" ${h.level<c.minLevel?"disabled":""}><span>${heroImage(h)}</span><strong>${escapeHTML(h.name)} · Lv ${h.level}</strong><small>${h.level<c.minLevel?`Needs Level ${c.minLevel}`:`Max hit ${heroMaxHit(h)} · ${heroAttackSpeed(h).toFixed(2)}s · HP ${fmt(h.hp)}`}</small></button>`).join("")}</div></div><div id="combatPartyPreview" class="combat-party-preview empty"><div><span>💥</span><strong id="partyMaxHit">Choose heroes</strong><small>Highest max hit</small></div><div><span>⚔️</span><strong id="partyDps">—</strong><small>Estimated DPS</small></div><div><span>⏱️</span><strong id="partyDuration">—</strong><small id="partySpeed">Estimated clear</small></div><div><span>🥕</span><strong id="partyFood">${fmt(state.resources.food)}</strong><small>Food supply stored</small></div></div><p id="combatPreviewNote" class="combat-preview-note">There is no pass/fail roll. The party must survive every room; more damage means faster kills, XP, and chest rolls.</p><label class="notice"><input id="autoRepeatChoice" type="checkbox" checked> Automatically repeat while entry supplies, food, Sanity, and heroes allow.</label><div class="drawer-footer"><button class="soft-button" data-action="close-drawer">Cancel</button><button class="primary-button" data-action="start-run" data-combat="${c.id}">Enter ${c.short}</button></div>`);
+  openDrawer(c.name,c.eyebrow,`<div class="drawer-section"><p>${c.description}</p><div class="info-grid"><div class="info-tile"><small>Route</small><strong>${combatRoomsFor(c).length} fights · ${layout.filter(r=>r.type==="skill").length} skill rooms</strong></div><div class="info-tile"><small>Required level</small><strong>Combat ${c.minLevel}+</strong></div><div class="info-tile"><small>Party size</small><strong>Up to ${max}</strong></div><div class="info-tile"><small>Auto-healing</small><strong>Eat below 45% HP</strong></div><div class="info-tile"><small>Entry per clear</small><strong>${entry}</strong></div><button class="info-tile loot-preview" data-action="open-loot" data-combat="${c.id}"><small>Possible rewards</small><strong><span class="loot-chest-icon" aria-hidden="true"></span> View loot & rates</strong></button></div></div><div class="drawer-section"><h3>Rooms in this route</h3><div class="route-preview">${layout.map((r,i)=>`<div><span>${r.icon}</span><div><strong>${i+1}. ${escapeHTML(r.name)}</strong><small>${r.type==="skill"?`${r.skill} obstacle · time scales with party skill`:r.boss?"Boss fight":"Enemy fight"}</small></div></div>`).join("")}</div></div><div class="drawer-section"><h3>Choose the party</h3><div class="choice-grid" id="partyChoices">${available.map(h=>`<button class="choice-card hero-choice ${h.level<c.minLevel?"locked":""}" data-action="toggle-party" data-hero="${h.id}" data-max="${max}" data-combat="${c.id}" ${h.level<c.minLevel?"disabled":""}><span>${heroImage(h)}</span><strong>${escapeHTML(h.name)} · Lv ${h.level}</strong><small>${h.level<c.minLevel?`Needs Level ${c.minLevel}`:`Max hit ${heroMaxHit(h)} · ${heroAttackSpeed(h).toFixed(2)}s · HP ${fmt(h.hp)}`}</small></button>`).join("")}</div></div><div id="combatPartyPreview" class="combat-party-preview empty"><div><span>💥</span><strong id="partyMaxHit">Choose heroes</strong><small>Highest max hit</small></div><div><span>⚔️</span><strong id="partyDps">—</strong><small>Estimated DPS</small></div><div><span>⏱️</span><strong id="partyDuration">—</strong><small id="partySpeed">Estimated clear</small></div><div><span>🥕</span><strong id="partyFood">${fmt(state.resources.food)}</strong><small>Meals stored</small></div></div><p id="combatPreviewNote" class="combat-preview-note">There is no pass/fail roll. The party must survive every room; more damage means faster kills, XP, and chest rolls.</p><label class="notice"><input id="autoRepeatChoice" type="checkbox" checked> Automatically repeat while entry supplies, meals, Sanity, and heroes allow.</label><div class="drawer-footer"><button class="soft-button" data-action="close-drawer">Cancel</button><button class="primary-button" data-action="start-run" data-combat="${c.id}">Enter ${c.short}</button></div>`);
   updateCombatPreview(c.id);
 }
 function estimatedClearTime(c,party){const dps=Math.max(.1,estimatedPartyDPS(party,c));return COMBAT_LAYOUTS[c.id].reduce((total,room)=>{if(room.type==="combat")return total+createEnemy(c,room).maxHP/dps;const ranked=party.map(h=>h.skills[room.skill]?.level||1).sort((a,b)=>b-a),effective=ranked.reduce((n,l,i)=>n+l*(i?0.25:1),0);return total+room.baseSeconds/(1+effective/25);},0);}

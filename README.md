@@ -15,18 +15,19 @@ Adventure Town is a mobile-first, persistent idle RPG built around six permanent
 - Raid Woodcutting, Farming, Mining, and Smithing obstacle rooms whose duration is driven by the party's real work levels
 - Party previews showing max hit, estimated DPS, Defence, real room lists, and estimated clear time—there is no pass/fail roll
 - Clickable loot chests with exact reward ranges and per-victory drop rates
-- Eight named tiers each of food, metal, and wood from Starter through Divine, stored as whole Warehouse item stacks
+- Eight discrete named items each for food, metal, and wood from Starter through Divine; there is no generic-resource conversion
+- Quality-matched equipment recipes: Good gear uses Steel and Ironwood, while Repair Kits use Scrap Metal and Fallen Branches
 - Per-hero task selection so workers stay on the exact unlocked resource tier chosen by the player
-- Named Warehouse food that heroes auto-eat below 45% HP, plus Sanity, defeat, Inn, Tavern, durability, repairs, Essence, and Raid Keys
+- Named Warehouse meals with explicit HP values that heroes auto-eat below 45% HP, plus exact-material crafting, Sanity, defeat, Inn, Tavern, durability, repairs, Essence, and Raid Keys
 - Complete, individually named 12-item class sets in every Dungeon and Raid, with transparent rare-table rates
 - Account-bound pets, raid-boss eggs, Dungeon trinkets, equipping, repairs, and salvage
 - Firebase Google and email/password accounts with cloud saves
 - Firestore player marketplace, delayed seller payouts, and leaderboards
 - Building upgrades, milestones, town reports, save export, and installable PWA support
 
-The visible game version is `1.5.1`.
+The visible game version is `1.5.2`.
 
-New towns begin with zero Gold, Food, Metal, Wood, Essence, Raid Keys, and Repair Kits. Existing saves are preserved; use **Account → Begin a new town** to test the new starting experience.
+New towns begin with zero Gold, meals, ores, woods, Essence, Raid Keys, and Repair Kits. Existing named stacks are preserved; use **Account → Begin a new town** to test the new starting experience.
 
 ## File layout
 
