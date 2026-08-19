@@ -318,6 +318,20 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .skill-obstacle .battle-hp { height:13px; margin-bottom:6px; }
 .skill-obstacle .battle-hp span { background:linear-gradient(90deg,#d4a63e,#f2df82); }
 .skill-obstacle > div:last-child > small { color:rgba(255,255,255,.72); font-size:.59rem; }
+.combat-rest-stop { display:grid; grid-template-columns:140px minmax(0,1fr); gap:22px; align-items:center; min-height:260px; padding:28px; background:radial-gradient(circle at 13% 50%,rgba(255,219,115,.16),transparent 30%); }
+.rest-stop-icon { display:grid; width:132px; height:132px; place-items:center; border:4px solid rgba(255,255,255,.22); border-radius:34px; background:rgba(20,38,25,.48); font-size:4.2rem; }
+.combat-rest-stop h3 { margin:4px 0 5px; font:800 1.42rem "Fraunces",serif; }
+.combat-rest-stop p { max-width:640px; margin:0 0 14px; color:rgba(255,255,255,.76); font-size:.7rem; line-height:1.5; }
+.resting-party { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; }
+.resting-party article { display:grid; grid-template-columns:38px minmax(0,1fr); gap:8px; align-items:center; padding:8px; border:1px solid rgba(255,255,255,.16); border-radius:12px; background:rgba(255,255,255,.08); }
+.resting-party article > span { width:36px; height:36px; overflow:hidden; border:2px solid #d2ad54; border-radius:10px; background:#fff0c1; }
+.resting-party article > span img { width:100%; height:100%; object-fit:cover; }
+.resting-party strong,.resting-party small { display:block; }
+.resting-party strong { font-size:.64rem; }
+.resting-party small { margin-top:2px; color:rgba(255,255,255,.68); font-size:.51rem; }
+.rest-sanity { height:5px; margin-top:5px; overflow:hidden; border-radius:99px; background:rgba(0,0,0,.28); }
+.rest-sanity i { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,#c08d37,#f1d777); transition:width .22s linear; }
+@keyframes restWait { 50%{opacity:.5} }
 .battle-summary { display:grid; grid-template-columns:repeat(5,1fr); border-top:1px solid rgba(255,255,255,.1); border-bottom:1px solid rgba(255,255,255,.1); background:rgba(8,21,13,.27); }
 .battle-summary > div { min-width:0; padding:10px 8px; border-right:1px solid rgba(255,255,255,.08); text-align:center; }
 .battle-summary > div:last-child { border-right:0; }
@@ -352,7 +366,11 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .run-progress { height:8px; margin:8px 0 5px; overflow:hidden; border-radius:99px; background:#dfe3d7; }
 .run-progress span { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,var(--forest-500),var(--gold)); }
 .run-party { display:flex; align-items:center; gap:3px; color:var(--muted); font-size:.62rem; }
-.run-party i { display:grid; width:25px; height:25px; overflow:hidden; place-items:center; border-radius:50%; background:#eee4c9; font-style:normal; }
+.run-party i { position:relative; display:grid; width:25px; height:25px; overflow:hidden; place-items:center; border-radius:50%; background:#eee4c9; font-style:normal; }
+.run-party i.resting { overflow:visible; border:2px solid #ba8b38; opacity:.78; filter:saturate(.72); }
+.run-party i.resting b { position:absolute; right:-6px; bottom:-5px; display:grid; width:15px; height:15px; place-items:center; border-radius:50%; background:#fff3c8; box-shadow:0 1px 4px rgba(31,44,32,.25); font-size:.48rem; }
+.active-run.waiting { border-color:#c19b49; background:linear-gradient(135deg,#fff8e5,#edf1e4); }
+.active-run.waiting .run-progress span { width:100% !important; background:linear-gradient(90deg,#c8953e,#f0d676); animation:restWait 1.8s ease-in-out infinite; }
 .active-run .stop-run { min-height:38px; padding:8px 11px; border:1px solid #dfb3a6; border-radius:10px; color:#8a3f33; background:#fff2eb; font-size:.64rem; font-weight:800; }
 .active-run-actions { display:grid; gap:6px; }
 .active-run-actions button { min-height:36px; padding:7px 10px; border-radius:10px; font-size:.62rem; font-weight:800; }
@@ -711,6 +729,10 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
   .skill-obstacle { grid-template-columns:78px 1fr; gap:12px; min-height:210px; padding:18px 13px; }
   .obstacle-icon { width:76px; height:76px; border-radius:22px; font-size:2.6rem; }
   .skill-obstacle h3 { font-size:1.12rem; }
+  .combat-rest-stop { grid-template-columns:72px minmax(0,1fr); gap:12px; min-height:220px; padding:18px 13px; }
+  .rest-stop-icon { width:70px; height:70px; border-radius:21px; font-size:2.35rem; }
+  .combat-rest-stop h3 { font-size:1.08rem; }
+  .resting-party { grid-template-columns:1fr; }
   .inventory-grid { grid-template-columns:repeat(2,minmax(145px,1fr)); }
   .item-card { grid-template-columns:42px 1fr; min-height:138px; padding:10px; }
   .item-icon { width:41px; height:41px; font-size:1.4rem; }
@@ -877,7 +899,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .profile-xp strong,.profile-xp small { display:block; }
 .profile-xp strong { color:var(--forest-900); font-size:.7rem; }
 .profile-xp small { color:var(--muted); font-size:.55rem; }
-.compact-combat-stats { display:grid; grid-template-columns:repeat(7,1fr); gap:5px; }
+.compact-combat-stats { display:grid; grid-template-columns:repeat(8,1fr); gap:5px; }
 .compact-combat-stats > div { min-width:0; padding:7px 3px; border:1px solid var(--line); border-radius:10px; background:white; text-align:center; }
 .compact-combat-stats span,.compact-combat-stats strong,.compact-combat-stats small { display:block; }
 .compact-combat-stats span { font-size:.9rem; }

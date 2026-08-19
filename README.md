@@ -12,6 +12,7 @@ Adventure Town is a mobile-first, persistent idle RPG built around six permanent
 - Timed work, room-by-room combat, recovery, and supplies with exact active-run restoration and a 12-hour offline progress cap
 - Four-hero combat cap with 6 Expeditions, 5 solo/duo Dungeons, and 3 four-person Raids
 - Live HP combat with Melee/Ranged/Magic identities, a two-way ±25% combat triangle, individual attack timers, critical hits, class actions, enemy retaliation, healing, and per-hero damage analytics
+- Per-hero Resolve gives every class a distinct Sanity drain rate and improves slowly with Combat Level; repeating Expeditions rotate tired heroes through temporary Tavern breaks and automatically reunite them with the reserved roster at checkpoints
 - Three enemies in every Expedition; three shared enemies plus a unique boss in every Dungeon; fully unique Raid enemies and bosses
 - Raid Woodcutting, Farming, Mining, and Smithing obstacle rooms whose duration is driven by the party's real work levels
 - Party previews showing max hit, estimated DPS, Defence, real room lists, and estimated clear time—there is no pass/fail roll
@@ -30,7 +31,7 @@ Adventure Town is a mobile-first, persistent idle RPG built around six permanent
 - Firestore player marketplace, delayed seller payouts, and leaderboards
 - Building upgrades, milestones, town reports, save export, and installable PWA support
 
-The visible game version is `1.6.3`.
+The visible game version is `1.6.4`.
 
 New towns begin with zero Gold, meals, ores, woods, Essence, Raid Keys, and Repair Kits. Existing named stacks are preserved; use **Account → Begin a new town** to test the new starting experience.
 
