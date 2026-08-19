@@ -25,7 +25,7 @@ Adventure Town is a mobile-first, persistent idle RPG built around six permanent
 - Firestore player marketplace, delayed seller payouts, and leaderboards
 - Building upgrades, milestones, town reports, save export, and installable PWA support
 
-The visible game version is `1.5.2`.
+The visible game version is `1.5.3`.
 
 New towns begin with zero Gold, meals, ores, woods, Essence, Raid Keys, and Repair Kits. Existing named stacks are preserved; use **Account → Begin a new town** to test the new starting experience.
 
@@ -54,7 +54,9 @@ The free-tier build supports a functional Firestore marketplace for trusted play
 
 ## Custom artwork
 
-The town map and six hero portraits are loaded from `img/`. Equipment and building icons still use lightweight interface symbols until their custom art sets are added.
+The town map, six hero portraits, complete combat enemy roster, pets, raid eggs, available sword art, and loot chest are loaded from `img/`. Enemy artwork appears in route previews, active-run summaries, timelines, and the live battlefield. Pets, eggs, and completed item art appear anywhere those items are shown. Equipment and buildings without completed custom art continue to use their lightweight interface symbols.
+
+Startup preloads the complete local art catalog behind a real progress screen. A failed image never blocks entry into the game and falls back to its interface symbol when rendered. The service worker also caches the full catalog for subsequent visits and offline play.
 
 ## Saving
 

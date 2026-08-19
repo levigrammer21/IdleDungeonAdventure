@@ -50,12 +50,15 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 }
 .loading-screen.fade { opacity: 0; visibility: hidden; }
 .loading-crest { display: grid; width: 92px; height: 92px; place-items: center; margin-bottom: 1rem; border: 2px solid rgba(255,255,255,.28); border-radius: 28px; background: rgba(255,255,255,.1); box-shadow: 0 24px 60px rgba(0,0,0,.25); font-size: 3rem; animation: crestFloat 2s ease-in-out infinite; }
+.loading-crest img { width:100%; height:100%; border-radius:25px; }
 .loading-screen h1 { margin: 0; font: 800 clamp(2.25rem,8vw,4rem)/1 "Fraunces", serif; letter-spacing: -.04em; }
 .loading-screen p { margin: .8rem 0 1.4rem; color: var(--sage-200); }
 .loading-track { width: min(280px,70vw); height: 6px; overflow: hidden; border-radius: 99px; background: rgba(255,255,255,.12); }
-.loading-track span { display: block; width: 42%; height: 100%; border-radius: inherit; background: var(--gold-light); animation: load 1.35s ease-in-out infinite; }
-@keyframes load { 0%{transform:translateX(-110%)} 100%{transform:translateX(350%)} }
+.loading-track span { display: block; width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg,var(--gold),var(--gold-light)); box-shadow: 0 0 14px rgba(243,215,130,.35); transition: width .16s ease; }
+.loading-count { margin-top:.65rem; color:rgba(231,236,223,.72); font-size:.65rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
 @keyframes crestFloat { 50%{transform:translateY(-7px) rotate(-2deg)} }
+
+.art-fallback { display:grid !important; place-items:center; font-style:normal; }
 
 .app { min-height: 100dvh; padding-top: calc(var(--safe-top) + var(--header-h) + var(--resource-h)); padding-bottom: calc(var(--safe-bottom) + var(--nav-h)); }
 .topbar {
@@ -64,6 +67,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 }
 .brand { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 0; border: 0; color: inherit; background: transparent; text-align: left; }
 .brand-crest { display: grid; width: 38px; height: 38px; flex: 0 0 auto; place-items: center; border-radius: 13px; background: linear-gradient(145deg,#fff2bc,#c99227); box-shadow: inset 0 0 0 1px rgba(255,255,255,.45); font-size: 1.25rem; }
+.brand-crest img { width:100%; height:100%; border-radius:12px; }
 .brand span:last-child { display: grid; }
 .brand strong { font: 700 1.05rem/1.1 "Fraunces",serif; letter-spacing: -.02em; white-space: nowrap; }
 .brand small { margin-top: 2px; color: #afc5b3; font-size: .63rem; letter-spacing: .08em; text-transform: uppercase; }
@@ -184,6 +188,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .equipment-pair { display:grid; grid-template-columns:1fr 1fr; gap:9px 8px; padding:11px 16px; border-top:1px solid var(--line); border-bottom:1px solid var(--line); background:rgba(255,255,255,.42); }
 .gear-slot { display:grid; grid-template-columns:30px 1fr; gap:7px; align-items:center; min-width:0; }
 .gear-slot span { display:grid; width:30px; height:30px; place-items:center; border-radius:9px; background:#e6dfc9; }
+.gear-art { width:28px; height:28px; object-fit:contain; }
 .gear-slot div { min-width:0; }
 .gear-slot small, .gear-slot strong { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .gear-slot small { color:var(--muted); font-size:.54rem; text-transform:uppercase; }
@@ -223,7 +228,8 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .room-timeline > div.current { opacity:1; border-color:#f4d476; background:rgba(244,212,118,.18); }
 .room-timeline > div.done { opacity:.72; background:rgba(117,185,128,.17); }
 .room-timeline > div.done::after { content:"✓"; color:#aee2a9; font-size:.55rem; font-weight:900; }
-.room-timeline span { font-size:.92rem; }
+.room-timeline span { display:grid; width:24px; height:24px; place-items:center; font-size:.92rem; }
+.timeline-room-art { width:24px; height:24px; object-fit:contain; }
 .room-timeline small { font-size:.53rem; font-weight:800; }
 .battle-stage { display:grid; grid-template-columns:minmax(220px,.8fr) 48px minmax(330px,1.45fr); gap:10px; align-items:center; min-height:330px; padding:20px; background:radial-gradient(circle at 26% 55%,rgba(255,222,135,.12),transparent 33%),linear-gradient(rgba(9,23,15,.08),rgba(9,23,15,.3)); }
 .enemy-zone { display:grid; justify-items:center; text-align:center; }
@@ -231,6 +237,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .enemy-name .eyebrow { color:#dccd9d; }
 .enemy-figure { position:relative; display:grid; width:132px; height:132px; place-items:center; margin-bottom:10px; border:4px solid rgba(255,255,255,.22); border-radius:38% 52% 42% 48%; background:radial-gradient(circle,#f6ddb1,#b88e4f 62%,#533c2d); box-shadow:0 15px 30px rgba(0,0,0,.26),inset 0 0 0 5px rgba(28,39,25,.25); animation:enemyIdle 2.4s ease-in-out infinite; }
 .enemy-zone.boss .enemy-figure { width:154px; height:154px; border-color:#e8c763; background:radial-gradient(circle,#ffe5a8,#a56b43 60%,#3d2924); box-shadow:0 0 30px rgba(235,194,89,.24),0 17px 32px rgba(0,0,0,.3); }
+.enemy-image { position:relative; z-index:1; width:116%; height:116%; object-fit:contain; filter:drop-shadow(0 9px 5px rgba(0,0,0,.24)); }
 .enemy-figure > span:first-child { font-size:4.5rem; filter:drop-shadow(0 7px 3px rgba(0,0,0,.2)); }
 .enemy-zone.boss .enemy-figure > span:first-child { font-size:5.2rem; }
 .versus-mark { display:grid; width:44px; height:44px; place-items:center; border:2px solid rgba(255,255,255,.26); border-radius:50%; color:#ffe9a4; background:rgba(15,31,20,.6); font:900 .72rem "Fraunces",serif; }
@@ -284,6 +291,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .route-preview { display:grid; gap:6px; }
 .route-preview > div { display:grid; grid-template-columns:35px 1fr; gap:8px; align-items:center; padding:8px 9px; border:1px solid var(--line); border-radius:11px; background:white; }
 .route-preview > div > span { display:grid; width:34px; height:34px; place-items:center; border-radius:9px; background:#ece5d0; font-size:1.15rem; }
+.route-room-art { width:32px; height:32px; object-fit:contain; }
 .route-preview strong,.route-preview small { display:block; }
 .route-preview strong { font-size:.67rem; }
 .route-preview small { margin-top:2px; color:var(--muted); font-size:.55rem; }
@@ -295,6 +303,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .empty-state span { display:block; margin-bottom:8px; font-size:2rem; }
 .active-run { display:grid; grid-template-columns:56px 1fr auto; gap:12px; align-items:center; padding:13px; border:1px solid var(--line); border-radius:18px; background:var(--paper); box-shadow:0 8px 22px rgba(39,57,41,.07); }
 .run-icon { display:grid; width:54px; height:54px; place-items:center; border-radius:16px; background:#e6ddbf; font-size:1.75rem; }
+.run-room-art { width:52px; height:52px; object-fit:contain; }
 .run-title { display:flex; justify-content:space-between; gap:8px; }
 .run-title strong { font:700 .95rem "Fraunces",serif; }
 .run-title small { color:var(--muted); font-size:.63rem; }
@@ -326,11 +335,13 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .loot-chest-icon { display:inline-block; width:20px; height:20px; vertical-align:middle; background:url("img/loot-chest.svg") center/contain no-repeat; }
 .loot-summary { display:grid; grid-template-columns:54px 1fr; gap:11px; align-items:center; margin-bottom:14px; padding:12px; border:1px solid var(--line); border-radius:15px; background:#e9eedf; }
 .loot-summary > span { display:grid; width:52px; height:52px; place-items:center; border-radius:15px; background:#fff8df; font-size:1.8rem; }
+.loot-summary-art { width:50px; height:50px; object-fit:contain; }
 .loot-summary strong { display:block; font:700 .9rem "Fraunces",serif; }
 .loot-summary p { margin:3px 0 0; color:var(--muted); font-size:.63rem; line-height:1.45; }
 .loot-table,.resource-tier-list { display:grid; gap:7px; }
 .loot-row,.resource-tier { display:grid; grid-template-columns:38px 1fr auto; gap:9px; align-items:center; padding:9px 10px; border:1px solid var(--line); border-radius:12px; background:white; }
 .loot-icon,.resource-tier > span { display:grid; width:36px; height:36px; place-items:center; border-radius:10px; background:#eee6d0; font-size:1.2rem; }
+.loot-art { width:34px; height:34px; object-fit:contain; }
 .loot-row strong,.loot-row small,.resource-tier strong,.resource-tier small { display:block; }
 .loot-row strong,.resource-tier strong { font-size:.7rem; }
 .loot-row small,.resource-tier small { margin-top:2px; color:var(--muted); font-size:.57rem; }
@@ -360,6 +371,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .item-card { display:grid; grid-template-columns:50px 1fr; gap:10px; min-height:126px; padding:12px; border:1px solid var(--line); border-radius:16px; background:var(--paper); box-shadow:0 7px 20px rgba(37,55,39,.06); }
 .item-card.special { border-color:rgba(157,117,36,.5); background:linear-gradient(145deg,#fff9df,#f3e1aa); }
 .item-icon { display:grid; width:48px; height:48px; place-items:center; border-radius:14px; background:#e7e1d0; font-size:1.7rem; }
+.item-art { width:46px; height:46px; object-fit:contain; }
 .item-card.special .item-icon { background:#e5c777; }
 .item-card h4 { margin:0; font:700 .83rem/1.15 "Fraunces",serif; }
 .item-card .item-meta { display:block; margin-top:3px; color:var(--muted); font-size:.56rem; font-weight:700; text-transform:uppercase; }
@@ -441,6 +453,8 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .action-list { display:grid; gap:8px; }
 .action-list button { display:flex; align-items:center; justify-content:space-between; min-height:44px; padding:9px 11px; border:1px solid var(--line); border-radius:12px; color:var(--forest-800); background:white; text-align:left; font-weight:800; }
 .action-list button small { color:var(--muted); font-weight:600; }
+.recipe-item { display:flex; align-items:center; gap:7px; }
+.recipe-item-art { width:32px; height:32px; object-fit:contain; }
 .choice-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
 .choice-card { padding:12px; border:1px solid var(--line); border-radius:14px; background:white; text-align:left; }
 .choice-card.selected { border-color:var(--forest-700); box-shadow:inset 0 0 0 1px var(--forest-700); background:#ebf0e4; }
@@ -470,6 +484,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .profile-equipment-grid { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
 .profile-gear-slot { display:grid; grid-template-columns:38px 1fr; gap:8px; min-width:0; padding:9px; border:1px solid var(--line); border-radius:12px; background:white; }
 .profile-gear-slot > span { display:grid; width:37px; height:37px; place-items:center; border-radius:10px; background:#ece4cc; font-size:1.2rem; }
+.profile-item-art { width:35px; height:35px; object-fit:contain; }
 .profile-gear-slot div { min-width:0; }
 .profile-gear-slot small,.profile-gear-slot strong { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .profile-gear-slot small { color:var(--muted); font-size:.51rem; font-weight:800; text-transform:uppercase; }
