@@ -1,4 +1,4 @@
-const VERSION = "1.6.2";
+const VERSION = "1.6.3";
 const SAVE_KEY = "adventure-town-save-v1";
 const SETTINGS_KEY = "adventure-town-settings-v1";
 const OFFLINE_LIMIT = 12 * 60 * 60;
@@ -622,11 +622,14 @@ function chatClock(time){return new Date(time).toLocaleTimeString([],{hour:"nume
 function partyChatMessageHTML(message,compact=false){const hero=chatHero(message);if(!hero)return "";return `<article class="party-chat-message ${compact?"compact":""} ${message.kind||"ambient"}" style="--chat-color:${hero.color}"><span class="chat-portrait">${heroImage(hero)}</span><div class="chat-bubble"><div class="chat-message-head"><strong><i></i>${escapeHTML(hero.name)}</strong><small>${escapeHTML(hero.className)} · ${chatClock(message.time)}</small></div><p>${escapeHTML(message.text)}</p></div></article>`;}
 function partyChatUnread(){const lastRead=Number(state.chatMeta?.lastReadAt)||0;return (state.partyChat||[]).filter(message=>message.time>lastRead).length;}
 function syncMapSpeech(){
-  const layer=$("#heroLayer");if(!layer)return;layer.querySelectorAll(".map-speech").forEach(node=>node.remove());
-  if(!activeMapSpeech||activeMapSpeech.expires<=Date.now())return;const host=layer.querySelector(`[data-map-hero="${activeMapSpeech.heroId}"]`);if(!host)return;const bubble=document.createElement("span");bubble.className="map-speech";bubble.textContent=activeMapSpeech.text;host.append(bubble);
+  const layer=$("#heroLayer");if(!layer)return;const bubbles=[...layer.querySelectorAll(".map-speech")];
+  if(!activeMapSpeech||activeMapSpeech.expires<=Date.now()){bubbles.forEach(node=>node.remove());return;}
+  const host=layer.querySelector(`[data-map-hero="${activeMapSpeech.heroId}"]`);if(!host){bubbles.forEach(node=>node.remove());return;}
+  const speechId=activeMapSpeech.id||`${activeMapSpeech.heroId}-${activeMapSpeech.expires}`,current=bubbles.find(node=>node.dataset.speechId===speechId&&node.parentElement===host);bubbles.forEach(node=>{if(node!==current)node.remove();});
+  if(current)return;const bubble=document.createElement("span");bubble.className="map-speech";bubble.dataset.speechId=speechId;bubble.textContent=activeMapSpeech.text;host.append(bubble);
 }
 function setMapSpeech(hero,text){
-  activeMapSpeech={heroId:hero.id,text,expires:Date.now()+6200};clearTimeout(mapSpeechTimer);syncMapSpeech();mapSpeechTimer=setTimeout(()=>{activeMapSpeech=null;syncMapSpeech();},6300);
+  const now=Date.now(),sameSpeech=activeMapSpeech?.heroId===hero.id&&activeMapSpeech.text===text&&activeMapSpeech.expires>now;activeMapSpeech=sameSpeech?{...activeMapSpeech,expires:now+6200}:{id:uid(),heroId:hero.id,text,expires:now+6200};clearTimeout(mapSpeechTimer);syncMapSpeech();mapSpeechTimer=setTimeout(()=>{activeMapSpeech=null;syncMapSpeech();},6300);
 }
 function renderPartyChat(){
   const messages=state.partyChat||[],latest=messages.slice(-2),preview=$("#partyChatPreview"),status=$("#partyChatStatus"),badge=$("#partyChatBadge");

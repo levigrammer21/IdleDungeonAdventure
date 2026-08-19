@@ -19,7 +19,7 @@ Adventure Town is a mobile-first, persistent idle RPG built around six permanent
 - Eight discrete named items each for food, metal, and wood from Starter through Divine; there is no generic-resource conversion
 - Complete eight-tier normal equipment progression for every class: Starter through Divine recipes use their exact matching metal and wood, with Smithing and Blacksmith requirements enforced
 - Two-way exact task assignment for every work skill: choose a task from its building and then an eligible hero, or choose a skill from a hero and then the precise food, ore, wood, or Smithing job
-- Persistent live-styled party chat with distinct voices for all six heroes, conversational replies, map speech, and real hooks for assignments, exact tasks, outdated work tiers, level gains, unlocks, milestones, combat danger, food shortages, victories, rare finds, broken gear, building upgrades, and offline progress
+- Persistent live-styled party chat with distinct voices for all six heroes, conversational replies, stable non-repeating map speech, and real hooks for assignments, exact tasks, outdated work tiers, level gains, unlocks, milestones, combat danger, food shortages, victories, rare finds, broken gear, building upgrades, and offline progress
 - Tavern stock diversion with three volatile fantasy companies, persistent/offline quotes, whole-share trading, portfolio P/L, and live sparkline charts
 - Procedural, user-toggleable sound cues for interface actions, chat, combat, levels, loot, victories, and tavern trading—no external audio files required
 - A private Heroes' League with four sortable metrics and compact work-skill charts
@@ -30,7 +30,7 @@ Adventure Town is a mobile-first, persistent idle RPG built around six permanent
 - Firestore player marketplace, delayed seller payouts, and leaderboards
 - Building upgrades, milestones, town reports, save export, and installable PWA support
 
-The visible game version is `1.6.2`.
+The visible game version is `1.6.3`.
 
 New towns begin with zero Gold, meals, ores, woods, Essence, Raid Keys, and Repair Kits. Existing named stacks are preserved; use **Account → Begin a new town** to test the new starting experience.
 
