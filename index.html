@@ -25,13 +25,14 @@
     <header class="topbar">
       <button class="brand" data-action="open-view" data-view="town" aria-label="Return to town">
         <span class="brand-crest"><img src="img/icon.svg" alt="" aria-hidden="true"></span>
-        <span><strong>Adventure Town</strong><small id="versionLabel">v1.5.9</small></span>
+        <span><strong>Adventure Town</strong><small id="versionLabel">v1.6.0</small></span>
       </button>
       <div class="top-actions">
         <button id="syncButton" class="status-pill" data-action="sync" aria-label="Cloud save status">
           <span id="syncDot" class="status-dot"></span><span id="syncLabel">Device save</span>
         </button>
         <button class="icon-button party-chat-button" data-action="open-party-chat" aria-label="Open party chat"><span aria-hidden="true">💬</span><span id="partyChatBadge" class="badge" hidden>0</span></button>
+        <button id="soundButton" class="icon-button sound-button" data-action="toggle-sound" aria-label="Turn sounds off" aria-pressed="true"><span aria-hidden="true">🔊</span></button>
         <button class="icon-button" data-action="open-notifications" aria-label="Town reports">🔔<span id="notificationBadge" class="badge" hidden>0</span></button>
         <button id="accountButton" class="avatar-button" data-action="account" aria-label="Account">G</button>
       </div>
@@ -158,6 +159,10 @@
       <section id="progressView" class="view" data-view-panel="progress">
         <div class="section-heading"><div><span class="eyebrow">A town worth remembering</span><h2>Progress &amp; Leaderboards</h2><p>Track long-term milestones without turning Adventure Town into PvP.</p></div></div>
         <div id="progressCards" class="progress-cards"></div>
+        <section class="hero-league-section">
+          <div class="hero-league-heading"><div><span class="eyebrow">Your roster, head to head</span><h3>Heroes' League</h3></div><div class="segmented compact" role="tablist" aria-label="Hero leaderboard metric"><button class="active" data-action="hero-league-metric" data-metric="power">Power</button><button data-action="hero-league-metric" data-metric="damage">Damage</button><button data-action="hero-league-metric" data-metric="combat">Combat</button><button data-action="hero-league-metric" data-metric="work">Work</button></div></div>
+          <div id="heroLeague" class="hero-league"></div>
+        </section>
         <div class="progress-columns">
           <div><h3>Milestones</h3><div id="achievementList" class="achievement-list"></div></div>
           <div><h3>Adventurer Rankings</h3><div id="leaderboardList" class="leaderboard-list"></div></div>

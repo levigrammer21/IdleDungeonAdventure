@@ -7,11 +7,11 @@ Adventure Town is a mobile-first, persistent idle RPG built around six permanent
 - Hand-painted responsive fantasy town map in portrait and landscape
 - Six fixed classes with custom portraits: Warrior, Wizard, Archer, Druid, Assassin, and Summoner
 - Per-hero Combat Level on a steep OSRS/Melvor-shaped curve, plus independent Farming, Mining, Woodcutting, and Smithing levels
-- Every Combat Level directly adds Attack, Defence, and Max HP; Max Hit also rises every four levels
-- Full hero character pages with renaming, combat stats, four equipment slots, special effects, and lifetime records
+- Every Combat Level directly improves class-weighted Attack, Defence, Max HP, and Max Hit
+- Compact hero command sheets with inline renaming, combat identity, work skills, equipment, and narrative career timelines
 - Timed work, room-by-room combat, recovery, and supplies with exact active-run restoration and a 12-hour offline progress cap
 - Four-hero combat cap with 6 Expeditions, 5 solo/duo Dungeons, and 3 four-person Raids
-- Live HP combat with individual attack timers, visible max hits, hitsplats, critical hits, class actions, enemy retaliation, healing, battle logs, and DPS tracking
+- Live HP combat with Melee/Ranged/Magic identities, a two-way ±25% combat triangle, individual attack timers, critical hits, class actions, enemy retaliation, healing, and per-hero damage analytics
 - Three enemies in every Expedition; three shared enemies plus a unique boss in every Dungeon; fully unique Raid enemies and bosses
 - Raid Woodcutting, Farming, Mining, and Smithing obstacle rooms whose duration is driven by the party's real work levels
 - Party previews showing max hit, estimated DPS, Defence, real room lists, and estimated clear time—there is no pass/fail roll
@@ -19,7 +19,10 @@ Adventure Town is a mobile-first, persistent idle RPG built around six permanent
 - Eight discrete named items each for food, metal, and wood from Starter through Divine; there is no generic-resource conversion
 - Complete eight-tier normal equipment progression for every class: Starter through Divine recipes use their exact matching metal and wood, with Smithing and Blacksmith requirements enforced
 - Per-hero task selection so workers stay on the exact unlocked resource tier chosen by the player
-- Persistent contextual party chat with distinct voices for all six heroes, conversational replies, restrained ambient pacing, and real hooks for assignments, exact tasks, outdated work tiers, level gains, unlocks, milestones, combat danger, food shortages, victories, rare finds, broken gear, building upgrades, and offline progress
+- Persistent live-styled party chat with distinct voices for all six heroes, conversational replies, map speech, and real hooks for assignments, exact tasks, outdated work tiers, level gains, unlocks, milestones, combat danger, food shortages, victories, rare finds, broken gear, building upgrades, and offline progress
+- Tavern stock diversion with three volatile fantasy companies, persistent/offline quotes, whole-share trading, portfolio P/L, and live sparkline charts
+- Procedural, user-toggleable sound cues for interface actions, chat, combat, levels, loot, victories, and tavern trading—no external audio files required
+- A private Heroes' League with four sortable metrics and compact work-skill charts
 - Named Warehouse meals with explicit HP values that heroes auto-eat below 45% HP, plus exact-material crafting, Sanity, defeat, Inn, Tavern, durability, repairs, Essence, and Raid Keys
 - Complete, individually named 12-item class sets in every Dungeon and Raid, with transparent rare-table rates
 - Account-bound pets, raid-boss eggs, Dungeon trinkets, equipping, repairs, and salvage
@@ -27,7 +30,7 @@ Adventure Town is a mobile-first, persistent idle RPG built around six permanent
 - Firestore player marketplace, delayed seller payouts, and leaderboards
 - Building upgrades, milestones, town reports, save export, and installable PWA support
 
-The visible game version is `1.5.9`.
+The visible game version is `1.6.0`.
 
 New towns begin with zero Gold, meals, ores, woods, Essence, Raid Keys, and Repair Kits. Existing named stacks are preserved; use **Account → Begin a new town** to test the new starting experience.
 
