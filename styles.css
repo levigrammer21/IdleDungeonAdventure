@@ -542,7 +542,14 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .auth-modal .text-button { width:100%; margin-top:7px; }
 .form-error { min-height:18px; margin:6px 0 0 !important; color:#a84537 !important; text-align:center; }
 .offline-report { display:grid; gap:8px; margin:15px 0; }
-.offline-line { display:flex; justify-content:space-between; gap:10px; padding:9px 10px; border-radius:11px; background:#edf0e5; font-size:.7rem; }
+.offline-section-title { margin:5px 2px -1px; color:var(--forest-900); font:800 .78rem "Fraunces",serif; }
+.offline-line { display:flex; justify-content:space-between; align-items:start; gap:12px; padding:9px 10px; border-radius:11px; background:#edf0e5; font-size:.7rem; }
+.offline-line strong { max-width:68%; text-align:right; line-height:1.35; }
+.offline-line.time { color:var(--forest-900); background:#f5e8bb; }
+.offline-line.xp { background:#e5ecda; }
+.offline-line.status strong { font-weight:700; }
+.offline-line.muted { color:var(--muted); }
+.offline-note { padding:10px; border:1px dashed var(--line); border-radius:11px; color:var(--muted); font-size:.67rem; line-height:1.45; }
 .report-modal .primary-button { width:100%; }
 .confirm-icon { display:grid; width:52px; height:52px; place-items:center; border-radius:17px; background:#f3d7c8; font-size:1.6rem; }
 .confirm-modal .button-row button { flex:1; }

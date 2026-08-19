@@ -26,7 +26,7 @@ Adventure Town is a mobile-first, persistent idle RPG built around six permanent
 - Firestore player marketplace, delayed seller payouts, and leaderboards
 - Building upgrades, milestones, town reports, save export, and installable PWA support
 
-The visible game version is `1.5.5`.
+The visible game version is `1.5.6`.
 
 New towns begin with zero Gold, meals, ores, woods, Essence, Raid Keys, and Repair Kits. Existing named stacks are preserved; use **Account → Begin a new town** to test the new starting experience.
 
@@ -64,4 +64,5 @@ Startup preloads the complete local art catalog behind a real progress screen. A
 - Signed-out play uses a local device save.
 - Signed-in play keeps a Firebase cloud save and local fallback.
 - The account panel downloads a readable JSON backup.
-- Offline progress is simulated for up to 12 hours, including after a mobile browser suspends and resumes the page. Active combat resumes from the saved room, enemy HP, hero HP, attack timers, and cycle state.
+- Offline progress is simulated for up to 12 hours, including after a mobile browser suspends and resumes the page. Starting a combat run immediately checkpoints it; hidden-page timers cannot consume the away-time window, and freeze, page-hide, and unload lifecycle events also checkpoint synchronously. Active combat resumes from the saved room, enemy HP, hero HP, attack timers, and cycle state.
+- The return report audits each saved route with clears, kills, continuation/stop reason, and exact Combat XP per participating hero, alongside chest rewards and town production.

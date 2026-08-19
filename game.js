@@ -1,4 +1,4 @@
-const VERSION = "1.5.5";
+const VERSION = "1.5.6";
 const SAVE_KEY = "adventure-town-save-v1";
 const SETTINGS_KEY = "adventure-town-settings-v1";
 const OFFLINE_LIMIT = 12 * 60 * 60;
@@ -258,6 +258,7 @@ let lastSlowRender = 0;
 let watchedRunId = null;
 let lastActiveRunRender = 0;
 let combatVisualFrame = null;
+let activeSimulationAudit = null;
 const seenCombatEventIds = new Set();
 
 const $ = s => document.querySelector(s);
@@ -271,6 +272,7 @@ const itemData = item => ({...ITEMS[item.key],...item});
 const xpForLevel = level => Math.floor(55 * Math.pow(level,1.62));
 const COMBAT_XP_TOTALS=(()=>{const totals=Array(101).fill(0);let points=0;for(let level=1;level<100;level++){points+=Math.floor(level+300*Math.pow(2,level/7));totals[level+1]=Math.floor(points/4);}return totals;})();
 const combatXPForLevel = level => level>=100?0:COMBAT_XP_TOTALS[level+1]-COMBAT_XP_TOTALS[level];
+const heroCombatTotalXP = h => COMBAT_XP_TOTALS[clamp(Math.floor(Number(h.level)||1),1,100)]+(Number(h.xp)||0);
 const combatXPProgress = h => {const required=combatXPForLevel(h.level),current=h.level>=100?0:clamp(Number(h.xp)||0,0,required),percent=h.level>=100?100:required?current/required*100:0;return {current,required,percent,remaining:Math.max(0,required-current)};};
 const SWORD_TIER_IMAGES=Object.fromEntries(["starter","weak","average","good","great","epic","legendary","divine"].map(tier=>[tier,`img/item-sword-${tier}.webp`]));
 const assetImage = (src,alt,className,fallback="✦",decorative=false) => `<img class="${className}" src="${escapeHTML(src)}" alt="${decorative?"":escapeHTML(alt)}" ${decorative?'aria-hidden="true" ':""}draggable="false" data-art-fallback="${escapeHTML(fallback)}">`;
@@ -440,8 +442,9 @@ function rollSkillPet(assignment,h){const key=SKILL_PETS[assignment];if(key&&ran
 
 function simulate(seconds,offline=false){
   seconds=clamp(seconds,0,OFFLINE_LIMIT); if(seconds<.01)return null;
-  const previousQuiet=quietSimulation; quietSimulation=offline;
-  const before={...state.resources,items:state.inventory.length,runs:state.stats.expeditions+state.stats.dungeons+state.stats.raids,kills:state.heroes.reduce((n,h)=>n+(h.records.kills||0),0),levels:state.heroes.reduce((n,h)=>n+h.level,0)};
+  const previousQuiet=quietSimulation,previousAudit=activeSimulationAudit;quietSimulation=offline;activeSimulationAudit=offline?{stops:[]}:null;
+  const before={...state.resources,items:state.inventory.length,runs:state.stats.expeditions+state.stats.dungeons+state.stats.raids,kills:state.heroes.reduce((n,h)=>n+(h.records.kills||0),0),levels:state.heroes.reduce((n,h)=>n+h.level,0),goldEarned:state.stats.goldEarned};
+  const runBefore=state.combatRuns.map(run=>({id:run.id,combatId:run.combatId,heroIds:[...run.heroIds],cycle:run.cycle,cycles:run.cycles,kills:run.kills,elapsed:run.elapsed})),combatHeroIds=new Set(runBefore.flatMap(run=>run.heroIds)),heroBefore=Object.fromEntries(state.heroes.map(h=>[h.id,{name:h.name,level:h.level,totalXP:heroCombatTotalXP(h)}]));
   const beforeTiers=Object.fromEntries(Object.entries(RESOURCE_TIERS).map(([resource,tiers])=>[resource,Object.fromEntries(tiers.map(tier=>[tier.id,state.resourceTiers[resource][tier.id]||0]))]));
   for(const h of state.heroes){
     if(h.assignment!=="idle")h.records.secondsActive+=seconds;
@@ -455,7 +458,8 @@ function simulate(seconds,offline=false){
   for(const run of [...state.combatRuns]) processRun(run,seconds,offline);
   checkAchievements(); if(offline)state.stats.offlineSeconds+=seconds;
   const tierChanges=Object.entries(RESOURCE_TIERS).flatMap(([resource,tiers])=>tiers.map(tier=>({resource,name:tier.name,icon:tier.icon,quantity:(state.resourceTiers[resource][tier.id]||0)-beforeTiers[resource][tier.id]}))).filter(change=>Math.abs(change.quantity)>.01);
-  const after=state.resources; quietSimulation=previousQuiet; return {seconds,gold:after.gold-before.gold,tierChanges,essence:after.essence-before.essence,keys:after.keys-before.keys,kits:after.repairKits-before.repairKits,items:state.inventory.length-before.items,runs:state.stats.expeditions+state.stats.dungeons+state.stats.raids-before.runs,kills:state.heroes.reduce((n,h)=>n+(h.records.kills||0),0)-before.kills,combatLevels:state.heroes.reduce((n,h)=>n+h.level,0)-before.levels};
+  const stops=activeSimulationAudit?.stops||[],combatHeroes=state.heroes.filter(h=>combatHeroIds.has(h.id)).map(h=>({id:h.id,name:h.name,xp:Math.max(0,heroCombatTotalXP(h)-heroBefore[h.id].totalXP),levelBefore:heroBefore[h.id].level,levelAfter:h.level,status:statusFor(h)})),combatRuns=runBefore.map(saved=>{const live=state.combatRuns.find(run=>run.id===saved.id),stop=stops.find(entry=>entry.id===saved.id),final=live||stop||saved,cfg=COMBAT[saved.combatId];return {id:saved.id,name:cfg?.short||saved.combatId,heroes:saved.heroIds.map(id=>heroBefore[id]?.name).filter(Boolean),clears:Math.max(0,(Number(final.cycles)||0)-saved.cycles),kills:Math.max(0,(Number(final.kills)||0)-saved.kills),status:live?"Still running":stop?.reason||"Stopped"};});
+  const after=state.resources;quietSimulation=previousQuiet;activeSimulationAudit=previousAudit;return {seconds,gold:after.gold-before.gold,goldEarned:state.stats.goldEarned-before.goldEarned,tierChanges,essence:after.essence-before.essence,keys:after.keys-before.keys,kits:after.repairKits-before.repairKits,items:state.inventory.length-before.items,runs:state.stats.expeditions+state.stats.dungeons+state.stats.raids-before.runs,kills:state.heroes.reduce((n,h)=>n+(h.records.kills||0),0)-before.kills,combatLevels:state.heroes.reduce((n,h)=>n+h.level,0)-before.levels,combatHeroes,combatRuns};
 }
 
 function settleToNow(showReport=true){
@@ -514,7 +518,7 @@ function performHeroAttack(run,h,offline=false){
   const bonus=equipmentDamageBonus(h),type=heroDamageType(h);if(damage>0&&bonus>0&&run.enemy){if(type==="poison"||type==="fire"){run.enemy.status[type]={damage:Math.max(1,Math.ceil(bonus/2)),remaining:6,timer:1.5,sourceId:h.id};pushCombatEvent(run,`${h.name}'s weapon inflicts ${type}.`,type,"enemy",bonus,h.id,offline);}else if(applyEnemyDamage(run,bonus,type,h.id,offline))return;if(type==="frost"&&run.enemy)run.enemyTimer+=.45;}
   if(h.className==="Druid"&&random()<.16)healLowestHero(run,Math.max(2,Math.ceil(maxHit*.35)),h,offline);if(special)pushCombatEvent(run,`${h.name}'s${special} strike surges.`,"special","enemy",null,h.id,offline);
 }
-function defeatHero(run,h,offline=false){h.hp=0;h.assignment="inn";h.recoveryUntil=Date.now()+(1200/(1+state.buildings.inn*.2))*1000;h.records.defeats++;state.stats.defeats++;run.heroIds=run.heroIds.filter(id=>id!==h.id);delete run.heroTimers[h.id];pushCombatEvent(run,`${h.name} falls and is carried to the Inn.`,"defeat",h.id,0,null,offline);notify("Cart to the Inn",`${h.name} was defeated during ${COMBAT[run.combatId].short}.`,"🛒");if(!run.heroIds.length)stopRun(run.id,false,false);}
+function defeatHero(run,h,offline=false){h.hp=0;h.assignment="inn";h.recoveryUntil=Date.now()+(1200/(1+state.buildings.inn*.2))*1000;h.records.defeats++;state.stats.defeats++;run.heroIds=run.heroIds.filter(id=>id!==h.id);delete run.heroTimers[h.id];pushCombatEvent(run,`${h.name} falls and is carried to the Inn.`,"defeat",h.id,0,null,offline);notify("Cart to the Inn",`${h.name} was defeated during ${COMBAT[run.combatId].short}.`,"🛒");if(!run.heroIds.length)stopRun(run.id,false,false,"Party defeated");}
 function performEnemyAttack(run,offline=false){
   const enemy=run.enemy,party=run.heroIds.map(heroById).filter(h=>h&&(h.hp||0)>0);if(!enemy||!party.length)return;enemy.attacks++;const targets=enemy.boss&&enemy.attacks%4===0?party:[party[Math.floor(random()*party.length)]];
   for(const h of targets){const hitChance=clamp(.22+(enemy.attack/(enemy.attack+heroDefense(h)*1.8))*.68,.18,.95),base=random()<hitChance?Math.floor(random()*(enemy.maxHit+1)):0,damage=targets.length>1?Math.ceil(base*.6):base;h.hp=Math.max(0,(h.hp??heroMaxHP(h))-damage);run.damageTaken+=damage;pushCombatEvent(run,damage?`${enemy.name} hits ${h.name} for ${damage}.`:`${enemy.name} misses ${h.name}.`,damage?"enemy":"miss",h.id,damage,"enemy",offline);if(h.hp<=0)defeatHero(run,h,offline);}
@@ -531,18 +535,18 @@ function processCombatRoom(run,cfg,dt,offline=false){
   if(!run.enemy)return;run.enemyTimer-=dt;if(run.enemyTimer<=0){run.enemyTimer+=run.enemy.speed+(run.enemy.status.frost?.remaining?0.5:0);performEnemyAttack(run,offline);}
 }
 function processRun(run,seconds,offline=false){
-  const cfg=COMBAT[run.combatId];if(!cfg){stopRun(run.id,false,false);return;}let remaining=seconds,steps=0;while(remaining>0&&state.combatRuns.includes(run)&&steps++<250000){const dt=Math.min(.25,remaining);remaining-=dt;run.elapsed+=dt;run.cycleElapsed+=dt;if(!run.roomState)enterCurrentRoom(run,cfg,offline);if(!state.combatRuns.includes(run)||!run.roomState)continue;if(run.roomState.type==="skill")processSkillRoom(run,cfg,dt,offline);else processCombatRoom(run,cfg,dt,offline);}
+  const cfg=COMBAT[run.combatId];if(!cfg){stopRun(run.id,false,false,"Activity unavailable");return;}let remaining=seconds,steps=0;while(remaining>0&&state.combatRuns.includes(run)&&steps++<250000){const dt=Math.min(.25,remaining);remaining-=dt;run.elapsed+=dt;run.cycleElapsed+=dt;if(!run.roomState)enterCurrentRoom(run,cfg,offline);if(!state.combatRuns.includes(run)||!run.roomState)continue;if(run.roomState.type==="skill")processSkillRoom(run,cfg,dt,offline);else processCombatRoom(run,cfg,dt,offline);}
 }
 
 function completeCombatCycle(run,cfg,offline=false){
-  const party=run.heroIds.map(heroById).filter(Boolean);if(!party.length){stopRun(run.id,false,false);return;}const gold=Math.floor(cfg.gold[0]+random()*(cfg.gold[1]-cfg.gold[0]+1));state.resources.gold+=gold;state.stats.goldEarned+=gold;run.cycles++;run.lastReward=`${fmt(gold)} Gold`;
+  const party=run.heroIds.map(heroById).filter(Boolean);if(!party.length){stopRun(run.id,false,false,"Party defeated");return;}const gold=Math.floor(cfg.gold[0]+random()*(cfg.gold[1]-cfg.gold[0]+1));state.resources.gold+=gold;state.stats.goldEarned+=gold;run.cycles++;run.lastReward=`${fmt(gold)} Gold`;
   for(const h of party){h.sanity=clamp(h.sanity-(cfg.category==="raid"?28:cfg.category==="dungeon"?17:8),0,100);damageGear(h,cfg.category==="raid"?12:cfg.category==="dungeon"?7:3);h.records.goldEarned+=Math.floor(gold/party.length);if(cfg.category==="expedition")h.records.expeditions++;if(cfg.category==="dungeon"){h.records.dungeons++;h.records.dungeonBosses++;}if(cfg.category==="raid"){h.records.raids++;h.records.raidBosses++;}}
   if(cfg.category==="expedition"){state.stats.expeditions++;if(random()<(cfg.essenceChance||0))state.resources.essence+=1;}
   if(cfg.category==="dungeon"){state.stats.dungeons++;state.resources.essence+=Math.floor(cfg.essenceReward[0]+random()*(cfg.essenceReward[1]-cfg.essenceReward[0]+1));if(random()<(cfg.keyChance||0))state.resources.keys+=1;if(cfg.trinketPool?.length&&random()<(cfg.trinketChance||0))dropTrinket(cfg,party);}
   if(cfg.category==="raid"){state.stats.raids++;state.resources.essence+=Math.floor(cfg.essenceReward[0]+random()*(cfg.essenceReward[1]-cfg.essenceReward[0]+1));if(cfg.eggKey&&random()<(cfg.eggChance||0))dropEgg(cfg,party);}
   if(cfg.pool?.length&&random()<(cfg.itemChance||0))dropSpecial(cfg,party);pushCombatEvent(run,`${cfg.short} cleared in ${formatDuration(run.cycleElapsed)}. Chest: ${fmt(gold)} Gold.`,"loot","room",gold,null,offline);notify(`${cfg.short} completed`,`${party.map(h=>h.name).join(", ")} opened the chest for ${fmt(gold)} Gold.`,cfg.icon);
-  for(const h of party.filter(x=>x.sanity<=0))sendToTavern(h);run.heroIds=run.heroIds.filter(id=>heroById(id)?.sanity>0);if(!run.heroIds.length){stopRun(run.id,false,false);return;}
-  if(!run.autoRepeat){stopRun(run.id,false,false);return;}if(!canPayRunEntry(cfg)){stopRun(run.id,false,false);notify("Run paused",`${cfg.short} stopped because the next entry needs more ${cfg.keys?"Raid Keys or Essence":"Essence"}.`,"🎒");return;}payRunEntry(cfg);run.cycle++;run.roomIndex=0;run.roomState=null;run.enemy=null;run.cycleElapsed=0;
+  for(const h of party.filter(x=>x.sanity<=0))sendToTavern(h);run.heroIds=run.heroIds.filter(id=>heroById(id)?.sanity>0);if(!run.heroIds.length){stopRun(run.id,false,false,"Sanity depleted");return;}
+  if(!run.autoRepeat){stopRun(run.id,false,false,"Single clear complete");return;}if(!canPayRunEntry(cfg)){stopRun(run.id,false,false,"Entry supplies exhausted");notify("Run paused",`${cfg.short} stopped because the next entry needs more ${cfg.keys?"Raid Keys or Essence":"Essence"}.`,"🎒");return;}payRunEntry(cfg);run.cycle++;run.roomIndex=0;run.roomState=null;run.enemy=null;run.cycleElapsed=0;
 }
 
 function dropSpecial(cfg,party=[]){const key=cfg.pool[Math.floor(random()*cfg.pool.length)],finder=party[Math.floor(random()*party.length)]||null;awardInventoryItem(key,finder,cfg.category==="raid"?"Raid rare table hit!":"Rare equipment!");}
@@ -560,10 +564,10 @@ function startRun(combatId,heroIds,autoRepeat=true){
   if(combatCount()+heroIds.length>4)return toast("⚠️","Only four heroes may fight at once");
   if(heroIds.some(id=>heroById(id).level<cfg.minLevel))return toast("🔒",`${cfg.name} requires Combat Level ${cfg.minLevel}`);
   if(!canPayRunEntry(cfg))return toast("🎒","Not enough entry supplies",`Need ${cfg.essence||0} Essence${cfg.keys?` and ${cfg.keys} Raid Key${cfg.keys===1?"":"s"}`:""}.`);
-  const party=heroIds.map(heroById).filter(Boolean);payRunEntry(cfg);for(const id of heroIds)heroById(id).assignment="combat";const run=createCombatRunState(combatId,heroIds,autoRepeat);state.combatRuns.push(run);watchedRunId=run.id;enterCurrentRoom(run,cfg,false);notify(`${cfg.short} started`,`${party.map(h=>h.name).join(", ")} entered live combat. Higher max hits and faster attacks now shorten every clear.`,cfg.icon);markDirty();renderAll();closeDrawer();
+  const party=heroIds.map(heroById).filter(Boolean);payRunEntry(cfg);for(const id of heroIds)heroById(id).assignment="combat";const run=createCombatRunState(combatId,heroIds,autoRepeat);state.combatRuns.push(run);watchedRunId=run.id;enterCurrentRoom(run,cfg,false);notify(`${cfg.short} started`,`${party.map(h=>h.name).join(", ")} entered live combat. Higher max hits and faster attacks now shorten every clear.`,cfg.icon);saveLocal();renderAll();closeDrawer();
 }
 
-function stopRun(id,announce=true,rerender=true){const run=state.combatRuns.find(r=>r.id===id);if(!run)return;for(const hid of run.heroIds){const h=heroById(hid);if(h?.assignment==="combat")h.assignment="idle";}state.combatRuns=state.combatRuns.filter(r=>r.id!==id);if(watchedRunId===id)watchedRunId=state.combatRuns[0]?.id||null;if(announce)notify("Party recalled","The adventurers are returning to town.","🏰");markDirty();if(rerender)renderAll();}
+function stopRun(id,announce=true,rerender=true,reason="Recalled"){const run=state.combatRuns.find(r=>r.id===id);if(!run)return;if(activeSimulationAudit)activeSimulationAudit.stops.push({id:run.id,reason,cycle:run.cycle,cycles:run.cycles,kills:run.kills,elapsed:run.elapsed});for(const hid of run.heroIds){const h=heroById(hid);if(h?.assignment==="combat")h.assignment="idle";}state.combatRuns=state.combatRuns.filter(r=>r.id!==id);if(watchedRunId===id)watchedRunId=state.combatRuns[0]?.id||null;if(announce)notify("Party recalled","The adventurers are returning to town.","🏰");markDirty();if(rerender)renderAll();}
 
 function assignHero(heroId,assignment){
   const h=heroById(heroId);if(!h||h.assignment==="inn")return toast("🛏️","Hero is still recovering");
@@ -839,7 +843,14 @@ document.addEventListener("click",async event=>{
   else if(a==="reset-game" && await confirmAction("Begin a new town?","This replaces the current town on this device and, after syncing, in the cloud.","🏰")){state=freshState();saveLocal();closeDrawer();renderAll();}
 });
 
-function showOffline(report){if(!report||report.seconds<60)return;const entries=[["Time away",formatDuration(report.seconds)],...(report.tierChanges||[]).map(change=>[`${change.icon} ${change.name}`,change.quantity]),["🪙 Gold",report.gold],["✨ Essence",report.essence],["🗝️ Raid Keys",report.keys],["🧰 Repair Kits",report.kits],["📦 Items",report.items],["💀 Enemies slain",report.kills],["⚔️ Routes cleared",report.runs],["⭐ Combat levels",report.combatLevels]].filter(([,v],i)=>i===0||Math.abs(v)>.01);$("#offlineReport").innerHTML=entries.map(([k,v],i)=>`<div class="offline-line"><span>${k}</span><strong>${i===0?v:`${v>=0?"+":""}${fmt(v)}`}</strong></div>`).join("");$("#offlineDialog").showModal();}
+function showOffline(report){
+  if(!report||report.seconds<60)return;const line=(label,value,kind="")=>`<div class="offline-line ${kind}"><span>${escapeHTML(label)}</span><strong>${escapeHTML(value)}</strong></div>`,section=title=>`<h3 class="offline-section-title">${escapeHTML(title)}</h3>`;let html=line("Time away",formatDuration(report.seconds),"time");
+  html+=section("Combat activity");
+  if(report.combatRuns?.length){for(const run of report.combatRuns){const clearText=`${fmt(run.clears)} clear${run.clears===1?"":"s"}`,killText=`${fmt(run.kills)} enem${run.kills===1?"y":"ies"}`;html+=line(`⚔️ ${run.name}`,`${clearText} · ${killText} · ${run.status}`,"status");}for(const hero of report.combatHeroes||[]){const levelText=hero.levelAfter>hero.levelBefore?` · Level ${hero.levelAfter}`:"";html+=line(`⭐ ${hero.name}`,`+${fmt(hero.xp)} Combat XP${levelText}`,"xp");}}
+  else html+=line("⚔️ Combat","No active combat run was saved","status muted");
+  const rewards=[...(report.tierChanges||[]).map(change=>[`${change.icon} ${change.name}`,change.quantity]),["🪙 Gold earned",report.goldEarned],["✨ Essence",report.essence],["🗝️ Raid Keys",report.keys],["🧰 Repair Kits",report.kits],["📦 Items",report.items]].filter(([,value])=>Math.abs(Number(value)||0)>.01);html+=section("Rewards & production");html+=rewards.length?rewards.map(([label,value])=>line(label,`${value>=0?"+":""}${fmt(value)}`)).join(""):`<div class="offline-note">No completed chest rewards or production actions during this window.</div>`;
+  $("#offlineReport").innerHTML=html;const dialog=$("#offlineDialog");if(!dialog.open)dialog.showModal();
+}
 
 async function init(){
   const raw=JSON.parse(localStorage.getItem(SAVE_KEY)||"null");state=migrate(raw);const now=Date.now(),elapsed=Math.min(OFFLINE_LIMIT,Math.max(0,(now-(state.lastTick||now))/1000));const report=simulate(elapsed,true);lastSimulationAt=now;state.lastTick=now;saveLocal();
@@ -847,11 +858,16 @@ async function init(){
   if("serviceWorker" in navigator)navigator.serviceWorker.register("./service-worker.js").catch(()=>{});
   const failedAssets=await preloadAssets();renderAll();
   $("#loadingText").textContent=failedAssets.length?"The town is ready. Missing artwork will retry when needed.":"The town is ready.";setTimeout(()=>{$("#loadingScreen").classList.add("fade");$("#app").hidden=false;setTimeout(()=>$("#loadingScreen").remove(),500);if(!settings.authDismissed)setTimeout(()=>$("#authDialog").showModal(),450);showOffline(report);},250);
-  setInterval(()=>{const now=Date.now();settleToNow(true);if(currentView==="combat")renderCombatLive();if(now-lastSlowRender>=1000){lastSlowRender=now;renderResources();renderTown();if(currentView==="warehouse")renderWarehouse();refreshWorkTimers();markDirty();}},100);
+  setInterval(()=>{if(document.visibilityState==="hidden")return;const now=Date.now();settleToNow(true);if(currentView==="combat")renderCombatLive();if(now-lastSlowRender>=1000){lastSlowRender=now;renderResources();renderTown();if(currentView==="warehouse")renderWarehouse();refreshWorkTimers();markDirty();}},100);
 }
 
-document.addEventListener("visibilitychange",()=>{if(!state)return;if(document.visibilityState==="hidden"){settleToNow(false);saveLocal();}else{settleToNow(true);renderAll();}});
-window.addEventListener("pagehide",()=>{if(!state)return;settleToNow(false);saveLocal();});
-window.addEventListener("pageshow",event=>{if(!state||!event.persisted)return;settleToNow(true);renderAll();});
+function persistLifecycle(){if(!state)return;settleToNow(false);saveLocal();}
+function resumeLifecycle(){if(!state)return;const report=settleToNow(false);renderAll();showOffline(report);}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")persistLifecycle();else resumeLifecycle();});
+document.addEventListener("freeze",persistLifecycle);
+document.addEventListener("resume",resumeLifecycle);
+window.addEventListener("pagehide",persistLifecycle);
+window.addEventListener("beforeunload",persistLifecycle);
+window.addEventListener("pageshow",event=>{if(event.persisted)resumeLifecycle();});
 
 init();
