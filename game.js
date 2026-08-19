@@ -1,4 +1,4 @@
-const VERSION = "1.5.7";
+const VERSION = "1.5.8";
 const SAVE_KEY = "adventure-town-save-v1";
 const SETTINGS_KEY = "adventure-town-settings-v1";
 const OFFLINE_LIMIT = 12 * 60 * 60;
@@ -161,8 +161,8 @@ const UNIQUE_ITEM_NAMES = {
 for(const set of LOOT_SET_SPECS){
   for(const c of CLASS_GEAR){
     const [weaponName,armorName]=UNIQUE_ITEM_NAMES[set.prefix][c.key];
-    ITEMS[`${set.prefix}_${c.key}_weapon`]={name:weaponName,type:"weapon",className:c.className,icon:c.weaponIcon,image:set.prefix==="thornroot"&&c.key==="warrior"?"img/item-thornroot-warrior-weapon.webp":undefined,tier:set.tier,attack:set.attack,element:set.weaponEffect,requiredLevel:set.level,value:set.value,salvage:set.salvage,special:true,raid:!!set.raid,source:set.name};
-    ITEMS[`${set.prefix}_${c.key}_armor`]={name:armorName,type:"armor",className:c.className,icon:c.armorIcon,tier:set.tier,defense:set.defense,element:set.armorEffect,requiredLevel:set.level,value:set.value,salvage:set.salvage,special:true,raid:!!set.raid,source:set.name};
+    ITEMS[`${set.prefix}_${c.key}_weapon`]={name:weaponName,type:"weapon",className:c.className,icon:c.weaponIcon,image:`img/item-${set.prefix}-${c.key}-weapon.webp`,tier:set.tier,attack:set.attack,element:set.weaponEffect,requiredLevel:set.level,value:set.value,salvage:set.salvage,special:true,raid:!!set.raid,source:set.name};
+    ITEMS[`${set.prefix}_${c.key}_armor`]={name:armorName,type:"armor",className:c.className,icon:c.armorIcon,image:`img/item-${set.prefix}-${c.key}-armor.webp`,tier:set.tier,defense:set.defense,element:set.armorEffect,requiredLevel:set.level,value:set.value,salvage:set.salvage,special:true,raid:!!set.raid,source:set.name};
   }
 }
 
@@ -183,6 +183,13 @@ Object.assign(ITEMS,{
   tidePearl:{name:"Tide Pearl",type:"trinket",icon:"🫧",tier:"Dungeon Trinket",value:0,soulbound:true,effects:{maxHP:8},effectText:"+8 maximum HP"},
   stormLocket:{name:"Storm Locket",type:"trinket",icon:"⚡",tier:"Dungeon Trinket",value:0,soulbound:true,effects:{combatStrength:3},effectText:"+3 combat strength"},
 });
+
+const ITEM_ART_ALIASES={
+  verdantBlade:"item-verdant-blade.webp",briarRobes:"item-briar-robes.webp",frostBow:"item-frost-bow.webp",healingStaff:"item-healing-staff.webp",emberBow:"item-ember-bow.webp",cinderTome:"item-cinder-tome.webp",stormStaff:"item-storm-staff.webp",tempestDaggers:"item-tempest-daggers.webp",voidWand:"item-void-wand.webp",eclipseTome:"item-eclipse-tome.webp",
+  luckyAcorn:"item-lucky-acorn.webp",frostSigil:"item-frost-sigil.webp",emberIdol:"item-ember-idol.webp",tidePearl:"item-tide-pearl.webp",stormLocket:"item-storm-locket.webp",
+  burningSword:"item-cinderdeep-warrior-weapon.webp",darkWand:"item-eclipse-wizard-weapon.webp",poisonDaggers:"item-basilisk-assassin-weapon.webp",echoTome:"item-stormcrypt-summoner-weapon.webp",tideSpear:"item-sunken-druid-weapon.webp",coralArmor:"item-sunken-warrior-armor.webp",basiliskTooth:"item-basilisk-assassin-weapon.webp",basiliskPlate:"item-basilisk-warrior-armor.webp",stormbreakerBow:"item-tempest-archer-weapon.webp",titanWard:"item-tempest-druid-armor.webp",nightweave:"item-eclipse-assassin-armor.webp",
+};
+for(const [key,filename] of Object.entries(ITEM_ART_ALIASES))if(ITEMS[key])ITEMS[key].image=`img/${filename}`;
 
 const RESOURCE_TIERS = {
   food:[
@@ -256,7 +263,8 @@ for(const tier of NORMAL_GEAR_TIER_SPECS){
     const classGear=CLASS_GEAR.find(entry=>entry.key===archetype.key);
     for(const slot of ["weapon","armor"]){
       const key=normalGearKey(tier.id,archetype.key,slot),existing=ITEMS[key]||{},[metalBase,woodBase]=archetype[`${slot}Base`];
-      ITEMS[key]={...existing,name:normalGearDisplayName(tier,archetype,slot),type:slot,className:classGear.className,icon:slot==="weapon"?classGear.weaponIcon:classGear.armorIcon,image:slot==="weapon"&&archetype.key==="warrior"?`img/item-sword-${tier.id}.webp`:existing.image,tier:tier.name,[slot==="weapon"?"attack":"defense"]:slot==="weapon"?tier.attack:tier.defense,requiredLevel:tier.combatLevel,value:slot==="weapon"?tier.weaponValue:tier.armorValue,recipeTier:tier.id,smithLevel:tier.smithLevel,buildingLevel:tier.building,metalCost:metalBase*tier.costScale,woodCost:woodBase*tier.costScale,normalGear:true};
+      const image=slot==="weapon"&&archetype.key==="warrior"?`img/item-sword-${tier.id}.webp`:`img/item-normal-${tier.id}-${archetype.key}-${slot}.webp`;
+      ITEMS[key]={...existing,name:normalGearDisplayName(tier,archetype,slot),type:slot,className:classGear.className,icon:slot==="weapon"?classGear.weaponIcon:classGear.armorIcon,image,tier:tier.name,[slot==="weapon"?"attack":"defense"]:slot==="weapon"?tier.attack:tier.defense,requiredLevel:tier.combatLevel,value:slot==="weapon"?tier.weaponValue:tier.armorValue,recipeTier:tier.id,smithLevel:tier.smithLevel,buildingLevel:tier.building,metalCost:metalBase*tier.costScale,woodCost:woodBase*tier.costScale,normalGear:true};
       NORMAL_GEAR_RECIPE_KEYS[tier.id][slot].push(key);
     }
   }
@@ -328,7 +336,9 @@ async function preloadAssets(){
   const assets=assetCatalog(),bar=$("#loadingProgress"),track=$(".loading-track"),count=$("#loadingCount"),failed=[];let complete=0;
   const update=()=>{const pct=assets.length?Math.round(complete/assets.length*100):100;if(bar)bar.style.width=`${pct}%`;if(track){track.setAttribute("aria-valuenow",String(complete));track.setAttribute("aria-valuemax",String(assets.length));}if(count)count.textContent=`${complete} / ${assets.length} assets`;};
   $("#loadingText").textContent="Preparing the town artwork…";update();
-  await Promise.all(assets.map(src=>new Promise(resolve=>{const image=new Image();let settled=false;const timeout=setTimeout(()=>finish(false),10000),finish=ok=>{if(settled)return;settled=true;clearTimeout(timeout);if(!ok)failed.push(src);complete++;update();resolve();};image.onload=()=>finish(true);image.onerror=()=>finish(false);image.src=src;})));
+  let cursor=0;const load=src=>new Promise(resolve=>{const image=new Image();let settled=false;const timeout=setTimeout(()=>finish(false),15000),finish=ok=>{if(settled)return;settled=true;clearTimeout(timeout);if(!ok)failed.push(src);complete++;update();resolve();};image.onload=()=>finish(true);image.onerror=()=>finish(false);image.src=src;});
+  const worker=async()=>{while(cursor<assets.length){const src=assets[cursor++];await load(src);}};
+  await Promise.all(Array.from({length:Math.min(10,assets.length)},worker));
   return failed;
 }
 
@@ -902,7 +912,7 @@ function showOffline(report){
 async function init(){
   const raw=JSON.parse(localStorage.getItem(SAVE_KEY)||"null");state=migrate(raw);const now=Date.now(),elapsed=Math.min(OFFLINE_LIMIT,Math.max(0,(now-(state.lastTick||now))/1000));const report=simulate(elapsed,true);lastSimulationAt=now;state.lastTick=now;saveLocal();
   initializeFirebase();
-  if("serviceWorker" in navigator)navigator.serviceWorker.register("./service-worker.js").catch(()=>{});
+  if("serviceWorker" in navigator){try{await navigator.serviceWorker.register("./service-worker.js");await navigator.serviceWorker.ready;}catch{}}
   const failedAssets=await preloadAssets();renderAll();
   $("#loadingText").textContent=failedAssets.length?"The town is ready. Missing artwork will retry when needed.":"The town is ready.";setTimeout(()=>{$("#loadingScreen").classList.add("fade");$("#app").hidden=false;setTimeout(()=>$("#loadingScreen").remove(),500);if(!settings.authDismissed)setTimeout(()=>$("#authDialog").showModal(),450);showOffline(report);},250);
   setInterval(()=>{if(document.visibilityState==="hidden")return;const now=Date.now();settleToNow(true);if(currentView==="combat")renderCombatLive();if(now-lastSlowRender>=1000){lastSlowRender=now;renderResources();renderTown();if(currentView==="warehouse")renderWarehouse();refreshWorkTimers();markDirty();}},100);
