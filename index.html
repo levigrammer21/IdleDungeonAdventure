@@ -25,12 +25,13 @@
     <header class="topbar">
       <button class="brand" data-action="open-view" data-view="town" aria-label="Return to town">
         <span class="brand-crest"><img src="img/icon.svg" alt="" aria-hidden="true"></span>
-        <span><strong>Adventure Town</strong><small id="versionLabel">v1.5.8</small></span>
+        <span><strong>Adventure Town</strong><small id="versionLabel">v1.5.9</small></span>
       </button>
       <div class="top-actions">
         <button id="syncButton" class="status-pill" data-action="sync" aria-label="Cloud save status">
           <span id="syncDot" class="status-dot"></span><span id="syncLabel">Device save</span>
         </button>
+        <button class="icon-button party-chat-button" data-action="open-party-chat" aria-label="Open party chat"><span aria-hidden="true">💬</span><span id="partyChatBadge" class="badge" hidden>0</span></button>
         <button class="icon-button" data-action="open-notifications" aria-label="Town reports">🔔<span id="notificationBadge" class="badge" hidden>0</span></button>
         <button id="accountButton" class="avatar-button" data-action="account" aria-label="Account">G</button>
       </div>
@@ -101,6 +102,10 @@
           <article class="summary-card">
             <div class="card-heading"><span><small>TOWN OUTPUT</small><strong id="townOutputText">No one working</strong></span><button data-action="open-view" data-view="assign">Change</button></div>
             <div id="townOutputMini" class="mini-bars"></div>
+          </article>
+          <article class="summary-card party-chat-card">
+            <div class="card-heading"><span><small>PARTY CHAT</small><strong id="partyChatStatus">Six heroes connected</strong></span><button data-action="open-party-chat">Open chat</button></div>
+            <div id="partyChatPreview" class="party-chat-preview"></div>
           </article>
           <article class="summary-card story-card">
             <div class="card-heading"><span><small>LATEST STORY</small><strong id="latestStoryTitle">The town awakens</strong></span><button data-action="open-notifications">Reports</button></div>

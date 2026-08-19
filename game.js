@@ -1,4 +1,4 @@
-const VERSION = "1.5.8";
+const VERSION = "1.5.9";
 const SAVE_KEY = "adventure-town-save-v1";
 const SETTINGS_KEY = "adventure-town-settings-v1";
 const OFFLINE_LIMIT = 12 * 60 * 60;
@@ -11,6 +11,99 @@ const HEROES = [
   { id:"assassin", name:"Vex", className:"Assassin", icon:"🗡️", portrait:"img/hero-assassin-vex.webp", weapon:"Daggers", armor:"Assassin Armor", color:"#755b86" },
   { id:"summoner", name:"Orin", className:"Summoner", icon:"📖", portrait:"img/hero-summoner-orin.webp", weapon:"Tome", armor:"Summoner Robes", color:"#a36f42" },
 ];
+
+const PARTY_CHAT_LIMIT = 80;
+const PARTY_CHAT_MILESTONES = [25,100,250,500,1000,2500,5000,10000,25000,50000,100000];
+const WORK_SKILL_NAMES = {farming:"Farming",mining:"Mining",woodcutting:"Woodcutting",smithing:"Smithing"};
+const HERO_CHAT_VOICES = {
+  warrior:{
+    assignment:{idle:"Shield is down. Call when something needs hitting—or carrying.",farm:"A stocked pantry wins more fights than bravado. I'll see to it.",mine:"I'll bring back enough metal to make this sword jealous.",forest:"Trees, axes, honest work. I can do that.",smith:"Good. I trust equipment more when I've watched it being forged.",tavern:"One bowl, one chair, and absolutely no quests until my head clears."},
+    danger:["Did someone turn up the difficulty in here, or did my sword get nerfed?","This armor is earning its keep. A little help would still be welcome."],
+    combatLevel:level=>`Combat Level ${level}. Harder to knock down, easier to annoy.`,
+    workLevel:(skill,level)=>`${skill} Level ${level}. Turns out repetition really does build muscle.`,
+    unlock:item=>`${item} is within reach now. Point me at the work.`,
+    outdated:(current,best)=>`We're still working ${current}? I can handle ${best} now.`,
+    milestone:(amount,item)=>`${amount} ${item}. That's a respectable pile.`,
+    combatStart:place=>`${place}. Stay close and let me take the first hit.`,
+    clear:(place,gold)=>`${place} cleared. ${gold} Gold in the chest—count it back in town.`,
+    rare:item=>`${item}. Finally, something worth the bruises.`,
+    broken:item=>`My ${item} is broken. That was not part of the battle plan.`,
+  },
+  wizard:{
+    assignment:{idle:"I have finished reorganizing my notes. Twice. I am available.",farm:"Agriculture is applied alchemy with fewer explosions.",mine:"Every vein tells a geological story. Most of them are very long.",forest:"I'll catalogue what we cut. Waste is simply poor scholarship.",smith:"Heat, pressure, structure—smithing is magic that admits it uses a hammer.",tavern:"Rest is not laziness. It is mana management."},
+    danger:["My calculations did not include quite this much bleeding.","A brief defensive adjustment would be academically prudent."],
+    combatLevel:level=>`Combat Level ${level}. The practical results agree with the theory.`,
+    workLevel:(skill,level)=>`${skill} Level ${level}. My field notes are becoming rather convincing.`,
+    unlock:item=>`${item} is unlocked. I have already begun a more efficient procedure.`,
+    outdated:(current,best)=>`We have the skill for ${best}, yet I am still processing ${current}. Curious.`,
+    milestone:(amount,item)=>`${amount} ${item}, recorded and verified.`,
+    combatStart:place=>`Entering ${place}. I have three theories and two of them are dangerous.`,
+    clear:(place,gold)=>`${place} complete. The chest contained ${gold} Gold and very little peer review.`,
+    rare:item=>`${item}! That changes several of my equipment models.`,
+    broken:item=>`The structural integrity of my ${item} has reached exactly zero.`,
+  },
+  archer:{
+    assignment:{idle:"Quiver checked, boots tied. I'm ready.",farm:"I'll keep the rows straight and the pests nervous.",mine:"Not much range in a mine, but I can spot a good seam.",forest:"I know which trees make good bows. The others can relax.",smith:"A balanced tool matters. A balanced weapon matters more.",tavern:"I'll take the quiet corner and keep an eye on the door."},
+    danger:["I'm running out of room to dodge—and health to spend.","A clean retreat is still a strategy. Just mentioning it."],
+    combatLevel:level=>`Combat Level ${level}. Faster eyes, steadier hands.`,
+    workLevel:(skill,level)=>`${skill} Level ${level}. I can see the pattern now.`,
+    unlock:item=>`${item} is available. Good—our old route was getting predictable.`,
+    outdated:(current,best)=>`I can gather ${best} now. ${current} is starting to feel like target practice.`,
+    milestone:(amount,item)=>`${amount} ${item}. I counted on the way back.`,
+    combatStart:place=>`I have sightlines on ${place}. Try not to stand in them.`,
+    clear:(place,gold)=>`${place} is quiet. Chest count: ${gold} Gold.`,
+    rare:item=>`Found ${item}. That one was hidden well.`,
+    broken:item=>`My ${item} won't survive another trip. It barely survived this one.`,
+  },
+  druid:{
+    assignment:{idle:"The town is breathing easily. So am I.",farm:"The soil remembers kindness. The harvest usually does too.",mine:"I'll take only what the town needs and leave the mountain stable.",forest:"A careful cut makes room for new growth.",smith:"Even iron has a rhythm if you listen past the hammer.",tavern:"Warm food, good company, and no poison clouds. Lovely."},
+    danger:["I can mend wounds, but I would prefer fewer of them.","The roots are holding me up. Barely."],
+    combatLevel:level=>`Combat Level ${level}. Stronger roots, steadier heart.`,
+    workLevel:(skill,level)=>`${skill} Level ${level}. Practice has taken root.`,
+    unlock:item=>`${item} is ready for us now. Let us use it wisely.`,
+    outdated:(current,best)=>`${current} still has uses, but I am ready to work with ${best}.`,
+    milestone:(amount,item)=>`${amount} ${item}. The town will make good use of every one.`,
+    combatStart:place=>`${place} feels unsettled. Stay near me.`,
+    clear:(place,gold)=>`${place} can rest again. We recovered ${gold} Gold.`,
+    rare:item=>`${item} found us at exactly the right moment.`,
+    broken:item=>`My ${item} has given all it can. We should repair it.`,
+  },
+  assassin:{
+    assignment:{idle:"Standing visibly in the town square feels deeply unnatural.",farm:"If anyone asks, these vegetables harvested themselves.",mine:"Dark tunnels, sharp tools, no small talk. Perfect.",forest:"Quiet work. Until the tree falls, anyway.",smith:"I need the edges sharp and the questions dull.",tavern:"I'm not resting. I'm gathering intelligence near the soup."},
+    danger:["Either they got stronger or I got significantly more perforated.","I prefer danger behind me, not distributed through my organs."],
+    combatLevel:level=>`Combat Level ${level}. I was already dangerous. Now it is documented.`,
+    workLevel:(skill,level)=>`${skill} Level ${level}. Please contain your surprise.`,
+    unlock:item=>`${item} unlocked. Finally, something less tedious.`,
+    outdated:(current,best)=>`Still ${current}? We can work ${best}. I am developing opinions about this.`,
+    milestone:(amount,item)=>`${amount} ${item}. I deny counting them.`,
+    combatStart:place=>`${place}. I'll find the path nobody is guarding.`,
+    clear:(place,gold)=>`${place} handled. ${gold} Gold, no witnesses worth mentioning.`,
+    rare:item=>`${item}. I saw it first, which is legally the same as finding it.`,
+    broken:item=>`My ${item} broke. Whoever laughs is testing the replacement.`,
+  },
+  summoner:{
+    assignment:{idle:"The spirits and I are ready. Mostly the spirits.",farm:"I asked the seedlings what they need. They were surprisingly specific.",mine:"I can summon help, but apparently the pickaxe builds character.",forest:"The little spirits keep naming the trees. This may take a while.",smith:"The forge sprites have suggestions. Many involve more fire.",tavern:"I ordered for two. My summon insists it counts."},
+    danger:["My summons would like everyone to know this is going badly.","I may have brought too many spell pages and not enough armor."],
+    combatLevel:level=>`Combat Level ${level}! The spirits are cheering in at least four languages.`,
+    workLevel:(skill,level)=>`${skill} Level ${level}! I knew the extra hands would help.`,
+    unlock:item=>`${item} is unlocked! I have already told everyone.`,
+    outdated:(current,best)=>`We can work ${best} now. Even the spirits are bored of ${current}.`,
+    milestone:(amount,item)=>`${amount} ${item}! We made a pile, then the pile waved back.`,
+    combatStart:place=>`${place}! Everyone stay together—including anything I summon.`,
+    clear:(place,gold)=>`${place} cleared! The chest says ${gold} Gold. Yes, I asked it.`,
+    rare:item=>`${item}! I knew today felt unusually sparkly.`,
+    broken:item=>`My ${item} broke. The spirits are holding a very small funeral.`,
+  },
+};
+
+const HERO_CHAT_REPLIES = {
+  warrior:{danger:name=>`Stay on your feet, ${name}. I'll pull their attention.`,level:name=>`Well earned, ${name}.`,milestone:name=>`Good work, ${name}. Keep the town supplied.`,rare:name=>`Straight to the Warehouse, ${name}.`,start:name=>`I'm with you, ${name}.`},
+  wizard:{danger:name=>`Hold still, ${name}. I am revising the odds.`,level:name=>`The improvement is measurable, ${name}. Nicely done.`,milestone:name=>`I can confirm ${name}'s count. Approximately.`,rare:name=>`Do not touch any runes before I inspect it, ${name}.`,start:name=>`I have prepared contingencies, ${name}.`},
+  archer:{danger:name=>`Move left, ${name}. I can cover you there.`,level:name=>`It shows, ${name}.`,milestone:name=>`I saw the last one come in. Nice work, ${name}.`,rare:name=>`Good eye, ${name}.`,start:name=>`I'll watch the edges, ${name}.`},
+  druid:{danger:name=>`Breathe, ${name}. Help is close.`,level:name=>`You have grown well, ${name}.`,milestone:name=>`The town is stronger for it, ${name}.`,rare:name=>`It suits you, ${name}.`,start:name=>`We go together, ${name}.`},
+  assassin:{danger:name=>`Try not to fall over, ${name}. It complicates the formation.`,level:name=>`Not bad, ${name}. Almost intimidating.`,milestone:name=>`I stopped counting. Glad you didn't, ${name}.`,rare:name=>`Fine. ${name} can carry it—for now.`,start:name=>`I'll be the shadow you pretend not to need, ${name}.`},
+  summoner:{danger:name=>`Hang on, ${name}! I am sending everything I have!`,level:name=>`I knew you could do it, ${name}!`,milestone:name=>`That deserves a celebration, ${name}!`,rare:name=>`Can I hold it for one second, ${name}?`,start:name=>`Ready, ${name}! The spirits are too!`},
+};
 
 const CLASS_GEAR = [
   {key:"warrior",className:"Warrior",weapon:"Sword",armor:"Warrior Armor",weaponIcon:"⚔️",armorIcon:"🛡️"},
@@ -303,6 +396,8 @@ let watchedRunId = null;
 let lastActiveRunRender = 0;
 let combatVisualFrame = null;
 let activeSimulationAudit = null;
+let activeMapSpeech = null;
+let mapSpeechTimer = null;
 const seenCombatEventIds = new Set();
 
 const $ = s => document.querySelector(s);
@@ -379,6 +474,7 @@ function freshState(){
       equipment:{weapon:{key:["rustySword","apprenticeWand","huntingBow","oakStaff","wornDaggers","noviceTome"][i],durability:100},armor:null,pet:null,trinket:null}
     })),
     inventory:[], combatRuns:[], notifications:[{id:uid(),time:Date.now(),title:"The town awakens",text:"Your six adventurers are ready. Every choice of how they spend their time will shape Briarwatch."}],
+    partyChat:starterPartyChat(), chatMeta:{lastReadAt:0,ambientProgress:0,nextAmbientAt:72,lastSpeakerId:null,cooldowns:{}},
     achievements:[], stats:{expeditions:0,dungeons:0,raids:0,defeats:0,goldEarned:0,itemsFound:0,marketSales:0,offlineSeconds:0},
     pendingFractions:{food:0,metal:0,wood:0,kits:0}, settings:{autoSave:true,reducedMotion:false},
   };
@@ -403,6 +499,8 @@ function migrate(raw){
   merged.combatRuns=(Array.isArray(raw.combatRuns)?raw.combatRuns:[]).map(r=>{const combatId=r.combatId||legacyCombat[r.type]||r.type;if(!COMBAT[combatId])return null;const heroIds=(r.heroIds||[]).filter(id=>merged.heroes.some(h=>h.id===id&&(h.hp||0)>0));return heroIds.length?migrateCombatRun(r,combatId,heroIds,merged.heroes):null;}).filter(Boolean);
   const activeIds=new Set(merged.combatRuns.flatMap(r=>r.heroIds));for(const h of merged.heroes){if(activeIds.has(h.id))h.assignment="combat";else if(h.assignment==="combat")h.assignment="idle";h.hp=clamp(Number(h.hp??heroMaxHP(h)),0,heroMaxHP(h));}
   merged.notifications=Array.isArray(raw.notifications)?raw.notifications:base.notifications;
+  merged.partyChat=(Array.isArray(raw.partyChat)?raw.partyChat:base.partyChat).filter(message=>message&&merged.heroes.some(hero=>hero.id===message.heroId)&&typeof message.text==="string").slice(-PARTY_CHAT_LIMIT);
+  merged.chatMeta={...base.chatMeta,...(raw.chatMeta||{}),cooldowns:{...base.chatMeta.cooldowns,...(raw.chatMeta?.cooldowns||{})}};
   return merged;
 }
 
@@ -448,6 +546,80 @@ function heroSpecials(h){return ["weapon","armor","pet","trinket"].map(slot=>act
 function workActionTime(h,assignment,tier=null){const skillKey=BUILDINGS[assignment]?.skill,skill=h.skills[skillKey]?.level||1,building=state.buildings[assignment]||1,base=assignment==="smith"?15:TIER_ACTION_SECONDS[tier?.id||"starter"];return base/(1+(skill-1)*.01+(building-1)*.08);}
 function workActionStatus(h){if(!["farm","mine","forest","smith"].includes(h.assignment))return "";if(h.assignment==="smith"&&(resourceTierCount("metal",REPAIR_KIT_RECIPE.metalTier)<REPAIR_KIT_RECIPE.metalCost||resourceTierCount("wood",REPAIR_KIT_RECIPE.woodTier)<REPAIR_KIT_RECIPE.woodCost)){const metal=resourceTierData("metal",REPAIR_KIT_RECIPE.metalTier),wood=resourceTierData("wood",REPAIR_KIT_RECIPE.woodTier);return `Waiting for ${REPAIR_KIT_RECIPE.metalCost} ${metal.name} + ${REPAIR_KIT_RECIPE.woodCost} ${wood.name}`;}const tier=RESOURCE_ASSIGNMENTS[h.assignment]?resourceTierForHero(h,h.assignment):null,seconds=Math.max(0,workActionTime(h,h.assignment,tier)-(h.workProgress||0));return `${tier?`${tier.icon} ${tier.name}`:"🧰 Repair Kit"} in ${Math.max(1,Math.ceil(seconds))}s`;}
 
+function starterPartyChat(){
+  const now=Date.now();return [
+    {id:uid(),time:now-1800,heroId:"warrior",kind:"welcome",text:"All six of us are here. Give us work and we'll keep Briarwatch moving."},
+    {id:uid(),time:now-900,heroId:"assassin",kind:"reply",text:"He means you give the orders and we develop strong opinions about them."},
+    {id:uid(),time:now,heroId:"summoner",kind:"reply",text:"I started a party channel! The spirits have been told not to spam it."},
+  ];
+}
+function chatPick(values){return values?.length?values[Math.floor(Math.random()*values.length)]:null;}
+function chatHero(message){return heroById(message.heroId)||HEROES.find(hero=>hero.id===message.heroId);}
+function chatClock(time){return new Date(time).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});}
+function partyChatMessageHTML(message,compact=false){const hero=chatHero(message);if(!hero)return "";return `<article class="party-chat-message ${compact?"compact":""}" style="--chat-color:${hero.color}"><span class="chat-portrait">${heroImage(hero)}</span><div><div class="chat-message-head"><strong>${escapeHTML(hero.name)}</strong><small>${escapeHTML(hero.className)} · ${chatClock(message.time)}</small></div><p>${escapeHTML(message.text)}</p></div></article>`;}
+function partyChatUnread(){const lastRead=Number(state.chatMeta?.lastReadAt)||0;return (state.partyChat||[]).filter(message=>message.time>lastRead).length;}
+function syncMapSpeech(){
+  const layer=$("#heroLayer");if(!layer)return;layer.querySelectorAll(".map-speech").forEach(node=>node.remove());
+  if(!activeMapSpeech||activeMapSpeech.expires<=Date.now())return;const host=layer.querySelector(`[data-map-hero="${activeMapSpeech.heroId}"]`);if(!host)return;const bubble=document.createElement("span");bubble.className="map-speech";bubble.textContent=activeMapSpeech.text;host.append(bubble);
+}
+function setMapSpeech(hero,text){
+  activeMapSpeech={heroId:hero.id,text,expires:Date.now()+6200};clearTimeout(mapSpeechTimer);syncMapSpeech();mapSpeechTimer=setTimeout(()=>{activeMapSpeech=null;syncMapSpeech();},6300);
+}
+function renderPartyChat(){
+  const messages=state.partyChat||[],latest=messages.slice(-2),preview=$("#partyChatPreview"),status=$("#partyChatStatus"),badge=$("#partyChatBadge");
+  if(preview)preview.innerHTML=latest.length?latest.map(message=>partyChatMessageHTML(message,true)).join(""):`<span class="empty-mini">The party channel is quiet.</span>`;
+  if(status){const speaker=latest.length?chatHero(latest[latest.length-1]):null;status.textContent=speaker?`${speaker.name} just checked in`:"Six heroes connected";}
+  if(badge){const unread=partyChatUnread();badge.hidden=!unread;badge.textContent=Math.min(99,unread);}
+  syncMapSpeech();renderOpenPartyChat();
+}
+function renderOpenPartyChat(){
+  if($("#drawer")?.dataset.mode!=="party-chat")return;const feed=$("#partyChatFeed");if(!feed)return;feed.innerHTML=(state.partyChat||[]).map(message=>partyChatMessageHTML(message)).join("");feed.scrollTop=feed.scrollHeight;
+}
+function openPartyChat(){
+  state.chatMeta.lastReadAt=Date.now()+1;markDirty();openDrawer("Party Chat","Live from Briarwatch",`<div class="party-chat-intro"><span>💬</span><div><strong>The heroes speak for themselves</strong><p>Messages come from real assignments, combat danger, levels, unlocks, milestones, loot, recovery, and idle progress. Chat never changes rewards or asks for input.</p></div></div><div id="partyChatFeed" class="party-chat-feed" aria-live="polite"></div><div class="drawer-footer"><button class="primary-button" data-action="close-drawer">Back to the game</button></div>`,"party-chat");renderPartyChat();requestAnimationFrame(()=>{const feed=$("#partyChatFeed");if(feed)feed.scrollTop=feed.scrollHeight;});
+}
+function postHeroChat(hero,text,kind="ambient",options={}){
+  if(quietSimulation||!hero||!text)return null;state.partyChat=Array.isArray(state.partyChat)?state.partyChat:[];state.chatMeta={lastReadAt:0,ambientProgress:0,nextAmbientAt:72,lastSpeakerId:null,cooldowns:{},...(state.chatMeta||{})};state.chatMeta.cooldowns={...(state.chatMeta.cooldowns||{})};const now=Date.now(),cooldownKey=options.cooldownKey;
+  if(cooldownKey){const last=Number(state.chatMeta.cooldowns[cooldownKey])||0;if(now-last<(options.cooldownSeconds||60)*1000)return null;state.chatMeta.cooldowns[cooldownKey]=now;}
+  const previous=state.partyChat[state.partyChat.length-1];if(previous?.heroId===hero.id&&previous.text===text&&now-previous.time<30000)return null;
+  const message={id:uid(),time:now,heroId:hero.id,kind,text};state.partyChat.push(message);state.partyChat=state.partyChat.slice(-PARTY_CHAT_LIMIT);state.chatMeta.lastSpeakerId=hero.id;
+  if($("#drawer")?.dataset.mode==="party-chat")state.chatMeta.lastReadAt=now+1;if(options.mapBubble!==false)setMapSpeech(hero,text);renderPartyChat();markDirty();
+  if(options.replyType&&Math.random()<(options.replyChance??.35)){
+    const supplied=(options.replyPool||state.heroes).map(candidate=>typeof candidate==="string"?heroById(candidate):candidate).filter(candidate=>candidate&&candidate.id!==hero.id&&candidate.assignment!=="inn"),preferred=options.replyType==="danger"?supplied.find(candidate=>candidate.id==="druid"):null,responder=preferred||chatPick(supplied),reply=HERO_CHAT_REPLIES[responder?.id]?.[options.replyType]?.(hero.name);if(reply)postHeroChat(responder,reply,"reply",{mapBubble:options.mapBubble});
+  }
+  return message;
+}
+function milestoneCrossed(before,after){return PARTY_CHAT_MILESTONES.find(milestone=>before<milestone&&after>=milestone)||null;}
+function postWorkMilestone(hero,before,after,itemName){const milestone=milestoneCrossed(before,after);if(milestone)postHeroChat(hero,HERO_CHAT_VOICES[hero.id].milestone(fmt(milestone),itemName),"milestone",{replyType:"milestone",replyChance:.3});}
+function postWorkLevelChat(hero,assignment,skillKey,oldLevel){
+  const skill=hero.skills[skillKey],voice=HERO_CHAT_VOICES[hero.id];if(!skill||skill.level<=oldLevel)return;const resource=RESOURCE_ASSIGNMENTS[assignment],crossed=resource?RESOURCE_TIERS[resource].filter(tier=>tier.level>oldLevel&&tier.level<=skill.level):[],smithCrossed=assignment==="smith"?NORMAL_GEAR_TIER_SPECS.filter(tier=>tier.smithLevel>oldLevel&&tier.smithLevel<=skill.level):[],usable=(resource?crossed:smithCrossed).filter(tier=>tier.building<=(state.buildings[assignment]||1)).pop(),blocked=(resource?crossed:smithCrossed).slice(-1)[0];let text;
+  if(usable)text=voice.unlock(assignment==="smith"?`${usable.name} equipment`:usable.name);else if(blocked)text=`${WORK_SKILL_NAMES[skillKey]} Level ${skill.level}. I can handle ${assignment==="smith"?`${blocked.name} equipment`:blocked.name}, but the ${BUILDINGS[assignment].name} needs Level ${blocked.building}.`;else text=voice.workLevel(WORK_SKILL_NAMES[skillKey],skill.level);
+  postHeroChat(hero,text,usable?"unlock":"level",{replyType:"level",replyChance:.38});
+}
+function postCombatLevelChat(hero){postHeroChat(hero,HERO_CHAT_VOICES[hero.id].combatLevel(hero.level),"level",{replyType:"level",replyChance:.42});}
+function postCombatDanger(run,hero){postHeroChat(hero,chatPick(HERO_CHAT_VOICES[hero.id].danger),"danger",{cooldownKey:`danger-${hero.id}`,cooldownSeconds:150,replyType:"danger",replyChance:.7,replyPool:run.heroIds});}
+function postNoFoodChat(hero){postHeroChat(hero,"I'm below half health and the Warehouse is out of food. That is useful information for whoever is listening.","danger",{cooldownKey:`no-food-${hero.id}`,cooldownSeconds:300});}
+function postCombatStartChat(party,cfg){const speaker=chatPick(party);if(speaker)postHeroChat(speaker,HERO_CHAT_VOICES[speaker.id].combatStart(cfg.short),"combat",{replyType:"start",replyChance:party.length>1 ? .55 : 0,replyPool:party});}
+function postCombatClearChat(run,party,cfg,gold){const milestone=[1,10,25,50,100,250,500,1000].find(value=>run.cycles-1<value&&run.cycles>=value);if(!milestone)return;const speaker=chatPick(party);if(speaker)postHeroChat(speaker,HERO_CHAT_VOICES[speaker.id].clear(cfg.short,fmt(gold)),"victory",{cooldownKey:`clear-${run.id}`,cooldownSeconds:45});}
+function postRareFindChat(hero,item){if(hero)postHeroChat(hero,HERO_CHAT_VOICES[hero.id].rare(item.name),"loot",{replyType:"rare",replyChance:.58});}
+function postBrokenGearChat(hero,item){postHeroChat(hero,HERO_CHAT_VOICES[hero.id].broken(item.name),"danger",{cooldownKey:`broken-${hero.id}-${item.type}`,cooldownSeconds:300});}
+function postAssignmentChat(hero,assignment){const text=HERO_CHAT_VOICES[hero.id]?.assignment?.[assignment];if(text)postHeroChat(hero,text,"assignment",{cooldownKey:`assignment-${hero.id}-${assignment}`,cooldownSeconds:20});}
+function postTierChat(hero,assignment,tier){const highest=unlockedResourceTiers(hero,assignment).slice(-1)[0],voice=HERO_CHAT_VOICES[hero.id],text=highest&&highest.rank>tier.rank?voice.outdated(tier.name,highest.name):`I'll focus on ${tier.name}. The Warehouse has ${fmt(resourceTierCount(RESOURCE_ASSIGNMENTS[assignment],tier.id))} stored.`;postHeroChat(hero,text,"assignment",{cooldownKey:`tier-${hero.id}-${assignment}-${tier.id}`,cooldownSeconds:20});}
+function contextualAmbientChat(hero){
+  const assignment=hero.assignment,voice=HERO_CHAT_VOICES[hero.id];if(RESOURCE_ASSIGNMENTS[assignment]){const resource=RESOURCE_ASSIGNMENTS[assignment],tier=resourceTierForHero(hero,assignment),best=unlockedResourceTiers(hero,assignment).slice(-1)[0];if(best&&best.rank>tier.rank)return voice.outdated(tier.name,best.name);const skillKey=BUILDINGS[assignment].skill,skill=hero.skills[skillKey],next=RESOURCE_TIERS[resource].find(candidate=>candidate.rank>(best?.rank||0));if(next&&skill.level>=next.level&&state.buildings[assignment]<next.building)return `I can work ${next.name}, but the ${BUILDINGS[assignment].name} needs Level ${next.building}.`;const stored=resourceTierCount(resource,tier.id),nextNote=next?` ${Math.max(0,next.level-skill.level)} skill level${Math.max(0,next.level-skill.level)===1?"":"s"} until ${next.name}.`:" This is the best material we know.";return `${tier.name}: ${fmt(stored)} stored.${nextNote}`;}
+  if(assignment==="smith"){const metal=resourceTierData("metal",REPAIR_KIT_RECIPE.metalTier),wood=resourceTierData("wood",REPAIR_KIT_RECIPE.woodTier),metalCount=resourceTierCount("metal",metal.id),woodCount=resourceTierCount("wood",wood.id),skill=hero.skills.smithing,next=NORMAL_GEAR_TIER_SPECS.find(tier=>skill.level<tier.smithLevel||state.buildings.smith<tier.building);if(metalCount<REPAIR_KIT_RECIPE.metalCost||woodCount<REPAIR_KIT_RECIPE.woodCost)return `The forge is waiting. We need ${REPAIR_KIT_RECIPE.metalCost} ${metal.name} and ${REPAIR_KIT_RECIPE.woodCost} ${wood.name} per Repair Kit.`;if(next&&skill.level>=next.smithLevel)return `I am ready for ${next.name} equipment, but the Blacksmith needs Level ${next.building}.`;return `${fmt(state.resources.repairKits)} Repair Kits stored.${next?` ${Math.max(0,next.smithLevel-skill.level)} Smithing level${Math.max(0,next.smithLevel-skill.level)===1?"":"s"} until ${next.name} equipment.`:" Every normal equipment tier is mastered."}`;}
+  if(assignment==="combat"){const run=state.combatRuns.find(candidate=>candidate.heroIds.includes(hero.id)),cfg=COMBAT[run?.combatId],room=COMBAT_LAYOUTS[run?.combatId]?.[run?.roomIndex];if(cfg&&room)return run.enemy?`Still in ${cfg.short}. ${run.enemy.name} has ${fmt(run.enemy.hp)} of ${fmt(run.enemy.maxHP)} HP left.`:`Working through ${room.name} in ${cfg.short}.`;}
+  if(assignment==="tavern")return `Sanity is back to ${Math.floor(hero.sanity)}. A little longer at the Tavern.`;
+  if(assignment==="inn")return `The Inn says ${formatDuration(Math.max(0,(hero.recoveryUntil-Date.now())/1000))} until I am back on my feet.`;
+  return voice.assignment.idle;
+}
+function maybeAmbientPartyChat(seconds){
+  if(quietSimulation||!state.chatMeta)return;state.chatMeta.ambientProgress=(Number(state.chatMeta.ambientProgress)||0)+seconds;if(state.chatMeta.ambientProgress<(Number(state.chatMeta.nextAmbientAt)||72))return;state.chatMeta.ambientProgress=0;state.chatMeta.nextAmbientAt=58+Math.floor(Math.random()*48);let candidates=state.heroes.filter(hero=>hero.assignment!=="inn");if(candidates.length>1)candidates=candidates.filter(hero=>hero.id!==state.chatMeta.lastSpeakerId);const hero=chatPick(candidates.length?candidates:state.heroes),text=contextualAmbientChat(hero);if(text)postHeroChat(hero,text,"ambient",{cooldownKey:`ambient-${hero.id}-${hero.assignment}`,cooldownSeconds:50});
+}
+function postOfflineProgressChat(report){
+  if(!report||report.seconds<60)return;const work=chatPick((report.workHeroes||[]).filter(hero=>hero.levels>0));if(work){const hero=heroById(work.id);if(hero)postHeroChat(hero,`While you were away, I gained ${work.levels} ${work.skill} level${work.levels===1?"":"s"} and reached Level ${work.levelAfter}.`,"offline",{mapBubble:false});return;}const combat=chatPick((report.combatHeroes||[]).filter(hero=>hero.levelAfter>hero.levelBefore));if(combat){const hero=heroById(combat.id);if(hero)postHeroChat(hero,`While you were away, I reached Combat Level ${combat.levelAfter}. The extra Attack, Defence, and HP are already noticeable.`,"offline",{mapBubble:false});}
+}
+
 function notify(title,text,icon="✦"){
   if(quietSimulation) return;
   state.notifications.unshift({id:uid(),time:Date.now(),title,text,icon}); state.notifications=state.notifications.slice(0,60);
@@ -482,7 +654,7 @@ function sendToTavern(h){
 function awardInventoryItem(key,hero=null,title="Special find!"){
   const d=ITEMS[key];if(!d)return null;const item={id:uid(),key,acquiredAt:Date.now()};if(["weapon","armor"].includes(d.type))item.durability=100;
   state.inventory.push(item);state.stats.itemsFound++;if(hero){hero.records.itemsFound++;}
-  const overflow=occupiedSlots()>warehouseCapacity();notify(overflow?"Find held in overflow":title,`${hero?`${hero.name} found `:""}${d.name}${overflow?". Make room in the Warehouse.":" was sent to the Warehouse."}`,overflow?"📦":d.icon);return item;
+  const overflow=occupiedSlots()>warehouseCapacity();notify(overflow?"Find held in overflow":title,`${hero?`${hero.name} found `:""}${d.name}${overflow?". Make room in the Warehouse.":" was sent to the Warehouse."}`,overflow?"📦":d.icon);postRareFindChat(hero,d);return item;
 }
 function rollSkillPet(assignment,h){const key=SKILL_PETS[assignment];if(key&&random()<SKILL_PET_CHANCE)awardInventoryItem(key,h,"Extremely rare skilling pet!");}
 
@@ -490,28 +662,29 @@ function simulate(seconds,offline=false){
   seconds=clamp(seconds,0,OFFLINE_LIMIT); if(seconds<.01)return null;
   const previousQuiet=quietSimulation,previousAudit=activeSimulationAudit;quietSimulation=offline;activeSimulationAudit=offline?{stops:[]}:null;
   const before={...state.resources,items:state.inventory.length,runs:state.stats.expeditions+state.stats.dungeons+state.stats.raids,kills:state.heroes.reduce((n,h)=>n+(h.records.kills||0),0),levels:state.heroes.reduce((n,h)=>n+h.level,0),goldEarned:state.stats.goldEarned};
-  const runBefore=state.combatRuns.map(run=>({id:run.id,combatId:run.combatId,heroIds:[...run.heroIds],cycle:run.cycle,cycles:run.cycles,kills:run.kills,elapsed:run.elapsed})),combatHeroIds=new Set(runBefore.flatMap(run=>run.heroIds)),heroBefore=Object.fromEntries(state.heroes.map(h=>[h.id,{name:h.name,level:h.level,totalXP:heroCombatTotalXP(h)}]));
+  const runBefore=state.combatRuns.map(run=>({id:run.id,combatId:run.combatId,heroIds:[...run.heroIds],cycle:run.cycle,cycles:run.cycles,kills:run.kills,elapsed:run.elapsed})),combatHeroIds=new Set(runBefore.flatMap(run=>run.heroIds)),heroBefore=Object.fromEntries(state.heroes.map(h=>[h.id,{name:h.name,level:h.level,totalXP:heroCombatTotalXP(h),skills:Object.fromEntries(Object.entries(h.skills).map(([key,skill])=>[key,skill.level]))}]));
   const beforeTiers=Object.fromEntries(Object.entries(RESOURCE_TIERS).map(([resource,tiers])=>[resource,Object.fromEntries(tiers.map(tier=>[tier.id,state.resourceTiers[resource][tier.id]||0]))]));
   for(const h of state.heroes){
     if(h.assignment!=="idle")h.records.secondsActive+=seconds;
-    if(h.assignment==="inn" && h.recoveryUntil && Date.now()>=h.recoveryUntil){h.hp=heroMaxHP(h);sendToTavern(h);h.recoveryUntil=0;notify("Back on their feet",`${h.name} left the Inn and is restoring Sanity at the Tavern.`,"🛏️");}
+    if(h.assignment==="inn" && h.recoveryUntil && Date.now()>=h.recoveryUntil){h.hp=heroMaxHP(h);sendToTavern(h);h.recoveryUntil=0;notify("Back on their feet",`${h.name} left the Inn and is restoring Sanity at the Tavern.`,"🛏️");postHeroChat(h,"Back on my feet. I am heading to the Tavern to clear the rest of the fog.","recovery");}
     if(h.assignment==="tavern"){
       const rate=(1.2+state.buildings.tavern*.35)*seconds; const needed=100-h.sanity; const restored=Math.min(needed,rate);
-      const cost=restored*.045; if(state.resources.gold>=cost){h.sanity+=restored;state.resources.gold-=cost;} if(h.sanity>=99.99){h.sanity=100;h.assignment="idle";}
+      const cost=restored*.045; if(state.resources.gold>=cost){h.sanity+=restored;state.resources.gold-=cost;} if(h.sanity>=99.99){h.sanity=100;h.assignment="idle";postHeroChat(h,"Clear head, steady hands, ready for another assignment.","recovery",{cooldownKey:`tavern-ready-${h.id}`,cooldownSeconds:30});}
     }
     if(["farm","mine","forest","smith"].includes(h.assignment)) processWork(h,seconds);
   }
   for(const run of [...state.combatRuns]) processRun(run,seconds,offline);
+  maybeAmbientPartyChat(seconds);
   checkAchievements(); if(offline)state.stats.offlineSeconds+=seconds;
   const tierChanges=Object.entries(RESOURCE_TIERS).flatMap(([resource,tiers])=>tiers.map(tier=>({resource,name:tier.name,icon:tier.icon,quantity:(state.resourceTiers[resource][tier.id]||0)-beforeTiers[resource][tier.id]}))).filter(change=>Math.abs(change.quantity)>.01);
-  const stops=activeSimulationAudit?.stops||[],combatHeroes=state.heroes.filter(h=>combatHeroIds.has(h.id)).map(h=>({id:h.id,name:h.name,xp:Math.max(0,heroCombatTotalXP(h)-heroBefore[h.id].totalXP),levelBefore:heroBefore[h.id].level,levelAfter:h.level,status:statusFor(h)})),combatRuns=runBefore.map(saved=>{const live=state.combatRuns.find(run=>run.id===saved.id),stop=stops.find(entry=>entry.id===saved.id),final=live||stop||saved,cfg=COMBAT[saved.combatId];return {id:saved.id,name:cfg?.short||saved.combatId,heroes:saved.heroIds.map(id=>heroBefore[id]?.name).filter(Boolean),clears:Math.max(0,(Number(final.cycles)||0)-saved.cycles),kills:Math.max(0,(Number(final.kills)||0)-saved.kills),status:live?"Still running":stop?.reason||"Stopped"};});
-  const after=state.resources;quietSimulation=previousQuiet;activeSimulationAudit=previousAudit;return {seconds,gold:after.gold-before.gold,goldEarned:state.stats.goldEarned-before.goldEarned,tierChanges,essence:after.essence-before.essence,keys:after.keys-before.keys,kits:after.repairKits-before.repairKits,items:state.inventory.length-before.items,runs:state.stats.expeditions+state.stats.dungeons+state.stats.raids-before.runs,kills:state.heroes.reduce((n,h)=>n+(h.records.kills||0),0)-before.kills,combatLevels:state.heroes.reduce((n,h)=>n+h.level,0)-before.levels,combatHeroes,combatRuns};
+  const stops=activeSimulationAudit?.stops||[],combatHeroes=state.heroes.filter(h=>combatHeroIds.has(h.id)).map(h=>({id:h.id,name:h.name,xp:Math.max(0,heroCombatTotalXP(h)-heroBefore[h.id].totalXP),levelBefore:heroBefore[h.id].level,levelAfter:h.level,status:statusFor(h)})),combatRuns=runBefore.map(saved=>{const live=state.combatRuns.find(run=>run.id===saved.id),stop=stops.find(entry=>entry.id===saved.id),final=live||stop||saved,cfg=COMBAT[saved.combatId];return {id:saved.id,name:cfg?.short||saved.combatId,heroes:saved.heroIds.map(id=>heroBefore[id]?.name).filter(Boolean),clears:Math.max(0,(Number(final.cycles)||0)-saved.cycles),kills:Math.max(0,(Number(final.kills)||0)-saved.kills),status:live?"Still running":stop?.reason||"Stopped"};}),workHeroes=state.heroes.flatMap(hero=>Object.entries(hero.skills).map(([skillKey,skill])=>({id:hero.id,name:hero.name,skill:WORK_SKILL_NAMES[skillKey],levelBefore:heroBefore[hero.id].skills[skillKey],levelAfter:skill.level,levels:skill.level-heroBefore[hero.id].skills[skillKey]}))).filter(hero=>hero.levels>0);
+  const after=state.resources;quietSimulation=previousQuiet;activeSimulationAudit=previousAudit;return {seconds,gold:after.gold-before.gold,goldEarned:state.stats.goldEarned-before.goldEarned,tierChanges,essence:after.essence-before.essence,keys:after.keys-before.keys,kits:after.repairKits-before.repairKits,items:state.inventory.length-before.items,runs:state.stats.expeditions+state.stats.dungeons+state.stats.raids-before.runs,kills:state.heroes.reduce((n,h)=>n+(h.records.kills||0),0)-before.kills,combatLevels:state.heroes.reduce((n,h)=>n+h.level,0)-before.levels,combatHeroes,combatRuns,workHeroes};
 }
 
 function settleToNow(showReport=true){
   if(!state)return null;const now=Date.now(),seconds=Math.min(OFFLINE_LIMIT,Math.max(0,(now-lastSimulationAt)/1000));lastSimulationAt=now;if(seconds<.01)return null;
   const catchUp=seconds>5,report=simulate(seconds,catchUp);state.lastTick=now;
-  if(catchUp){saveLocal();renderAll();if(showReport)showOffline(report);}
+  if(catchUp){postOfflineProgressChat(report);saveLocal();renderAll();if(showReport)showOffline(report);}
   return report;
 }
 
@@ -522,11 +695,11 @@ function processWork(h,seconds){
     while(loops++<50000){
       const tier=resourceTierForHero(h,h.assignment),actionTime=workActionTime(h,h.assignment,tier);if(h.workProgress+1e-8<actionTime)break;h.workProgress-=actionTime;
       const doubleKey=resource==="food"?"foodDoubleChance":resource==="metal"?"metalDoubleChance":"woodDoubleChance",units=random()<equipmentEffect(h,doubleKey)?2:1;
-      addTieredResource(resource,tier.id,units);addXP(h.skills[skill],5*Math.sqrt(tier.rank));h.records.workActions++;h.records[resource==="food"?"foodGathered":resource==="metal"?"metalMined":"woodGathered"]+=units;rollSkillPet(h.assignment,h);
+      const oldLevel=h.skills[skill].level,recordKey=resource==="food"?"foodGathered":resource==="metal"?"metalMined":"woodGathered",milestoneName=resource==="food"?"meals gathered":resource==="metal"?"ores mined":"logs gathered",before=h.records[recordKey];addTieredResource(resource,tier.id,units);addXP(h.skills[skill],5*Math.sqrt(tier.rank));h.records.workActions++;h.records[recordKey]+=units;postWorkLevelChat(h,h.assignment,skill,oldLevel);postWorkMilestone(h,before,h.records[recordKey],milestoneName);rollSkillPet(h.assignment,h);
     }
   }else if(h.assignment==="smith"){
     const skill=h.skills.smithing;h.workProgress=(h.workProgress||0)+seconds;let loops=0;
-    while(loops++<50000){const actionTime=workActionTime(h,"smith");if(h.workProgress+1e-8<actionTime)break;if(resourceTierCount("metal",REPAIR_KIT_RECIPE.metalTier)<REPAIR_KIT_RECIPE.metalCost||resourceTierCount("wood",REPAIR_KIT_RECIPE.woodTier)<REPAIR_KIT_RECIPE.woodCost){h.workProgress=Math.min(h.workProgress,actionTime);break;}h.workProgress-=actionTime;spendSpecificResource("metal",REPAIR_KIT_RECIPE.metalTier,REPAIR_KIT_RECIPE.metalCost);spendSpecificResource("wood",REPAIR_KIT_RECIPE.woodTier,REPAIR_KIT_RECIPE.woodCost);const kits=random()<equipmentEffect(h,"smithDoubleChance")?2:1;state.resources.repairKits+=kits;addXP(skill,28);h.records.kitsForged+=kits;h.records.workActions++;rollSkillPet("smith",h);}
+    while(loops++<50000){const actionTime=workActionTime(h,"smith");if(h.workProgress+1e-8<actionTime)break;if(resourceTierCount("metal",REPAIR_KIT_RECIPE.metalTier)<REPAIR_KIT_RECIPE.metalCost||resourceTierCount("wood",REPAIR_KIT_RECIPE.woodTier)<REPAIR_KIT_RECIPE.woodCost){h.workProgress=Math.min(h.workProgress,actionTime);break;}h.workProgress-=actionTime;spendSpecificResource("metal",REPAIR_KIT_RECIPE.metalTier,REPAIR_KIT_RECIPE.metalCost);spendSpecificResource("wood",REPAIR_KIT_RECIPE.woodTier,REPAIR_KIT_RECIPE.woodCost);const kits=random()<equipmentEffect(h,"smithDoubleChance")?2:1,oldLevel=skill.level,before=h.records.kitsForged;state.resources.repairKits+=kits;addXP(skill,28);h.records.kitsForged+=kits;h.records.workActions++;postWorkLevelChat(h,"smith","smithing",oldLevel);postWorkMilestone(h,before,h.records.kitsForged,"Repair Kits");rollSkillPet("smith",h);}
   }
 }
 
@@ -550,7 +723,7 @@ function enterCurrentRoom(run,cfg,offline=false){
 function advanceCombatRoom(run,cfg,offline=false){run.roomIndex++;run.roomState=null;run.enemy=null;if(run.roomIndex>=COMBAT_LAYOUTS[cfg.id].length)completeCombatCycle(run,cfg,offline);else enterCurrentRoom(run,cfg,offline);}
 function applyEnemyDamage(run,amount,type,sourceId,offline=false){if(!run.enemy)return false;amount=Math.max(0,Math.floor(amount));run.enemy.hp=Math.max(0,run.enemy.hp-amount);run.damageDealt+=amount;pushCombatEvent(run,amount?`${heroById(sourceId)?.name||"The party"} deals ${amount} ${type} damage.`:`${heroById(sourceId)?.name||"The party"} misses.`,type,"enemy",amount,sourceId,offline);if(run.enemy.hp<=0){defeatEnemy(run,sourceId,offline);return true;}return false;}
 function defeatEnemy(run,killerId,offline=false){
-  const cfg=COMBAT[run.combatId],enemy=run.enemy,killer=heroById(killerId),party=run.heroIds.map(heroById).filter(Boolean),xp=cfg.xp/Math.max(1,combatRoomsFor(cfg).length),leveled=[];if(killer)killer.records.kills++;for(const h of party)if(addXP(h,xp)>0)leveled.push(h);if(leveled.length)notify("Combat level gained",`${leveled.map(h=>h.name).join(", ")} reached ${leveled.length===1?`Combat Level ${leveled[0].level}`:"new Combat Levels"}. Attack, Defence, and Max HP increased.`,"⭐");run.kills++;pushCombatEvent(run,`${enemy.name} defeated! ${fmt(xp)} XP to each survivor.`,enemy.boss?"boss":"kill","enemy",null,killerId,offline);advanceCombatRoom(run,cfg,offline);
+  const cfg=COMBAT[run.combatId],enemy=run.enemy,killer=heroById(killerId),party=run.heroIds.map(heroById).filter(Boolean),xp=cfg.xp/Math.max(1,combatRoomsFor(cfg).length),leveled=[];if(killer)killer.records.kills++;for(const h of party)if(addXP(h,xp)>0)leveled.push(h);if(leveled.length){notify("Combat level gained",`${leveled.map(h=>h.name).join(", ")} reached ${leveled.length===1?`Combat Level ${leveled[0].level}`:"new Combat Levels"}. Attack, Defence, and Max HP increased.`,"⭐");postCombatLevelChat(chatPick(leveled));}run.kills++;pushCombatEvent(run,`${enemy.name} defeated! ${fmt(xp)} XP to each survivor.`,enemy.boss?"boss":"kill","enemy",null,killerId,offline);advanceCombatRoom(run,cfg,offline);
 }
 function processEnemyStatuses(run,dt,offline=false){
   const enemy=run.enemy;if(!enemy)return false;for(const [type,status] of Object.entries(enemy.status||{})){status.remaining-=dt;status.timer-=dt;while(status.timer<=0&&status.remaining>0&&run.enemy){status.timer+=type==="fire"?1.5:2;if(applyEnemyDamage(run,status.damage,type,status.sourceId,offline))return true;}if(status.remaining<=0)delete enemy.status[type];}return false;
@@ -564,16 +737,16 @@ function performHeroAttack(run,h,offline=false){
   const bonus=equipmentDamageBonus(h),type=heroDamageType(h);if(damage>0&&bonus>0&&run.enemy){if(type==="poison"||type==="fire"){run.enemy.status[type]={damage:Math.max(1,Math.ceil(bonus/2)),remaining:6,timer:1.5,sourceId:h.id};pushCombatEvent(run,`${h.name}'s weapon inflicts ${type}.`,type,"enemy",bonus,h.id,offline);}else if(applyEnemyDamage(run,bonus,type,h.id,offline))return;if(type==="frost"&&run.enemy)run.enemyTimer+=.45;}
   if(h.className==="Druid"&&random()<.16)healLowestHero(run,Math.max(2,Math.ceil(maxHit*.35)),h,offline);if(special)pushCombatEvent(run,`${h.name}'s${special} strike surges.`,"special","enemy",null,h.id,offline);
 }
-function defeatHero(run,h,offline=false){h.hp=0;h.assignment="inn";h.recoveryUntil=Date.now()+(1200/(1+state.buildings.inn*.2))*1000;h.records.defeats++;state.stats.defeats++;run.heroIds=run.heroIds.filter(id=>id!==h.id);delete run.heroTimers[h.id];pushCombatEvent(run,`${h.name} falls and is carried to the Inn.`,"defeat",h.id,0,null,offline);notify("Cart to the Inn",`${h.name} was defeated during ${COMBAT[run.combatId].short}.`,"🛒");if(!run.heroIds.length)stopRun(run.id,false,false,"Party defeated");}
+function defeatHero(run,h,offline=false){h.hp=0;h.assignment="inn";h.recoveryUntil=Date.now()+(1200/(1+state.buildings.inn*.2))*1000;h.records.defeats++;state.stats.defeats++;run.heroIds=run.heroIds.filter(id=>id!==h.id);delete run.heroTimers[h.id];pushCombatEvent(run,`${h.name} falls and is carried to the Inn.`,"defeat",h.id,0,null,offline);notify("Cart to the Inn",`${h.name} was defeated during ${COMBAT[run.combatId].short}.`,"🛒");const companion=chatPick(run.heroIds.map(heroById).filter(Boolean));if(companion)postHeroChat(companion,`${h.name} is down. The Inn has them—we keep moving.`,"danger");else postHeroChat(h,"I woke up in the Inn. That answers how the fight went.","recovery");if(!run.heroIds.length)stopRun(run.id,false,false,"Party defeated");}
 function performEnemyAttack(run,offline=false){
   const enemy=run.enemy,party=run.heroIds.map(heroById).filter(h=>h&&(h.hp||0)>0);if(!enemy||!party.length)return;enemy.attacks++;const targets=enemy.boss&&enemy.attacks%4===0?party:[party[Math.floor(random()*party.length)]];
-  for(const h of targets){const hitChance=clamp(.22+(enemy.attack/(enemy.attack+heroDefense(h)*1.8))*.68,.18,.95),base=random()<hitChance?Math.floor(random()*(enemy.maxHit+1)):0,damage=targets.length>1?Math.ceil(base*.6):base;h.hp=Math.max(0,(h.hp??heroMaxHP(h))-damage);run.damageTaken+=damage;pushCombatEvent(run,damage?`${enemy.name} hits ${h.name} for ${damage}.`:`${enemy.name} misses ${h.name}.`,damage?"enemy":"miss",h.id,damage,"enemy",offline);if(h.hp<=0)defeatHero(run,h,offline);}
+  for(const h of targets){const hitChance=clamp(.22+(enemy.attack/(enemy.attack+heroDefense(h)*1.8))*.68,.18,.95),base=random()<hitChance?Math.floor(random()*(enemy.maxHit+1)):0,damage=targets.length>1?Math.ceil(base*.6):base,maxHP=heroMaxHP(h),before=h.hp??maxHP;h.hp=Math.max(0,before-damage);run.damageTaken+=damage;pushCombatEvent(run,damage?`${enemy.name} hits ${h.name} for ${damage}.`:`${enemy.name} misses ${h.name}.`,damage?"enemy":"miss",h.id,damage,"enemy",offline);if(h.hp>0&&before/maxHP>.42&&h.hp/maxHP<=.42)postCombatDanger(run,h);if(h.hp<=0)defeatHero(run,h,offline);}
 }
 function consumeCombatFood(run,h,offline=false){
-  if((h.hp||0)>heroMaxHP(h)*.45||state.resources.food<=0)return false;const deficit=heroMaxHP(h)-h.hp,bonus=equipmentEffect(h,"foodEfficiency")*4,available=RESOURCE_TIERS.food.filter(t=>(state.resourceTiers.food[t.id]||0)>0).map(t=>({...t,actualHeal:t.heal+bonus}));if(!available.length)return false;const tier=available.find(t=>t.actualHeal>=deficit)||available[available.length-1];state.resourceTiers.food[tier.id]--;recalculateTieredTotal("food");const healed=Math.min(deficit,tier.actualHeal);h.hp+=healed;run.foodEaten++;pushCombatEvent(run,`${h.name} eats ${tier.name} and heals ${healed} HP.`,"heal",h.id,healed,h.id,offline);return true;
+  if((h.hp||0)>heroMaxHP(h)*.45)return false;if(state.resources.food<=0){postNoFoodChat(h);return false;}const deficit=heroMaxHP(h)-h.hp,bonus=equipmentEffect(h,"foodEfficiency")*4,available=RESOURCE_TIERS.food.filter(t=>(state.resourceTiers.food[t.id]||0)>0).map(t=>({...t,actualHeal:t.heal+bonus}));if(!available.length){postNoFoodChat(h);return false;}const tier=available.find(t=>t.actualHeal>=deficit)||available[available.length-1];state.resourceTiers.food[tier.id]--;recalculateTieredTotal("food");const healed=Math.min(deficit,tier.actualHeal);h.hp+=healed;run.foodEaten++;pushCombatEvent(run,`${h.name} eats ${tier.name} and heals ${healed} HP.`,"heal",h.id,healed,h.id,offline);return true;
 }
 function processSkillRoom(run,cfg,dt,offline=false){
-  const room=COMBAT_LAYOUTS[cfg.id][run.roomIndex],s=run.roomState;s.remaining-=dt;if(s.remaining>0)return;const party=run.heroIds.map(heroById).filter(Boolean),leader=heroById(s.leaderId);for(const h of party){addXP(h.skills[room.skill],h.id===s.leaderId?room.baseSeconds*.45:room.baseSeconds*.16);h.records.workActions++;}if(leader)rollSkillPet({farming:"farm",mining:"mine",woodcutting:"forest",smithing:"smith"}[room.skill],leader);pushCombatEvent(run,`${room.name} cleared by ${leader?.name||"the party"} at effective ${Math.floor(s.effective)} ${room.skill}.`,"skill","room",null,s.leaderId,offline);advanceCombatRoom(run,cfg,offline);
+  const room=COMBAT_LAYOUTS[cfg.id][run.roomIndex],s=run.roomState;s.remaining-=dt;if(s.remaining>0)return;const party=run.heroIds.map(heroById).filter(Boolean),leader=heroById(s.leaderId),assignment={farming:"farm",mining:"mine",woodcutting:"forest",smithing:"smith"}[room.skill],leveled=[];for(const h of party){const oldLevel=h.skills[room.skill].level;addXP(h.skills[room.skill],h.id===s.leaderId?room.baseSeconds*.45:room.baseSeconds*.16);h.records.workActions++;if(h.skills[room.skill].level>oldLevel)leveled.push({hero:h,oldLevel});}const chatter=chatPick(leveled);if(chatter)postWorkLevelChat(chatter.hero,assignment,room.skill,chatter.oldLevel);if(leader)rollSkillPet(assignment,leader);pushCombatEvent(run,`${room.name} cleared by ${leader?.name||"the party"} at effective ${Math.floor(s.effective)} ${room.skill}.`,"skill","room",null,s.leaderId,offline);advanceCombatRoom(run,cfg,offline);
 }
 function processCombatRoom(run,cfg,dt,offline=false){
   for(const id of [...run.heroIds]){const h=heroById(id);if(h)consumeCombatFood(run,h,offline);}if(processEnemyStatuses(run,dt,offline)||!run.enemy)return;
@@ -590,7 +763,7 @@ function completeCombatCycle(run,cfg,offline=false){
   if(cfg.category==="expedition"){state.stats.expeditions++;if(random()<(cfg.essenceChance||0))state.resources.essence+=1;}
   if(cfg.category==="dungeon"){state.stats.dungeons++;state.resources.essence+=Math.floor(cfg.essenceReward[0]+random()*(cfg.essenceReward[1]-cfg.essenceReward[0]+1));if(random()<(cfg.keyChance||0))state.resources.keys+=1;if(cfg.trinketPool?.length&&random()<(cfg.trinketChance||0))dropTrinket(cfg,party);}
   if(cfg.category==="raid"){state.stats.raids++;state.resources.essence+=Math.floor(cfg.essenceReward[0]+random()*(cfg.essenceReward[1]-cfg.essenceReward[0]+1));if(cfg.eggKey&&random()<(cfg.eggChance||0))dropEgg(cfg,party);}
-  if(cfg.pool?.length&&random()<(cfg.itemChance||0))dropSpecial(cfg,party);pushCombatEvent(run,`${cfg.short} cleared in ${formatDuration(run.cycleElapsed)}. Chest: ${fmt(gold)} Gold.`,"loot","room",gold,null,offline);notify(`${cfg.short} completed`,`${party.map(h=>h.name).join(", ")} opened the chest for ${fmt(gold)} Gold.`,cfg.icon);
+  if(cfg.pool?.length&&random()<(cfg.itemChance||0))dropSpecial(cfg,party);pushCombatEvent(run,`${cfg.short} cleared in ${formatDuration(run.cycleElapsed)}. Chest: ${fmt(gold)} Gold.`,"loot","room",gold,null,offline);notify(`${cfg.short} completed`,`${party.map(h=>h.name).join(", ")} opened the chest for ${fmt(gold)} Gold.`,cfg.icon);postCombatClearChat(run,party,cfg,gold);
   for(const h of party.filter(x=>x.sanity<=0))sendToTavern(h);run.heroIds=run.heroIds.filter(id=>heroById(id)?.sanity>0);if(!run.heroIds.length){stopRun(run.id,false,false,"Sanity depleted");return;}
   if(!run.autoRepeat){stopRun(run.id,false,false,"Single clear complete");return;}if(!canPayRunEntry(cfg)){stopRun(run.id,false,false,"Entry supplies exhausted");notify("Run paused",`${cfg.short} stopped because the next entry needs more ${cfg.keys?"Raid Keys or Essence":"Essence"}.`,"🎒");return;}payRunEntry(cfg);run.cycle++;run.roomIndex=0;run.roomState=null;run.enemy=null;run.cycleElapsed=0;
 }
@@ -599,7 +772,7 @@ function dropSpecial(cfg,party=[]){const key=cfg.pool[Math.floor(random()*cfg.po
 function dropTrinket(cfg,party=[]){const key=cfg.trinketPool[Math.floor(random()*cfg.trinketPool.length)],finder=party[Math.floor(random()*party.length)]||null;awardInventoryItem(key,finder,"Dungeon trinket found!");}
 function dropEgg(cfg,party=[]){const finder=party[Math.floor(random()*party.length)]||null;awardInventoryItem(cfg.eggKey,finder,"Boss egg! One-in-500 drop!");}
 
-function damageGear(h,amount){for(const slot of ["weapon","armor"]){const item=h.equipment[slot];if(item)item.durability=clamp((item.durability??100)-amount,0,100);}}
+function damageGear(h,amount){for(const slot of ["weapon","armor"]){const item=h.equipment[slot];if(item){const before=item.durability??100;item.durability=clamp(before-amount,0,100);if(before>0&&item.durability<=0)postBrokenGearChat(h,itemData(item));}}}
 function canPayRunEntry(cfg){return state.resources.essence>=(cfg.essence||0)&&state.resources.keys>=(cfg.keys||0);}
 function payRunEntry(cfg){state.resources.essence-=cfg.essence||0;state.resources.keys-=cfg.keys||0;}
 
@@ -610,7 +783,7 @@ function startRun(combatId,heroIds,autoRepeat=true){
   if(combatCount()+heroIds.length>4)return toast("⚠️","Only four heroes may fight at once");
   if(heroIds.some(id=>heroById(id).level<cfg.minLevel))return toast("🔒",`${cfg.name} requires Combat Level ${cfg.minLevel}`);
   if(!canPayRunEntry(cfg))return toast("🎒","Not enough entry supplies",`Need ${cfg.essence||0} Essence${cfg.keys?` and ${cfg.keys} Raid Key${cfg.keys===1?"":"s"}`:""}.`);
-  const party=heroIds.map(heroById).filter(Boolean);payRunEntry(cfg);for(const id of heroIds)heroById(id).assignment="combat";const run=createCombatRunState(combatId,heroIds,autoRepeat);state.combatRuns.push(run);watchedRunId=run.id;enterCurrentRoom(run,cfg,false);notify(`${cfg.short} started`,`${party.map(h=>h.name).join(", ")} entered live combat. Higher max hits and faster attacks now shorten every clear.`,cfg.icon);saveLocal();renderAll();closeDrawer();
+  const party=heroIds.map(heroById).filter(Boolean);payRunEntry(cfg);for(const id of heroIds)heroById(id).assignment="combat";const run=createCombatRunState(combatId,heroIds,autoRepeat);state.combatRuns.push(run);watchedRunId=run.id;enterCurrentRoom(run,cfg,false);notify(`${cfg.short} started`,`${party.map(h=>h.name).join(", ")} entered live combat. Higher max hits and faster attacks now shorten every clear.`,cfg.icon);postCombatStartChat(party,cfg);saveLocal();renderAll();closeDrawer();
 }
 
 function stopRun(id,announce=true,rerender=true,reason="Recalled"){const run=state.combatRuns.find(r=>r.id===id);if(!run)return;if(activeSimulationAudit)activeSimulationAudit.stops.push({id:run.id,reason,cycle:run.cycle,cycles:run.cycles,kills:run.kills,elapsed:run.elapsed});for(const hid of run.heroIds){const h=heroById(hid);if(h?.assignment==="combat")h.assignment="idle";}state.combatRuns=state.combatRuns.filter(r=>r.id!==id);if(watchedRunId===id)watchedRunId=state.combatRuns[0]?.id||null;if(announce)notify("Party recalled","The adventurers are returning to town.","🏰");markDirty();if(rerender)renderAll();}
@@ -618,17 +791,17 @@ function stopRun(id,announce=true,rerender=true,reason="Recalled"){const run=sta
 function assignHero(heroId,assignment){
   const h=heroById(heroId);if(!h||h.assignment==="inn")return toast("🛏️","Hero is still recovering");
   if(h.assignment==="combat"){const run=state.combatRuns.find(r=>r.heroIds.includes(heroId));if(run)stopRun(run.id,false);}
-  h.workProgress=0;if(RESOURCE_ASSIGNMENTS[assignment]&&!h.workTiers?.[assignment]){h.workTiers={...(h.workTiers||{}),[assignment]:"starter"};}if(assignment==="tavern")sendToTavern(h);else h.assignment=assignment;if(assignment==="tavern" && h.sanity>=100)h.assignment="idle";checkAchievements();notify("Assignment changed",`${h.name} is now ${ASSIGNMENTS[h.assignment].name.toLowerCase()}.`,ASSIGNMENTS[h.assignment].icon);markDirty();renderAll();
+  h.workProgress=0;if(RESOURCE_ASSIGNMENTS[assignment]&&!h.workTiers?.[assignment]){h.workTiers={...(h.workTiers||{}),[assignment]:"starter"};}if(assignment==="tavern")sendToTavern(h);else h.assignment=assignment;if(assignment==="tavern" && h.sanity>=100)h.assignment="idle";checkAchievements();notify("Assignment changed",`${h.name} is now ${ASSIGNMENTS[h.assignment].name.toLowerCase()}.`,ASSIGNMENTS[h.assignment].icon);postAssignmentChat(h,h.assignment);markDirty();renderAll();
 }
 
 function setWorkTier(heroId,assignment,tierId){
   const h=heroById(heroId);if(!h)return;const tier=unlockedResourceTiers(h,assignment).find(candidate=>candidate.id===tierId);if(!tier)return toast("🔒","That task is not unlocked");
-  h.workTiers={...(h.workTiers||{}),[assignment]:tier.id};if(h.assignment===assignment)h.workProgress=0;notify("Work task changed",`${h.name} will produce ${tier.name} until you choose another task.`,tier.icon);markDirty();renderAssignments();renderTown();refreshWorkTimers();
+  h.workTiers={...(h.workTiers||{}),[assignment]:tier.id};if(h.assignment===assignment)h.workProgress=0;notify("Work task changed",`${h.name} will produce ${tier.name} until you choose another task.`,tier.icon);postTierChat(h,assignment,tier);markDirty();renderAssignments();renderTown();refreshWorkTimers();
 }
 
 function checkAchievements(){for(const a of ACHIEVEMENTS){if(!state.achievements.includes(a.id)&&a.test(state)){state.achievements.push(a.id);notify("Milestone unlocked",a.name,a.icon);}}}
 
-function renderAll(){renderResources();renderTown();renderHeroes();renderAssignments();renderCombat();renderWarehouse();renderMarket();renderProgress();renderSyncUser();}
+function renderAll(){renderResources();renderTown();renderHeroes();renderAssignments();renderCombat();renderWarehouse();renderMarket();renderProgress();renderSyncUser();renderPartyChat();}
 function refreshWorkTimers(){$$("[data-work-timer]").forEach(el=>{const h=heroById(el.dataset.workTimer);if(h)el.textContent=workActionStatus(h);});}
 function renderResources(){
   const data=[['gold','🪙','Gold']];
@@ -645,8 +818,9 @@ function mapPosition(h,index){
 function renderTown(){
   $("#townName").textContent=state.townName;for(const [k,v] of Object.entries(state.buildings))$$(`[data-level-for="${k}"]`).forEach(el=>el.textContent=v);
   $("#warehouseMapCount").textContent=`${occupiedSlots()} / ${warehouseCapacity()}`;
-  const heroLayer=$("#heroLayer"),heroMap=state.heroes.map((h,i)=>{const [x,y]=mapPosition(h,i),recover=["inn","tavern"].includes(h.assignment),status=statusFor(h);return {signature:[h.id,h.name,h.assignment,status,x,y,h.color,h.portrait].join(":"),html:`<div class="map-hero ${h.assignment==="combat"?"fighting":""} ${recover?"recovering":""}" style="--x:${x};--y:${y};--hero-color:${h.color};--delay:-${i*.22}s"><button data-action="open-hero" data-hero="${h.id}" aria-label="${escapeHTML(h.name)}, ${escapeHTML(status)}">${heroImage(h)}</button><small>${escapeHTML(h.name)} · ${escapeHTML(status)}</small></div>`};}),mapSignature=heroMap.map(entry=>entry.signature).join("|");
+  const heroLayer=$("#heroLayer"),heroMap=state.heroes.map((h,i)=>{const [x,y]=mapPosition(h,i),recover=["inn","tavern"].includes(h.assignment),status=statusFor(h);return {signature:[h.id,h.name,h.assignment,status,x,y,h.color,h.portrait].join(":"),html:`<div class="map-hero ${h.assignment==="combat"?"fighting":""} ${recover?"recovering":""}" data-map-hero="${h.id}" style="--x:${x};--y:${y};--hero-color:${h.color};--delay:-${i*.22}s"><button data-action="open-hero" data-hero="${h.id}" aria-label="${escapeHTML(h.name)}, ${escapeHTML(status)}">${heroImage(h)}</button><small>${escapeHTML(h.name)} · ${escapeHTML(status)}</small></div>`};}),mapSignature=heroMap.map(entry=>entry.signature).join("|");
   if(heroLayer.dataset.signature!==mapSignature){heroLayer.dataset.signature=mapSignature;heroLayer.innerHTML=heroMap.map(entry=>entry.html).join("");}
+  syncMapSpeech();
   const fighting=state.heroes.filter(h=>h.assignment==="combat");$("#activePartyCount").textContent=`${fighting.length} / 4 fighting`;$("#activePartyMini").innerHTML=fighting.length?fighting.map(h=>`<span title="${escapeHTML(h.name)}">${heroImage(h)}</span>`).join(""):`<span class="empty-mini">No active combat party</span>`;
   const work=state.heroes.filter(h=>["farm","mine","forest","smith"].includes(h.assignment));$("#townOutputText").textContent=work.length?`${work.length} heroes producing`:"No one working";
   const counts=["farm","mine","forest","smith"].map(a=>[a,state.heroes.filter(h=>h.assignment===a).length]);$("#townOutputMini").innerHTML=counts.filter(x=>x[1]).map(([a,n])=>`<div class="mini-bar"><span>${ASSIGNMENTS[a].icon} ${ASSIGNMENTS[a].name}</span><i style="--w:${n/6*100}%"></i><b>${n}</b></div>`).join("")||`<span class="empty-mini">Assign heroes to begin production.</span>`;
@@ -757,8 +931,8 @@ function renderSyncUser(){
 function setSync(status){const dot=$("#syncDot"),label=$("#syncLabel");dot.className=`status-dot ${status==="online"?"online":status==="error"?"error":""}`;label.textContent=status==="online"?"Cloud saved":status==="saving"?"Saving…":status==="error"?"Sync problem":"Device save";}
 
 function openView(view){currentView=view;$$('.view').forEach(v=>v.classList.toggle('active',v.dataset.viewPanel===view));$$('.bottom-nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===view));window.scrollTo({top:0,behavior:"smooth"});renderAll();}
-function openDrawer(title,eyebrow,html){$("#drawerTitle").textContent=title;$("#drawerEyebrow").textContent=eyebrow;$("#drawerContent").innerHTML=html;$("#drawer").classList.add("open");$("#drawer").setAttribute("aria-hidden","false");document.body.style.overflow="hidden";}
-function closeDrawer(){$("#drawer").classList.remove("open");$("#drawer").setAttribute("aria-hidden","true");document.body.style.overflow="";}
+function openDrawer(title,eyebrow,html,mode=""){$("#drawerTitle").textContent=title;$("#drawerEyebrow").textContent=eyebrow;$("#drawerContent").innerHTML=html;$("#drawer").dataset.mode=mode;$("#drawer").classList.add("open");$("#drawer").setAttribute("aria-hidden","false");document.body.style.overflow="hidden";}
+function closeDrawer(){$("#drawer").classList.remove("open");$("#drawer").setAttribute("aria-hidden","true");$("#drawer").dataset.mode="";document.body.style.overflow="";}
 
 function profileEquipmentSlot(h,slot,label){const d=h.equipment[slot]?itemData(h.equipment[slot]):null,detail=d?[d.attack?`+${d.attack} ATK`:"",d.defense?`+${d.defense} DEF`:"",d.element,d.effectText,["weapon","armor"].includes(slot)?`${Math.floor(d.durability??100)}% durability`:""].filter(Boolean).join(" · "):slot==="pet"?"Find pets while skilling or hatch a raid egg":slot==="trinket"?"Find trinkets in Dungeons":"No item equipped";return `<article class="profile-gear-slot"><span>${d?itemImage(d,"profile-item-art"):"＋"}</span><div><small>${label}</small><strong>${d?escapeHTML(d.name):"Empty slot"}</strong><p>${escapeHTML(detail)}</p></div></article>`;}
 function openHero(id){
@@ -812,7 +986,7 @@ function openAccount(){
   openDrawer("Account & Town",cloud?(currentUser.email||"Cloud adventurer"):"Playing on this device",`<div class="drawer-section"><div class="info-grid"><div class="info-tile"><small>Save</small><strong>${cloud?"Firebase cloud + device":"This device"}</strong></div><div class="info-tile"><small>Version</small><strong>${VERSION}</strong></div><div class="info-tile"><small>Town created</small><strong>${new Date(state.createdAt).toLocaleDateString()}</strong></div><div class="info-tile"><small>Offline time</small><strong>${formatDuration(state.stats.offlineSeconds)}</strong></div></div></div><div class="action-list">${accountActions}<button data-action="export-save"><span>📤 Export save backup</span><small>Download JSON</small></button><button data-action="reset-game"><span>⚠️ Begin a new town</span><small>Starts with zero resources</small></button></div>`);
 }
 
-function upgradeBuilding(id){const b=BUILDINGS[id],cost=Math.floor(b.baseCost*Math.pow(1.55,state.buildings[id]-1));if(state.resources.gold<cost)return toast("🪙","Not enough Gold");state.resources.gold-=cost;state.buildings[id]++;notify(`${b.name} upgraded`,`Building Level ${state.buildings[id]} is now complete.`,b.icon);markDirty();renderAll();openBuilding(id);}
+function upgradeBuilding(id){const b=BUILDINGS[id],cost=Math.floor(b.baseCost*Math.pow(1.55,state.buildings[id]-1));if(state.resources.gold<cost)return toast("🪙","Not enough Gold");state.resources.gold-=cost;state.buildings[id]++;notify(`${b.name} upgraded`,`Building Level ${state.buildings[id]} is now complete.`,b.icon);const speaker=state.heroes.find(hero=>hero.assignment===id)||chatPick(state.heroes.filter(hero=>hero.assignment==="idle"));if(speaker)postHeroChat(speaker,`${b.name} Level ${state.buildings[id]} is complete. ${RESOURCE_ASSIGNMENTS[id]?"Check our exact tasks—higher materials may be available.":"The town feels a little stronger already."}`,"upgrade");markDirty();renderAll();openBuilding(id);}
 
 function equipItem(id){const item=state.inventory.find(i=>i.id===id);if(!item)return;const d=itemData(item);if(["pet","trinket"].includes(d.type))return openEquipPicker(id);const hero=state.heroes.find(h=>h.className===d.className);if(!hero)return toast("⚠️","No matching hero");equipItemToHero(id,hero.id);}
 function openEquipPicker(itemId){const item=state.inventory.find(i=>i.id===itemId);if(!item)return;const d=itemData(item),slot=d.type;openDrawer(`Equip ${d.name}`,`${slot[0].toUpperCase()+slot.slice(1)} · Any hero`, `<div class="loot-summary"><span>${itemImage(d,"loot-summary-art")}</span><div><strong>${escapeHTML(d.name)}</strong><p>${escapeHTML(d.effectText||d.element||"Choose who will carry this item.")}</p></div></div><div class="drawer-section"><h3>Choose a hero</h3><div class="action-list">${state.heroes.map(h=>{const current=h.equipment[slot]?itemData(h.equipment[slot]):null,busy=h.assignment==="combat";return `<button data-action="equip-to-hero" data-item="${itemId}" data-hero="${h.id}" ${busy?"disabled":""}><span class="inline-hero">${heroImage(h)} ${escapeHTML(h.name)}</span><small>${busy?"Recall from combat first":current?`Replace ${escapeHTML(current.name)}`:`Empty ${slot} slot`}</small></button>`}).join("")}</div></div><div class="drawer-footer"><button class="soft-button" data-action="close-drawer">Cancel</button></div>`);}
@@ -827,7 +1001,7 @@ async function initializeFirebase(){
     currentUser=user;renderSyncUser();
     if(user){
       setSync("saving");const cloud=await firebaseApi.loadGame(user.uid);
-      if(cloud?.updatedAt>state.updatedAt){const restoredAt=Date.now();state=migrate(cloud);const away=Math.min(OFFLINE_LIMIT,Math.max(0,(restoredAt-(state.lastTick||restoredAt))/1000)),report=simulate(away,true);lastSimulationAt=restoredAt;state.lastTick=restoredAt;saveLocal();notify("Cloud town restored","Your latest Firebase save and its idle progress are now on this device.","☁️");showOffline(report);}
+      if(cloud?.updatedAt>state.updatedAt){const restoredAt=Date.now();state=migrate(cloud);const away=Math.min(OFFLINE_LIMIT,Math.max(0,(restoredAt-(state.lastTick||restoredAt))/1000)),report=simulate(away,true);postOfflineProgressChat(report);lastSimulationAt=restoredAt;state.lastTick=restoredAt;saveLocal();notify("Cloud town restored","Your latest Firebase save and its idle progress are now on this device.","☁️");showOffline(report);}
       await claimPayouts();subscribeOnline();scheduleCloudSave();if($("#authDialog").open)$("#authDialog").close();
     }else{setSync("device");unsubscribeOnline();}
     renderAll();
@@ -867,6 +1041,7 @@ document.addEventListener("click",async event=>{
   else if(a==="open-combat-category")openCombatCategory(b.dataset.category);
   else if(a==="open-loot")openLoot(b.dataset.combat);
   else if(a==="close-drawer")closeDrawer();
+  else if(a==="open-party-chat")openPartyChat();
   else if(a==="open-notifications")openNotifications();
   else if(a==="account")openAccount();
   else if(a==="open-auth"){closeDrawer();$("#authDialog").showModal();}
@@ -910,7 +1085,7 @@ function showOffline(report){
 }
 
 async function init(){
-  const raw=JSON.parse(localStorage.getItem(SAVE_KEY)||"null");state=migrate(raw);const now=Date.now(),elapsed=Math.min(OFFLINE_LIMIT,Math.max(0,(now-(state.lastTick||now))/1000));const report=simulate(elapsed,true);lastSimulationAt=now;state.lastTick=now;saveLocal();
+  const raw=JSON.parse(localStorage.getItem(SAVE_KEY)||"null");state=migrate(raw);const now=Date.now(),elapsed=Math.min(OFFLINE_LIMIT,Math.max(0,(now-(state.lastTick||now))/1000));const report=simulate(elapsed,true);postOfflineProgressChat(report);lastSimulationAt=now;state.lastTick=now;saveLocal();
   initializeFirebase();
   if("serviceWorker" in navigator){try{await navigator.serviceWorker.register("./service-worker.js");await navigator.serviceWorker.ready;}catch{}}
   const failedAssets=await preloadAssets();renderAll();

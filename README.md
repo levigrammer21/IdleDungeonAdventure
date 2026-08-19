@@ -19,6 +19,7 @@ Adventure Town is a mobile-first, persistent idle RPG built around six permanent
 - Eight discrete named items each for food, metal, and wood from Starter through Divine; there is no generic-resource conversion
 - Complete eight-tier normal equipment progression for every class: Starter through Divine recipes use their exact matching metal and wood, with Smithing and Blacksmith requirements enforced
 - Per-hero task selection so workers stay on the exact unlocked resource tier chosen by the player
+- Persistent contextual party chat with distinct voices for all six heroes, conversational replies, restrained ambient pacing, and real hooks for assignments, exact tasks, outdated work tiers, level gains, unlocks, milestones, combat danger, food shortages, victories, rare finds, broken gear, building upgrades, and offline progress
 - Named Warehouse meals with explicit HP values that heroes auto-eat below 45% HP, plus exact-material crafting, Sanity, defeat, Inn, Tavern, durability, repairs, Essence, and Raid Keys
 - Complete, individually named 12-item class sets in every Dungeon and Raid, with transparent rare-table rates
 - Account-bound pets, raid-boss eggs, Dungeon trinkets, equipping, repairs, and salvage
@@ -26,7 +27,7 @@ Adventure Town is a mobile-first, persistent idle RPG built around six permanent
 - Firestore player marketplace, delayed seller payouts, and leaderboards
 - Building upgrades, milestones, town reports, save export, and installable PWA support
 
-The visible game version is `1.5.8`.
+The visible game version is `1.5.9`.
 
 New towns begin with zero Gold, meals, ores, woods, Essence, Raid Keys, and Repair Kits. Existing named stacks are preserved; use **Account → Begin a new town** to test the new starting experience.
 
