@@ -8,20 +8,23 @@ Adventure Town is a mobile-first, persistent idle RPG built around six permanent
 - Six fixed classes with custom portraits: Warrior, Wizard, Archer, Druid, Assassin, and Summoner
 - Per-hero Combat Level and independent Farming, Mining, Woodcutting, and Smithing levels
 - Full hero character pages with renaming, combat stats, four equipment slots, special effects, and lifetime records
-- Timed work, combat, recovery, and supplies with a 12-hour offline progress cap
+- Timed work, room-by-room combat, recovery, and supplies with a 12-hour offline progress cap
 - Four-hero combat cap with 6 Expeditions, 5 solo/duo Dungeons, and 3 four-person Raids
-- Live party previews showing exact success chance, total power, food-supply cost, and power-adjusted clear time
+- Live HP combat with individual attack timers, visible max hits, hitsplats, critical hits, class actions, enemy retaliation, healing, battle logs, and DPS tracking
+- Three enemies in every Expedition; three shared enemies plus a unique boss in every Dungeon; fully unique Raid enemies and bosses
+- Raid Woodcutting, Farming, Mining, and Smithing obstacle rooms whose duration is driven by the party's real work levels
+- Party previews showing max hit, estimated DPS, Defence, real room lists, and estimated clear time—there is no pass/fail roll
 - Clickable loot chests with exact reward ranges and per-victory drop rates
 - Eight named tiers each of food, metal, and wood from Starter through Divine, stored as whole Warehouse item stacks
 - Per-hero task selection so workers stay on the exact unlocked resource tier chosen by the player
-- Food, Sanity, defeat, Inn, Tavern, durability, repairs, Essence, and Raid Keys
+- Named Warehouse food that heroes auto-eat below 45% HP, plus Sanity, defeat, Inn, Tavern, durability, repairs, Essence, and Raid Keys
 - Complete, individually named 12-item class sets in every Dungeon and Raid, with transparent rare-table rates
 - Account-bound pets, raid-boss eggs, Dungeon trinkets, equipping, repairs, and salvage
 - Firebase Google and email/password accounts with cloud saves
 - Firestore player marketplace, delayed seller payouts, and leaderboards
 - Building upgrades, milestones, town reports, save export, and installable PWA support
 
-The visible game version is `1.4.0`.
+The visible game version is `1.5.0`.
 
 New towns begin with zero Gold, Food, Metal, Wood, Essence, Raid Keys, and Repair Kits. Existing saves are preserved; use **Account → Begin a new town** to test the new starting experience.
 

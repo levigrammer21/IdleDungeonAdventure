@@ -1,4 +1,4 @@
-const VERSION = "1.4.0";
+const VERSION = "1.5.0";
 const SAVE_KEY = "adventure-town-save-v1";
 const SETTINGS_KEY = "adventure-town-settings-v1";
 const OFFLINE_LIMIT = 12 * 60 * 60;
@@ -61,6 +61,37 @@ const COMBAT = {
   basiliskCrown:{id:"basiliskCrown",category:"raid",name:"Basilisk Crown",short:"Basilisk Raid",icon:"🐲",eyebrow:"First raid · Level 30",description:"A four-hero assault with a 10% chance to enter its complete 12-item rare class table.",requirements:["Combat Level 30+","Up to 4 heroes","1 Raid Key + 8 Essence","80 Food per hero"],minLevel:30,maxParty:4,duration:240,difficulty:650,food:80,essence:8,keys:1,gold:[900,1600],xp:620,essenceReward:[6,16],itemChance:.10,pool:gearSetPool("basilisk"),eggChance:1/500,eggKey:"basiliskEgg",killCount:45,colors:["#6f4737","#2f2520"]},
   tempestTitan:{id:"tempestTitan",category:"raid",name:"Tempest Titan",short:"Titan Raid",icon:"⚡",eyebrow:"Second raid · Level 60",description:"Challenge a storm giant with a 10% chance to enter its complete 12-item rare class table.",requirements:["Combat Level 60+","Up to 4 heroes","1 Raid Key + 16 Essence","180 Food per hero"],minLevel:60,maxParty:4,duration:420,difficulty:1600,food:180,essence:16,keys:1,gold:[2600,4100],xp:1450,essenceReward:[12,28],itemChance:.10,pool:gearSetPool("tempest"),eggChance:1/500,eggKey:"tempestEgg",killCount:65,colors:["#4d5f83","#252d49"]},
   eclipseWyrm:{id:"eclipseWyrm",category:"raid",name:"Eclipse Wyrm",short:"Eclipse Raid",icon:"🌘",eyebrow:"Endgame raid · Level 90",description:"The current final raid has a 10% chance to enter its complete 12-item rare class table.",requirements:["Combat Level 90+","Up to 4 heroes","2 Raid Keys + 30 Essence","400 Food per hero"],minLevel:90,maxParty:4,duration:720,difficulty:3000,food:400,essence:30,keys:2,gold:[7000,11000],xp:3600,essenceReward:[24,55],itemChance:.10,pool:gearSetPool("eclipse"),eggChance:1/500,eggKey:"eclipseEgg",killCount:90,colors:["#514063","#1e1929"]},
+};
+
+const CLASS_COMBAT = {
+  Warrior:{speed:2.55,crit:.05,style:"melee",verb:"cleaves"},
+  Wizard:{speed:2.85,crit:.07,style:"magic",verb:"blasts"},
+  Archer:{speed:2.25,crit:.11,style:"ranged",verb:"shoots"},
+  Druid:{speed:2.75,crit:.06,style:"nature",verb:"strikes"},
+  Assassin:{speed:1.65,crit:.15,style:"shadow",verb:"slashes"},
+  Summoner:{speed:2.65,crit:.06,style:"summon",verb:"commands"},
+};
+const FOOD_HEAL_PER_SUPPLY=8;
+const combatRoom=(name,icon,hp=1,attack=1,defense=1,speed=2.7,boss=false)=>({type:"combat",name,icon,hp,attack,defense,speed,boss});
+const skillRoom=(name,icon,skill,baseSeconds,description)=>({type:"skill",name,icon,skill,baseSeconds,description});
+
+const COMBAT_LAYOUTS = {
+  meadowWatch:[combatRoom("Tanglehare","🐇",.75,.70,.65,2.4),combatRoom("Grainback Boar","🐗",1,.95,.85,2.8),combatRoom("Meadow Bandit","🗡️",1.2,1,1,2.5,true)],
+  whisperwood:[combatRoom("Thorn Wolf","🐺",.85,.9,.8,2.2),combatRoom("Moss Goblin","👺",1,1,.9,2.5),combatRoom("Hollow Treant","🌳",1.35,1,1.25,3.1,true)],
+  frostmarch:[combatRoom("Rime Wolf","🐺",.9,.9,.8,2.15),combatRoom("Icebound Raider","🪓",1,1.05,1,2.55),combatRoom("Glacier Yeti","🦍",1.4,1.15,1.15,3,true)],
+  cindertrail:[combatRoom("Ember Imp","😈",.8,.95,.75,2),combatRoom("Ashscale Drake","🐉",1.05,1.1,1,2.5),combatRoom("Cinder Golem","🗿",1.5,1.15,1.3,3.2,true)],
+  stormcoast:[combatRoom("Reef Stalker","🦈",.9,1,.8,2.2),combatRoom("Storm Harpy","🦅",1,1.1,.9,2),combatRoom("Thunder Roc","🌩️",1.45,1.2,1.15,2.8,true)],
+  shadowpeaks:[combatRoom("Gloom Stalker","🐈‍⬛",.9,1.1,.85,1.9),combatRoom("Void Revenant","👻",1.1,1.15,1.05,2.45),combatRoom("Umbral Giant","👹",1.55,1.25,1.3,3.15,true)],
+
+  thornrootBurrow:[combatRoom("Dungeon Rat","🐀",.75,.8,.65,2.1),combatRoom("Bone Sentinel","💀",1,1,1,2.7),combatRoom("Hollow Warden","🛡️",1.15,1.05,1.2,2.9),combatRoom("Thornroot Matriarch","🕷️",2.2,1.25,1.25,2.65,true)],
+  frozenHollow:[combatRoom("Dungeon Rat","🐀",.75,.8,.65,2.1),combatRoom("Bone Sentinel","💀",1,1,1,2.7),combatRoom("Hollow Warden","🛡️",1.15,1.05,1.2,2.9),combatRoom("Hollow Wyrm","🐉",2.25,1.3,1.25,2.7,true)],
+  cinderdeepVault:[combatRoom("Dungeon Rat","🐀",.75,.8,.65,2.1),combatRoom("Bone Sentinel","💀",1,1,1,2.7),combatRoom("Hollow Warden","🛡️",1.15,1.05,1.2,2.9),combatRoom("Cinderdeep Forgelord","🔥",2.35,1.35,1.3,2.8,true)],
+  sunkenSanctum:[combatRoom("Dungeon Rat","🐀",.75,.8,.65,2.1),combatRoom("Bone Sentinel","💀",1,1,1,2.7),combatRoom("Hollow Warden","🛡️",1.15,1.05,1.2,2.9),combatRoom("Sanctum Leviathan","🐙",2.45,1.4,1.3,2.85,true)],
+  stormcrypt:[combatRoom("Dungeon Rat","🐀",.75,.8,.65,2.1),combatRoom("Bone Sentinel","💀",1,1,1,2.7),combatRoom("Hollow Warden","🛡️",1.15,1.05,1.2,2.9),combatRoom("Crypt Sovereign","👑",2.55,1.45,1.4,2.7,true)],
+
+  basiliskCrown:[combatRoom("Crownscale Guard","🦎",1,1,1,2.35),skillRoom("Briar-Choked Causeway","🌿","woodcutting",210,"Cut a path through living briars."),combatRoom("Venom Oracle","🐍",1.25,1.15,1.1,2.5),skillRoom("Venomroot Garden","🌾","farming",150,"Harvest an antidote before entering the throne den."),combatRoom("The Basilisk Crown","🐲",3.2,1.5,1.35,2.75,true)],
+  tempestTitan:[combatRoom("Stormbound Colossus","🗿",1.1,1.05,1.15,2.8),skillRoom("Collapsed Sky-Mine","⛏️","mining",330,"Mine through charged stone and fallen pillars."),combatRoom("Thunder Herald","⚡",1.3,1.2,1,2.15),skillRoom("Shattered Conduit","⚒️","smithing",270,"Reforge the lightning conduit that opens the summit."),combatRoom("The Tempest Titan","🌩️",3.5,1.55,1.45,2.65,true)],
+  eclipseWyrm:[combatRoom("Duskborn Knight","🌑",1.2,1.1,1.25,2.45),skillRoom("Shadowroot Barricade","🪵","woodcutting",480,"Hack through roots that regrow in moonless light."),combatRoom("Moon-Eater Spawn","🐉",1.4,1.25,1.1,2.25),skillRoom("Moonstone Seal","💎","mining",420,"Mine the seal without collapsing the Wyrm's lair."),skillRoom("Nightbloom Antidote","🌾","farming",330,"Prepare food and antidotes for the final chamber."),skillRoom("Broken Eclipse Ward","⚒️","smithing",390,"Repair the ancient ward before the eclipse peaks."),combatRoom("The Eclipse Wyrm","🌘",3.9,1.65,1.5,2.55,true)],
 };
 
 const ITEMS = {
@@ -137,7 +168,7 @@ for(const set of LOOT_SET_SPECS){
 
 Object.assign(ITEMS,{
   beaverPet:{name:"Beaver",type:"pet",icon:"🦫",tier:"Pet",value:0,soulbound:true,effects:{combatStrength:3,woodDoubleChance:.20},effectText:"+3 combat strength · 20% chance to double Wood"},
-  cowPet:{name:"Cow",type:"pet",icon:"🐄",tier:"Pet",value:0,soulbound:true,effects:{combatStrength:2,foodEfficiency:2},effectText:"+2 combat strength · combat Food costs -2 per run"},
+  cowPet:{name:"Cow",type:"pet",icon:"🐄",tier:"Pet",value:0,soulbound:true,effects:{combatStrength:2,foodEfficiency:2},effectText:"+2 combat strength · combat food heals +8 HP"},
   molePet:{name:"Mole",type:"pet",icon:"🐾",tier:"Pet",value:0,soulbound:true,effects:{combatStrength:2,metalDoubleChance:.15},effectText:"+2 combat strength · 15% chance to double Metal"},
   forgeSpritePet:{name:"Forge Sprite",type:"pet",icon:"🔥",tier:"Pet",value:0,soulbound:true,effects:{combatStrength:3,smithDoubleChance:.10},effectText:"+3 combat strength · 10% chance to double Repair Kits"},
   basiliskPet:{name:"Basilisk Hatchling",type:"pet",icon:"🐍",tier:"Raid Pet",value:0,soulbound:true,effects:{combatStrength:9,poisonDamage:2},effectText:"+9 combat strength · +2 poison damage"},
@@ -222,6 +253,8 @@ let quietSimulation = false;
 let currentView = "town";
 let warehouseFilter = "all";
 let lastFrame = Date.now();
+let lastSlowRender = 0;
+let watchedRunId = null;
 
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
@@ -244,6 +277,10 @@ function spendTieredResource(resource,amount){
 function unlockedResourceTiers(h,assignment){const resource=RESOURCE_ASSIGNMENTS[assignment],skill=BUILDINGS[assignment]?.skill,buildingLevel=state.buildings[assignment]||1;return resource?RESOURCE_TIERS[resource].filter(t=>(h.skills[skill]?.level||1)>=t.level&&buildingLevel>=t.building):[];}
 function resourceTierForHero(h,assignment){const unlocked=unlockedResourceTiers(h,assignment),selected=h.workTiers?.[assignment]||"starter";return unlocked.find(t=>t.id===selected)||unlocked[0]||RESOURCE_TIERS[RESOURCE_ASSIGNMENTS[assignment]]?.[0];}
 function workTierPickerHTML(h,assignment){const tiers=unlockedResourceTiers(h,assignment),selected=resourceTierForHero(h,assignment)?.id;return tiers.length?`<label class="work-tier-picker"><span>Exact task</span><select data-work-tier data-hero="${h.id}" data-assignment="${assignment}" aria-label="${escapeHTML(h.name)} ${ASSIGNMENTS[assignment].name} task">${tiers.map(t=>`<option value="${t.id}" ${t.id===selected?"selected":""}>${t.icon} ${escapeHTML(t.name)} · ${TIER_ACTION_SECONDS[t.id]}s base</option>`).join("")}</select></label>`:"";}
+
+function createCombatRunState(combatId,heroIds,autoRepeat=true,id=uid()){
+  return {id,combatId,heroIds:[...heroIds],autoRepeat,startedAt:Date.now(),cycle:1,roomIndex:0,roomState:null,heroTimers:{},enemyTimer:0,enemy:null,elapsed:0,cycleElapsed:0,kills:0,cycles:0,foodEaten:0,damageDealt:0,damageTaken:0,recentEvents:[],lastReward:"No chest opened yet"};
+}
 
 function freshState(){
   return {
@@ -275,7 +312,8 @@ function migrate(raw){
   merged.heroes=base.heroes.map(b=>{const h=raw.heroes.find(x=>x.id===b.id)||{},skills=Object.fromEntries(Object.entries(b.skills).map(([key,value])=>[key,{...value,...(h.skills?.[key]||{})}]));return {...b,...h,portrait:b.portrait,workProgress:Math.max(0,Number(h.workProgress)||0),workTiers:{...b.workTiers,...(h.workTiers||{})},records:{...HERO_RECORD_DEFAULTS,...(h.records||{})},skills,equipment:{...b.equipment,...(h.equipment||{})}}});
   merged.inventory=Array.isArray(raw.inventory)?raw.inventory:[];
   const legacyCombat={expedition:"meadowWatch",dungeon:"frozenHollow",raid:"basiliskCrown"};
-  merged.combatRuns=(Array.isArray(raw.combatRuns)?raw.combatRuns:[]).map(r=>({...r,combatId:r.combatId||legacyCombat[r.type]||r.type})).filter(r=>COMBAT[r.combatId]);
+  merged.combatRuns=(Array.isArray(raw.combatRuns)?raw.combatRuns:[]).map(r=>{const combatId=r.combatId||legacyCombat[r.type]||r.type;if(!COMBAT[combatId])return null;const heroIds=(r.heroIds||[]).filter(id=>merged.heroes.some(h=>h.id===id&&(h.hp||0)>0));return heroIds.length?createCombatRunState(combatId,heroIds,r.autoRepeat!==false,r.id):null;}).filter(Boolean);
+  const activeIds=new Set(merged.combatRuns.flatMap(r=>r.heroIds));for(const h of merged.heroes){if(activeIds.has(h.id))h.assignment="combat";else if(h.assignment==="combat")h.assignment="idle";h.hp=clamp(Number(h.hp??heroMaxHP(h)),0,heroMaxHP(h));}
   merged.notifications=Array.isArray(raw.notifications)?raw.notifications:base.notifications;
   return merged;
 }
@@ -301,18 +339,21 @@ function occupiedSlots(){ return state.inventory.reduce((n,i)=>n+(i.qty||1),0)+w
 function combatCount(){ return state.heroes.filter(h=>h.assignment==="combat").length; }
 function activeEquipment(h,slot){const item=h.equipment?.[slot];if(!item)return null;if(["weapon","armor"].includes(slot)&&(item.durability??100)<=0)return null;return itemData(item);}
 function equipmentEffect(h,key){return ["weapon","armor","pet","trinket"].reduce((total,slot)=>total+(activeEquipment(h,slot)?.effects?.[key]||0),0);}
-function equipmentDamageBonus(h){return ["poisonDamage","lightningDamage","shadowDamage","fireDamage","frostDamage","natureDamage"].reduce((total,key)=>total+equipmentEffect(h,key),0);}
+function itemTextDamage(h){return ["weapon","armor","pet","trinket"].map(slot=>activeEquipment(h,slot)).filter(Boolean).reduce((total,d)=>{if(["poisonDamage","lightningDamage","shadowDamage","fireDamage","frostDamage","natureDamage"].some(key=>d.effects?.[key]))return total;const match=`${d.element||""} ${d.effectText||""}`.match(/\+(\d+)\s+(poison|lightning|thunder|shadow|void|fire|frost|nature|tide)(?:\s+damage)?/i);return total+(match?Number(match[1]):0);},0);}
+function equipmentDamageBonus(h){return ["poisonDamage","lightningDamage","shadowDamage","fireDamage","frostDamage","natureDamage"].reduce((total,key)=>total+equipmentEffect(h,key),0)+itemTextDamage(h);}
 function heroAttack(h){return 4+h.level*2+(activeEquipment(h,"weapon")?.attack||0)+equipmentEffect(h,"attack")+equipmentDamageBonus(h);}
 function heroDefense(h){return 2+h.level+(activeEquipment(h,"armor")?.defense||0)+equipmentEffect(h,"defense");}
 function heroMaxHP(h){return 100+(h.level-1)*6+equipmentEffect(h,"maxHP");}
+function heroMaxHit(h){return Math.max(1,2+Math.floor(h.level/4)+(activeEquipment(h,"weapon")?.attack||0)+equipmentEffect(h,"attack"));}
+function heroAttackSpeed(h){return CLASS_COMBAT[h.className]?.speed||2.6;}
+function heroCritChance(h){const text=heroSpecials(h).join(" "),match=text.match(/\+(\d+)%\s+Crit/i);return clamp((CLASS_COMBAT[h.className]?.crit||.05)+(match?Number(match[1])/100:0),0,.65);}
+function heroDamageType(h){const text=heroSpecials(h).join(" ").toLowerCase();if(text.includes("poison")||equipmentEffect(h,"poisonDamage"))return "poison";if(text.includes("fire")||text.includes("burn"))return "fire";if(text.includes("frost")||text.includes("cold"))return "frost";if(text.includes("lightning")||text.includes("thunder"))return "lightning";if(text.includes("shadow")||text.includes("void")||text.includes("eclipse"))return "shadow";if(text.includes("nature")||text.includes("tide"))return "nature";return CLASS_COMBAT[h.className]?.style||"physical";}
 function heroPower(h){
   const weapon=activeEquipment(h,"weapon")||{attack:0},armor=activeEquipment(h,"armor")||{defense:0};
   return 8+h.level*4+(weapon.attack||0)*3+(armor.defense||0)*1.7+equipmentEffect(h,"combatStrength")+equipmentEffect(h,"attack")*2.5+equipmentEffect(h,"defense")*1.5+equipmentEffect(h,"maxHP")*.1+equipmentDamageBonus(h)*3;
 }
 function partyPower(party){return party.reduce((total,h)=>total+heroPower(h),0);}
-function combatSuccessChance(cfg,party){return party.length?clamp(.32+partyPower(party)/(cfg.difficulty*2.1),.34,.96):0;}
-function combatSpeedMultiplier(cfg,party){if(!party.length)return 1;const powerRatio=partyPower(party)/cfg.difficulty;return clamp(1+(powerRatio-.5)*.55,.85,3);}
-function combatDuration(cfg,party){return Math.max(10,Math.round(cfg.duration/combatSpeedMultiplier(cfg,party)));}
+function estimatedPartyDPS(party,cfg){if(!party.length)return 0;const preview=createEnemy(cfg,COMBAT_LAYOUTS[cfg.id].find(r=>r.type==="combat"));return party.reduce((total,h)=>{const hit=clamp(.25+(heroAttack(h)/(heroAttack(h)+preview.defense))*.7,.25,.98),average=heroMaxHit(h)*.5*(1+heroCritChance(h)*.6)+equipmentDamageBonus(h);return total+hit*average/heroAttackSpeed(h);},0);}
 function heroSpecials(h){return ["weapon","armor","pet","trinket"].map(slot=>activeEquipment(h,slot)).filter(Boolean).flatMap(d=>[d.element,d.effectText].filter(Boolean));}
 function workActionTime(h,assignment,tier=null){const skillKey=BUILDINGS[assignment]?.skill,skill=h.skills[skillKey]?.level||1,building=state.buildings[assignment]||1,base=assignment==="smith"?15:TIER_ACTION_SECONDS[tier?.id||"starter"];return base/(1+(skill-1)*.01+(building-1)*.08);}
 function workActionStatus(h){if(!["farm","mine","forest","smith"].includes(h.assignment))return "";const tier=RESOURCE_ASSIGNMENTS[h.assignment]?resourceTierForHero(h,h.assignment):null,seconds=Math.max(0,workActionTime(h,h.assignment,tier)-(h.workProgress||0));return `${tier?`${tier.icon} ${tier.name}`:"🧰 Repair Kit"} in ${Math.max(1,Math.ceil(seconds))}s`;}
@@ -356,9 +397,9 @@ function awardInventoryItem(key,hero=null,title="Special find!"){
 function rollSkillPet(assignment,h){const key=SKILL_PETS[assignment];if(key&&random()<SKILL_PET_CHANCE)awardInventoryItem(key,h,"Extremely rare skilling pet!");}
 
 function simulate(seconds,offline=false){
-  seconds=clamp(seconds,0,OFFLINE_LIMIT); if(seconds<.25)return null;
+  seconds=clamp(seconds,0,OFFLINE_LIMIT); if(seconds<.01)return null;
   const previousQuiet=quietSimulation; quietSimulation=offline;
-  const before={...state.resources,items:state.inventory.length,runs:state.stats.expeditions+state.stats.dungeons+state.stats.raids};
+  const before={...state.resources,items:state.inventory.length,runs:state.stats.expeditions+state.stats.dungeons+state.stats.raids,kills:state.heroes.reduce((n,h)=>n+(h.records.kills||0),0)};
   const beforeTiers=Object.fromEntries(Object.entries(RESOURCE_TIERS).map(([resource,tiers])=>[resource,Object.fromEntries(tiers.map(tier=>[tier.id,state.resourceTiers[resource][tier.id]||0]))]));
   for(const h of state.heroes){
     if(h.assignment!=="idle")h.records.secondsActive+=seconds;
@@ -372,7 +413,7 @@ function simulate(seconds,offline=false){
   for(const run of [...state.combatRuns]) processRun(run,seconds,offline);
   checkAchievements(); if(offline)state.stats.offlineSeconds+=seconds;
   const tierChanges=Object.entries(RESOURCE_TIERS).flatMap(([resource,tiers])=>tiers.map(tier=>({resource,name:tier.name,icon:tier.icon,quantity:(state.resourceTiers[resource][tier.id]||0)-beforeTiers[resource][tier.id]}))).filter(change=>Math.abs(change.quantity)>.01);
-  const after=state.resources; quietSimulation=previousQuiet; return {seconds,gold:after.gold-before.gold,tierChanges,essence:after.essence-before.essence,keys:after.keys-before.keys,kits:after.repairKits-before.repairKits,items:state.inventory.length-before.items,runs:state.stats.expeditions+state.stats.dungeons+state.stats.raids-before.runs};
+  const after=state.resources; quietSimulation=previousQuiet; return {seconds,gold:after.gold-before.gold,tierChanges,essence:after.essence-before.essence,keys:after.keys-before.keys,kits:after.repairKits-before.repairKits,items:state.inventory.length-before.items,runs:state.stats.expeditions+state.stats.dungeons+state.stats.raids-before.runs,kills:state.heroes.reduce((n,h)=>n+(h.records.kills||0),0)-before.kills};
 }
 
 function processWork(h,seconds){
@@ -390,27 +431,69 @@ function processWork(h,seconds){
   }
 }
 
+function createEnemy(cfg,room){
+  const level=cfg.minLevel,baseHP=cfg.category==="raid"?160+level*11:cfg.category==="dungeon"?50+level*5.5:18+level*3.5,baseAttack=5+level*1.7,baseDefense=4+level*1.2,baseMax=cfg.category==="raid"?6+level*.5:cfg.category==="dungeon"?4+level*.38:2+level*.28;
+  const maxHP=Math.max(8,Math.round(baseHP*room.hp));return {name:room.name,icon:room.icon,boss:!!room.boss,hp:maxHP,maxHP,attack:Math.round(baseAttack*room.attack),defense:Math.round(baseDefense*room.defense),maxHit:Math.max(2,Math.round(baseMax*(room.boss?1.18:1))),speed:room.speed,attacks:0,status:{},room};
+}
+function combatRoomsFor(cfg){return (COMBAT_LAYOUTS[cfg.id]||[]).filter(room=>room.type==="combat");}
+function pushCombatEvent(run,text,type="info",target="enemy",amount=null,attackerId=null,offline=false){if(offline||quietSimulation)return;run.recentEvents=(run.recentEvents||[]).concat({id:uid(),at:Date.now(),text,type,target,amount,attackerId}).slice(-30);}
+function enterCurrentRoom(run,cfg,offline=false){
+  const room=COMBAT_LAYOUTS[cfg.id]?.[run.roomIndex];if(!room){completeCombatCycle(run,cfg,offline);return;}
+  if(room.type==="combat"){
+    run.enemy=createEnemy(cfg,room);run.roomState={type:"combat"};run.enemyTimer=run.enemy.speed*.7;run.heroTimers={};
+    for(const id of run.heroIds){const h=heroById(id);if(h)run.heroTimers[id]=heroAttackSpeed(h)*(.25+random()*.45);}
+    pushCombatEvent(run,`${run.enemy.name} enters the fight.`,room.boss?"boss":"info","enemy",null,null,offline);
+  }else{
+    const party=run.heroIds.map(heroById).filter(Boolean),ranked=party.map(h=>({h,level:h.skills[room.skill]?.level||1})).sort((a,b)=>b.level-a.level),effective=ranked.reduce((total,x,i)=>total+x.level*(i?0.25:1),0),total=Math.max(8,room.baseSeconds/(1+effective/25));
+    run.enemy=null;run.roomState={type:"skill",total,remaining:total,effective,leaderId:ranked[0]?.h.id||null};pushCombatEvent(run,`${room.name}: ${room.description}`,"skill","room",null,ranked[0]?.h.id,offline);
+  }
+}
+function advanceCombatRoom(run,cfg,offline=false){run.roomIndex++;run.roomState=null;run.enemy=null;if(run.roomIndex>=COMBAT_LAYOUTS[cfg.id].length)completeCombatCycle(run,cfg,offline);else enterCurrentRoom(run,cfg,offline);}
+function applyEnemyDamage(run,amount,type,sourceId,offline=false){if(!run.enemy)return false;amount=Math.max(0,Math.floor(amount));run.enemy.hp=Math.max(0,run.enemy.hp-amount);run.damageDealt+=amount;pushCombatEvent(run,amount?`${heroById(sourceId)?.name||"The party"} deals ${amount} ${type} damage.`:`${heroById(sourceId)?.name||"The party"} misses.`,type,"enemy",amount,sourceId,offline);if(run.enemy.hp<=0){defeatEnemy(run,sourceId,offline);return true;}return false;}
+function defeatEnemy(run,killerId,offline=false){
+  const cfg=COMBAT[run.combatId],enemy=run.enemy,killer=heroById(killerId),party=run.heroIds.map(heroById).filter(Boolean),xp=cfg.xp/Math.max(1,combatRoomsFor(cfg).length);if(killer)killer.records.kills++;for(const h of party)addXP(h,xp);run.kills++;pushCombatEvent(run,`${enemy.name} defeated! ${fmt(xp)} XP to each survivor.`,enemy.boss?"boss":"kill","enemy",null,killerId,offline);advanceCombatRoom(run,cfg,offline);
+}
+function processEnemyStatuses(run,dt,offline=false){
+  const enemy=run.enemy;if(!enemy)return false;for(const [type,status] of Object.entries(enemy.status||{})){status.remaining-=dt;status.timer-=dt;while(status.timer<=0&&status.remaining>0&&run.enemy){status.timer+=type==="fire"?1.5:2;if(applyEnemyDamage(run,status.damage,type,status.sourceId,offline))return true;}if(status.remaining<=0)delete enemy.status[type];}return false;
+}
+function healLowestHero(run,amount,source,offline=false){const party=run.heroIds.map(heroById).filter(h=>h&&(h.hp||0)>0),target=party.sort((a,b)=>(a.hp/heroMaxHP(a))-(b.hp/heroMaxHP(b)))[0];if(!target||target.hp>=heroMaxHP(target))return;const healed=Math.min(amount,heroMaxHP(target)-target.hp);target.hp+=healed;pushCombatEvent(run,`${source.name} restores ${healed} HP to ${target.name}.`,"heal",target.id,healed,source.id,offline);}
+function performHeroAttack(run,h,offline=false){
+  const enemy=run.enemy;if(!enemy||(h.hp||0)<=0)return;const maxHit=heroMaxHit(h),hitChance=clamp(.25+(heroAttack(h)/(heroAttack(h)+enemy.defense))*.7,.25,.98);let damage=random()<hitChance?Math.floor(random()*(maxHit+1)):0,crit=damage>0&&random()<heroCritChance(h),special="";
+  if(crit)damage=Math.ceil(damage*1.6);if(h.className==="Warrior"&&damage&&random()<.12){damage+=Math.ceil(maxHit*.3);special=" crushing";}if(h.className==="Wizard"&&damage&&random()<.18){damage+=Math.ceil(maxHit*.4);special=" arcane";}
+  if(applyEnemyDamage(run,damage,crit?"crit":CLASS_COMBAT[h.className]?.style||"physical",h.id,offline))return;
+  if(damage&&h.className==="Summoner"&&random()<.22){const echo=Math.max(1,Math.ceil(damage*.5));if(applyEnemyDamage(run,echo,"summon",h.id,offline))return;special=" echoed";}
+  const bonus=equipmentDamageBonus(h),type=heroDamageType(h);if(damage>0&&bonus>0&&run.enemy){if(type==="poison"||type==="fire"){run.enemy.status[type]={damage:Math.max(1,Math.ceil(bonus/2)),remaining:6,timer:1.5,sourceId:h.id};pushCombatEvent(run,`${h.name}'s weapon inflicts ${type}.`,type,"enemy",bonus,h.id,offline);}else if(applyEnemyDamage(run,bonus,type,h.id,offline))return;if(type==="frost"&&run.enemy)run.enemyTimer+=.45;}
+  if(h.className==="Druid"&&random()<.16)healLowestHero(run,Math.max(2,Math.ceil(maxHit*.35)),h,offline);if(special)pushCombatEvent(run,`${h.name}'s${special} strike surges.`,"special","enemy",null,h.id,offline);
+}
+function defeatHero(run,h,offline=false){h.hp=0;h.assignment="inn";h.recoveryUntil=Date.now()+(1200/(1+state.buildings.inn*.2))*1000;h.records.defeats++;state.stats.defeats++;run.heroIds=run.heroIds.filter(id=>id!==h.id);delete run.heroTimers[h.id];pushCombatEvent(run,`${h.name} falls and is carried to the Inn.`,"defeat",h.id,0,null,offline);notify("Cart to the Inn",`${h.name} was defeated during ${COMBAT[run.combatId].short}.`,"🛒");if(!run.heroIds.length)stopRun(run.id,false,false);}
+function performEnemyAttack(run,offline=false){
+  const enemy=run.enemy,party=run.heroIds.map(heroById).filter(h=>h&&(h.hp||0)>0);if(!enemy||!party.length)return;enemy.attacks++;const targets=enemy.boss&&enemy.attacks%4===0?party:[party[Math.floor(random()*party.length)]];
+  for(const h of targets){const hitChance=clamp(.22+(enemy.attack/(enemy.attack+heroDefense(h)*1.8))*.68,.18,.95),base=random()<hitChance?Math.floor(random()*(enemy.maxHit+1)):0,damage=targets.length>1?Math.ceil(base*.6):base;h.hp=Math.max(0,(h.hp??heroMaxHP(h))-damage);run.damageTaken+=damage;pushCombatEvent(run,damage?`${enemy.name} hits ${h.name} for ${damage}.`:`${enemy.name} misses ${h.name}.`,damage?"enemy":"miss",h.id,damage,"enemy",offline);if(h.hp<=0)defeatHero(run,h,offline);}
+}
+function consumeCombatFood(run,h,offline=false){
+  if((h.hp||0)>heroMaxHP(h)*.45||state.resources.food<=0)return false;const deficit=heroMaxHP(h)-h.hp,bonus=equipmentEffect(h,"foodEfficiency")*4,available=RESOURCE_TIERS.food.filter(t=>(state.resourceTiers.food[t.id]||0)>0).map(t=>({...t,heal:t.value*FOOD_HEAL_PER_SUPPLY+bonus}));if(!available.length)return false;const tier=available.find(t=>t.heal>=deficit)||available[available.length-1];state.resourceTiers.food[tier.id]--;recalculateTieredTotal("food");const healed=Math.min(deficit,tier.heal);h.hp+=healed;run.foodEaten++;pushCombatEvent(run,`${h.name} eats ${tier.name} and heals ${healed} HP.`,"heal",h.id,healed,h.id,offline);return true;
+}
+function processSkillRoom(run,cfg,dt,offline=false){
+  const room=COMBAT_LAYOUTS[cfg.id][run.roomIndex],s=run.roomState;s.remaining-=dt;if(s.remaining>0)return;const party=run.heroIds.map(heroById).filter(Boolean),leader=heroById(s.leaderId);for(const h of party){addXP(h.skills[room.skill],h.id===s.leaderId?room.baseSeconds*.45:room.baseSeconds*.16);h.records.workActions++;}if(leader)rollSkillPet({farming:"farm",mining:"mine",woodcutting:"forest",smithing:"smith"}[room.skill],leader);pushCombatEvent(run,`${room.name} cleared by ${leader?.name||"the party"} at effective ${Math.floor(s.effective)} ${room.skill}.`,"skill","room",null,s.leaderId,offline);advanceCombatRoom(run,cfg,offline);
+}
+function processCombatRoom(run,cfg,dt,offline=false){
+  for(const id of [...run.heroIds]){const h=heroById(id);if(h)consumeCombatFood(run,h,offline);}if(processEnemyStatuses(run,dt,offline)||!run.enemy)return;
+  for(const id of [...run.heroIds]){const h=heroById(id);if(!h||!run.enemy)continue;run.heroTimers[id]=(run.heroTimers[id]??heroAttackSpeed(h))-dt;let attacks=0;while(run.heroTimers[id]<=0&&run.enemy&&attacks++<3){run.heroTimers[id]+=heroAttackSpeed(h);performHeroAttack(run,h,offline);}}
+  if(!run.enemy)return;run.enemyTimer-=dt;if(run.enemyTimer<=0){run.enemyTimer+=run.enemy.speed+(run.enemy.status.frost?.remaining?0.5:0);performEnemyAttack(run,offline);}
+}
 function processRun(run,seconds,offline=false){
-  const cfg=COMBAT[run.combatId];if(!cfg){stopRun(run.id,false);return;}run.progress+=seconds;
-  let loops=0; const loopLimit=offline?20000:500; while(run.progress>=run.duration && loops++<loopLimit){run.progress-=run.duration;resolveRun(run,cfg);if(!state.combatRuns.includes(run))break;if(!run.autoRepeat){stopRun(run.id,false);break;}if(!canPayRun(cfg,run.heroIds)){stopRun(run.id,false);notify("Run paused",`${cfg.short} stopped because supplies ran out.`,"🎒");break;}payRun(cfg,run.heroIds);run.duration=combatDuration(cfg,run.heroIds.map(heroById).filter(Boolean));}
+  const cfg=COMBAT[run.combatId];if(!cfg){stopRun(run.id,false,false);return;}let remaining=seconds,steps=0;while(remaining>0&&state.combatRuns.includes(run)&&steps++<250000){const dt=Math.min(.25,remaining);remaining-=dt;run.elapsed+=dt;run.cycleElapsed+=dt;if(!run.roomState)enterCurrentRoom(run,cfg,offline);if(!state.combatRuns.includes(run)||!run.roomState)continue;if(run.roomState.type==="skill")processSkillRoom(run,cfg,dt,offline);else processCombatRoom(run,cfg,dt,offline);}
 }
 
-function resolveRun(run,cfg){
-  const party=run.heroIds.map(heroById).filter(Boolean);if(!party.length){stopRun(run.id,false);return;}const chance=combatSuccessChance(cfg,party),won=random()<chance;
-  for(const h of party){h.sanity=clamp(h.sanity-(cfg.category==="raid"?28:cfg.category==="dungeon"?17:8),0,100);damageGear(h,cfg.category==="raid"?12:cfg.category==="dungeon"?7:3);}
-  if(!won){
-    const defeated=party[Math.floor(random()*party.length)];defeated.hp=0;defeated.assignment="inn";defeated.recoveryUntil=Date.now()+(1200/(1+state.buildings.inn*.2))*1000;defeated.records.defeats++;state.stats.defeats++;
-    run.heroIds=run.heroIds.filter(id=>id!==defeated.id);notify("Cart to the Inn",`${defeated.name} was defeated during ${cfg.short} and is being brought home.`,"🛒");
-    if(!run.heroIds.length){stopRun(run.id,false);}return;
-  }
-  const gold=Math.floor(cfg.gold[0]+random()*(cfg.gold[1]-cfg.gold[0]));state.resources.gold+=gold;state.stats.goldEarned+=gold;
-  for(const h of party){addXP(h,cfg.xp);h.records.kills+=cfg.killCount||6;h.records.goldEarned+=Math.floor(gold/party.length);if(cfg.category==="expedition")h.records.expeditions++;if(cfg.category==="dungeon"){h.records.dungeons++;h.records.dungeonBosses++;}if(cfg.category==="raid"){h.records.raids++;h.records.raidBosses++;}}
+function completeCombatCycle(run,cfg,offline=false){
+  const party=run.heroIds.map(heroById).filter(Boolean);if(!party.length){stopRun(run.id,false,false);return;}const gold=Math.floor(cfg.gold[0]+random()*(cfg.gold[1]-cfg.gold[0]+1));state.resources.gold+=gold;state.stats.goldEarned+=gold;run.cycles++;run.lastReward=`${fmt(gold)} Gold`;
+  for(const h of party){h.sanity=clamp(h.sanity-(cfg.category==="raid"?28:cfg.category==="dungeon"?17:8),0,100);damageGear(h,cfg.category==="raid"?12:cfg.category==="dungeon"?7:3);h.records.goldEarned+=Math.floor(gold/party.length);if(cfg.category==="expedition")h.records.expeditions++;if(cfg.category==="dungeon"){h.records.dungeons++;h.records.dungeonBosses++;}if(cfg.category==="raid"){h.records.raids++;h.records.raidBosses++;}}
   if(cfg.category==="expedition"){state.stats.expeditions++;if(random()<(cfg.essenceChance||0))state.resources.essence+=1;}
   if(cfg.category==="dungeon"){state.stats.dungeons++;state.resources.essence+=Math.floor(cfg.essenceReward[0]+random()*(cfg.essenceReward[1]-cfg.essenceReward[0]+1));if(random()<(cfg.keyChance||0))state.resources.keys+=1;if(cfg.trinketPool?.length&&random()<(cfg.trinketChance||0))dropTrinket(cfg,party);}
   if(cfg.category==="raid"){state.stats.raids++;state.resources.essence+=Math.floor(cfg.essenceReward[0]+random()*(cfg.essenceReward[1]-cfg.essenceReward[0]+1));if(cfg.eggKey&&random()<(cfg.eggChance||0))dropEgg(cfg,party);}
-  if(cfg.pool?.length&&random()<(cfg.itemChance||0))dropSpecial(cfg,party);
-  if(party.some(h=>h.sanity<=0)){for(const h of party.filter(x=>x.sanity<=0))sendToTavern(h);run.heroIds=run.heroIds.filter(id=>heroById(id).sanity>0);if(!run.heroIds.length)stopRun(run.id,false);}
-  notify(`${cfg.short} completed`,`${party.map(h=>h.name).join(", ")} returned with ${fmt(gold)} Gold.`,cfg.icon);
+  if(cfg.pool?.length&&random()<(cfg.itemChance||0))dropSpecial(cfg,party);pushCombatEvent(run,`${cfg.short} cleared in ${formatDuration(run.cycleElapsed)}. Chest: ${fmt(gold)} Gold.`,"loot","room",gold,null,offline);notify(`${cfg.short} completed`,`${party.map(h=>h.name).join(", ")} opened the chest for ${fmt(gold)} Gold.`,cfg.icon);
+  for(const h of party.filter(x=>x.sanity<=0))sendToTavern(h);run.heroIds=run.heroIds.filter(id=>heroById(id)?.sanity>0);if(!run.heroIds.length){stopRun(run.id,false,false);return;}
+  if(!run.autoRepeat){stopRun(run.id,false,false);return;}if(!canPayRunEntry(cfg)){stopRun(run.id,false,false);notify("Run paused",`${cfg.short} stopped because the next entry needs more ${cfg.keys?"Raid Keys or Essence":"Essence"}.`,"🎒");return;}payRunEntry(cfg);run.cycle++;run.roomIndex=0;run.roomState=null;run.enemy=null;run.cycleElapsed=0;
 }
 
 function dropSpecial(cfg,party=[]){const key=cfg.pool[Math.floor(random()*cfg.pool.length)],finder=party[Math.floor(random()*party.length)]||null;awardInventoryItem(key,finder,cfg.category==="raid"?"Raid rare table hit!":"Rare equipment!");}
@@ -418,22 +501,20 @@ function dropTrinket(cfg,party=[]){const key=cfg.trinketPool[Math.floor(random()
 function dropEgg(cfg,party=[]){const finder=party[Math.floor(random()*party.length)]||null;awardInventoryItem(cfg.eggKey,finder,"Boss egg! One-in-500 drop!");}
 
 function damageGear(h,amount){for(const slot of ["weapon","armor"]){const item=h.equipment[slot];if(item)item.durability=clamp((item.durability??100)-amount,0,100);}}
-function runFoodCost(cfg,heroIds){return heroIds.reduce((total,id)=>{const h=heroById(id);return total+Math.max(0,cfg.food-(h?equipmentEffect(h,"foodEfficiency"):0));},0);}
-function canPayRun(cfg,heroIds){return state.resources.food>=runFoodCost(cfg,heroIds) && state.resources.essence>=(cfg.essence||0) && state.resources.keys>=(cfg.keys||0);}
-function payRun(cfg,heroIds){spendTieredResource("food",runFoodCost(cfg,heroIds));state.resources.essence-=cfg.essence||0;state.resources.keys-=cfg.keys||0;}
+function canPayRunEntry(cfg){return state.resources.essence>=(cfg.essence||0)&&state.resources.keys>=(cfg.keys||0);}
+function payRunEntry(cfg){state.resources.essence-=cfg.essence||0;state.resources.keys-=cfg.keys||0;}
 
 function startRun(combatId,heroIds,autoRepeat=true){
-  const cfg=COMBAT[combatId];if(!cfg)return;heroIds=heroIds.filter(id=>{const h=heroById(id);return h&&h.assignment!=="combat"&&h.assignment!=="inn"&&h.sanity>0;});
+  const cfg=COMBAT[combatId];if(!cfg)return;heroIds=heroIds.filter(id=>{const h=heroById(id);return h&&h.assignment!=="combat"&&h.assignment!=="inn"&&h.sanity>0&&(h.hp||0)>0;});
   if(!heroIds.length)return toast("⚠️","Choose at least one available hero");
   const max=cfg.maxParty;if(heroIds.length>max)return toast("⚠️",`${cfg.short} allows up to ${max} heroes`);
   if(combatCount()+heroIds.length>4)return toast("⚠️","Only four heroes may fight at once");
   if(heroIds.some(id=>heroById(id).level<cfg.minLevel))return toast("🔒",`${cfg.name} requires Combat Level ${cfg.minLevel}`);
-  const foodCost=runFoodCost(cfg,heroIds);if(!canPayRun(cfg,heroIds))return toast("🎒","Not enough supplies",`Need ${foodCost} Food${cfg.essence?`, ${cfg.essence} Essence`:""}${cfg.keys?`, ${cfg.keys} Key`:""}.`);
-  const party=heroIds.map(heroById).filter(Boolean),duration=combatDuration(cfg,party);payRun(cfg,heroIds);for(const id of heroIds)heroById(id).assignment="combat";
-  state.combatRuns.push({id:uid(),combatId,heroIds,progress:0,duration,baseDuration:cfg.duration,autoRepeat,startedAt:Date.now()});notify(`${cfg.short} started`,`${party.map(h=>h.name).join(", ")} departed with a ${chanceLabel(combatSuccessChance(cfg,party))} success chance and ${formatDuration(duration)} clear time.`,cfg.icon);markDirty();renderAll();closeDrawer();
+  if(!canPayRunEntry(cfg))return toast("🎒","Not enough entry supplies",`Need ${cfg.essence||0} Essence${cfg.keys?` and ${cfg.keys} Raid Key${cfg.keys===1?"":"s"}`:""}.`);
+  const party=heroIds.map(heroById).filter(Boolean);payRunEntry(cfg);for(const id of heroIds)heroById(id).assignment="combat";const run=createCombatRunState(combatId,heroIds,autoRepeat);state.combatRuns.push(run);watchedRunId=run.id;enterCurrentRoom(run,cfg,false);notify(`${cfg.short} started`,`${party.map(h=>h.name).join(", ")} entered live combat. Higher max hits and faster attacks now shorten every clear.`,cfg.icon);markDirty();renderAll();closeDrawer();
 }
 
-function stopRun(id,announce=true){const run=state.combatRuns.find(r=>r.id===id);if(!run)return;for(const hid of run.heroIds){const h=heroById(hid);if(h?.assignment==="combat")h.assignment="idle";}state.combatRuns=state.combatRuns.filter(r=>r.id!==id);if(announce)notify("Party recalled","The adventurers are returning to town.","🏰");markDirty();renderAll();}
+function stopRun(id,announce=true,rerender=true){const run=state.combatRuns.find(r=>r.id===id);if(!run)return;for(const hid of run.heroIds){const h=heroById(hid);if(h?.assignment==="combat")h.assignment="idle";}state.combatRuns=state.combatRuns.filter(r=>r.id!==id);if(watchedRunId===id)watchedRunId=state.combatRuns[0]?.id||null;if(announce)notify("Party recalled","The adventurers are returning to town.","🏰");markDirty();if(rerender)renderAll();}
 
 function assignHero(heroId,assignment){
   const h=heroById(heroId);if(!h||h.assignment==="inn")return toast("🛏️","Hero is still recovering");
@@ -483,17 +564,34 @@ function renderAssignments(){
 }
 function bestSkill(h){const names={farming:"Farming",mining:"Mining",woodcutting:"Woodcutting",smithing:"Smithing"};const [k,v]=Object.entries(h.skills).sort((a,b)=>b[1].level-a[1].level)[0];return `${names[k]} ${v.level}`;}
 
+function hitsplatsFor(run,target){const now=Date.now();return (run.recentEvents||[]).filter(e=>e.target===target&&e.amount!==null&&now-e.at<1450).slice(-4).map((e,i)=>`<span class="hitsplat ${e.type}" style="--hit-index:${i}">${e.type==="heal"?"+":""}${fmt(e.amount)}</span>`).join("");}
+function roomProgress(run){if(run.roomState?.type==="skill")return clamp(1-run.roomState.remaining/run.roomState.total,0,1);if(run.enemy)return clamp(1-run.enemy.hp/run.enemy.maxHP,0,1);return 0;}
+function renderCombatBattlefield(){
+  const host=$("#combatBattlefield");if(!host)return;if(!state.combatRuns.length){host.innerHTML="";return;}if(!state.combatRuns.some(r=>r.id===watchedRunId))watchedRunId=state.combatRuns[0].id;const run=state.combatRuns.find(r=>r.id===watchedRunId),cfg=COMBAT[run.combatId],layout=COMBAT_LAYOUTS[cfg.id],room=layout[run.roomIndex]||layout[0],party=run.heroIds.map(heroById).filter(Boolean),dps=run.elapsed?run.damageDealt/run.elapsed:0;
+  const timeline=`<div class="room-timeline">${layout.map((r,i)=>`<div class="${i<run.roomIndex?"done":i===run.roomIndex?"current":""}"><span>${r.icon}</span><small>${escapeHTML(r.name)}</small></div>`).join("")}</div>`;
+  let stage="";if(room.type==="skill"){
+    const s=run.roomState||{total:1,remaining:1,effective:0},leader=heroById(s.leaderId);stage=`<div class="skill-obstacle"><div class="obstacle-icon">${room.icon}</div><div><span class="eyebrow">Non-combat Raid room · ${escapeHTML(room.skill)}</span><h3>${escapeHTML(room.name)}</h3><p>${escapeHTML(room.description)}</p><div class="battle-hp"><span style="width:${clamp((1-s.remaining/s.total)*100,0,100)}%"></span></div><small>${leader?`${escapeHTML(leader.name)} leads at effective level ${Math.floor(s.effective)}`:"Party assessing obstacle"} · ${formatDuration(Math.max(0,s.remaining))} remaining</small></div></div>`;
+  }else{
+    const enemy=run.enemy||createEnemy(cfg,room),enemyPct=clamp(enemy.hp/enemy.maxHP*100,0,100),statuses=Object.keys(enemy.status||{});stage=`<div class="battle-stage"><div class="enemy-zone ${enemy.boss?"boss":""}"><div class="enemy-name"><span class="eyebrow">${enemy.boss?"Boss":"Enemy"} · Room ${run.roomIndex+1}/${layout.length}</span><h3>${escapeHTML(enemy.name)}</h3></div><div class="enemy-figure"><span>${enemy.icon}</span>${hitsplatsFor(run,"enemy")}</div><div class="battle-hp enemy-hp"><span style="width:${enemyPct}%"></span></div><small>${fmt(enemy.hp)} / ${fmt(enemy.maxHP)} HP · Max hit ${fmt(enemy.maxHit)} · ${enemy.speed.toFixed(1)}s attacks</small>${statuses.length?`<div class="status-effects">${statuses.map(x=>`<span class="${x}">${x}</span>`).join("")}</div>`:""}</div><div class="versus-mark">VS</div><div class="battle-party">${party.map(h=>{const maxHP=heroMaxHP(h),hpPct=clamp((h.hp||0)/maxHP*100,0,100),timer=run.heroTimers?.[h.id]??heroAttackSpeed(h),attackPct=clamp((1-timer/heroAttackSpeed(h))*100,0,100),last=(run.recentEvents||[]).slice().reverse().find(e=>e.attackerId===h.id&&Date.now()-e.at<350);return `<article class="battle-hero ${last?"attacking":""}" style="--hero-color:${h.color}"><div class="battle-portrait">${heroImage(h)}${hitsplatsFor(run,h.id)}</div><div class="battle-hero-name"><strong>${escapeHTML(h.name)}</strong><small>${h.className} · Max ${fmt(heroMaxHit(h))}</small></div><div class="battle-hp hero-hp"><span style="width:${hpPct}%"></span></div><small>${fmt(h.hp)} / ${fmt(maxHP)} HP</small><div class="attack-timer"><span style="width:${attackPct}%"></span></div></article>`}).join("")}</div></div>`;
+  }
+  const log=(run.recentEvents||[]).slice(-7).reverse();host.innerHTML=`<section class="combat-battlefield" style="--battle-a:${cfg.colors[0]};--battle-b:${cfg.colors[1]}"><header><div><span class="eyebrow">Now watching · Cycle ${run.cycle}</span><h2>${cfg.icon} ${escapeHTML(cfg.name)}</h2></div><div class="battle-actions"><button class="loot-button" data-action="open-loot" data-combat="${cfg.id}"><span class="loot-chest-icon"></span> Drop table</button><button class="stop-run" data-action="stop-run" data-run="${run.id}">Recall</button></div></header>${timeline}${stage}<div class="battle-summary"><div><strong>${dps.toFixed(1)}</strong><small>Party DPS</small></div><div><strong>${fmt(run.kills)}</strong><small>Enemies slain</small></div><div><strong>${fmt(run.cycles)}</strong><small>Clears</small></div><div><strong>${fmt(run.foodEaten)}</strong><small>Food eaten</small></div><div><strong>${escapeHTML(run.lastReward||"None yet")}</strong><small>Latest chest</small></div></div><details class="combat-log"><summary>Battle log</summary>${log.length?log.map(e=>`<p class="${e.type}">${escapeHTML(e.text)}</p>`).join(""):`<p>The party is entering the first room.</p>`}</details></section>`;
+}
+function renderActiveRuns(){
+  $("#combatSlotCount").textContent=combatCount();$("#activeRuns").innerHTML=state.combatRuns.length?state.combatRuns.map(r=>{const c=COMBAT[r.combatId],party=r.heroIds.map(heroById).filter(Boolean),room=COMBAT_LAYOUTS[c.id]?.[r.roomIndex],pct=roomProgress(r)*100,status=r.roomState?.type==="skill"?`${formatDuration(Math.max(0,r.roomState.remaining))} on obstacle`:r.enemy?`${fmt(r.enemy.hp)} / ${fmt(r.enemy.maxHP)} enemy HP`:"Entering room";return `<article class="active-run ${r.id===watchedRunId?"watched":""}"><div class="run-icon">${room?.icon||c.icon}</div><div><div class="run-title"><strong>${c.name} · Cycle ${r.cycle}</strong><small>${escapeHTML(status)}</small></div><div class="run-progress"><span style="width:${pct}%"></span></div><div class="run-party">${party.map(h=>`<i title="${escapeHTML(h.name)}">${heroImage(h)}</i>`).join("")}<span>${escapeHTML(room?.name||"First room")} · ${r.autoRepeat?"Repeating":"Single clear"}</span></div></div><div class="active-run-actions"><button class="watch-run" data-action="watch-run" data-run="${r.id}">${r.id===watchedRunId?"Watching":"Watch fight"}</button><button class="loot-button" data-action="open-loot" data-combat="${c.id}"><span class="loot-chest-icon" aria-hidden="true"></span> Rewards</button><button class="stop-run" data-action="stop-run" data-run="${r.id}">Recall</button></div></article>`}).join(""):`<div class="empty-state"><span>🗺️</span>No active runs. Your heroes are waiting for orders.</div>`;
+}
+function renderCombatLive(){renderCombatBattlefield();renderActiveRuns();}
 function renderCombat(){
-  $("#combatSlotCount").textContent=combatCount();
-  $("#activeRuns").innerHTML=state.combatRuns.length?state.combatRuns.map(r=>{const c=COMBAT[r.combatId],party=r.heroIds.map(heroById).filter(Boolean),pct=clamp(r.progress/r.duration*100,0,100);return `<article class="active-run"><div class="run-icon">${c.icon}</div><div><div class="run-title"><strong>${c.name}</strong><small>${Math.ceil(r.duration-r.progress)}s remaining</small></div><div class="run-progress"><span style="width:${pct}%"></span></div><div class="run-party">${party.map(h=>`<i title="${escapeHTML(h.name)}">${heroImage(h)}</i>`).join("")}<span>${chanceLabel(combatSuccessChance(c,party))} success · ${combatSpeedMultiplier(c,party).toFixed(2)}× speed · ${r.autoRepeat?"Repeating":"Single run"}</span></div></div><div class="active-run-actions"><button class="loot-button" data-action="open-loot" data-combat="${c.id}" aria-label="View ${c.name} rewards"><span class="loot-chest-icon" aria-hidden="true"></span> Rewards</button><button class="stop-run" data-action="stop-run" data-run="${r.id}">Recall party</button></div></article>`}).join(""):`<div class="empty-state"><span>🗺️</span>No active runs. Your heroes are waiting for orders.</div>`;
+  renderCombatLive();
   const groups=[
-    ["expedition","Expeditions","Free and low-cost routes for Combat XP, Gold, and the Essence needed to enter Dungeons."],
-    ["dungeon","Dungeons","Solo or duo multi-room runs with unique equipment and Raid Key chances."],
-    ["raid","Raids","Four-hero milestone battles at Levels 30, 60, and 90 with exceptional jackpot gear."],
+    ["expedition","Expeditions","Three real enemies per route. Every attack, kill, XP gain, and chest is simulated."],
+    ["dungeon","Dungeons","Shared dungeon enemies lead to a unique regional boss and the existing loot table."],
+    ["raid","Raids","Unique raid enemies, live bosses, and work-skill obstacles that reward well-rounded parties."],
   ];
   const highest=Math.max(...state.heroes.map(h=>h.level));
-  $("#combatCatalog").innerHTML=groups.map(([category,title,subtitle])=>`<section id="combat-${category}" class="combat-section"><div class="combat-section-heading"><div><span class="eyebrow">${category}</span><h3>${title}</h3><p>${subtitle}</p></div><span>${Object.values(COMBAT).filter(c=>c.category===category).length} locations</span></div><div class="combat-cards">${Object.values(COMBAT).filter(c=>c.category===category).map(c=>{const locked=highest<c.minLevel;return `<article class="combat-card ${locked?"locked":""}" style="--card-a:${c.colors[0]};--card-b:${c.colors[1]}" data-icon="${c.icon}"><span class="eyebrow">${c.eyebrow}</span><h3>${c.name}</h3><p>${c.description}</p><ul>${c.requirements.map(x=>`<li>${x}</li>`).join("")}</ul><div class="combat-card-actions"><button class="loot-button" data-action="open-loot" data-combat="${c.id}" aria-label="View ${c.name} rewards"><span class="loot-chest-icon" aria-hidden="true"></span> Loot</button><button data-action="open-combat" data-combat="${c.id}">${locked?`Locked · Lv ${c.minLevel}`:`Prepare ${c.short}`}</button></div></article>`}).join("")}</div></section>`).join("");
+  $("#combatCatalog").innerHTML=groups.map(([category,title,subtitle])=>`<section id="combat-${category}" class="combat-section"><div class="combat-section-heading"><div><span class="eyebrow">${category}</span><h3>${title}</h3><p>${subtitle}</p></div><span>${Object.values(COMBAT).filter(c=>c.category===category).length} locations</span></div><div class="combat-cards">${Object.values(COMBAT).filter(c=>c.category===category).map(c=>{const locked=highest<c.minLevel;return `<article class="combat-card ${locked?"locked":""}" style="--card-a:${c.colors[0]};--card-b:${c.colors[1]}" data-icon="${c.icon}"><span class="eyebrow">${c.eyebrow}</span><h3>${c.name}</h3><p>${c.description}</p><ul>${combatRequirements(c).map(x=>`<li>${x}</li>`).join("")}</ul><div class="combat-card-actions"><button class="loot-button" data-action="open-loot" data-combat="${c.id}" aria-label="View ${c.name} rewards"><span class="loot-chest-icon" aria-hidden="true"></span> Loot</button><button data-action="open-combat" data-combat="${c.id}">${locked?`Locked · Lv ${c.minLevel}`:`Prepare ${c.short}`}</button></div></article>`}).join("")}</div></section>`).join("");
 }
+
+function combatRequirements(c){const entry=[c.keys?`${c.keys} Raid Key${c.keys===1?"":"s"}`:"",c.essence?`${c.essence} Essence`:""].filter(Boolean).join(" + ");return [`Combat Level ${c.minLevel}+`,`1–${c.maxParty} heroes`,entry?`${entry} per clear`:"No entry cost","Warehouse food auto-heals in battle"];}
 
 function chanceLabel(value){return `${(Math.round(value*10000)/100).toFixed(2).replace(/\.?0+$/,"")}%`;}
 function lootRows(c){
@@ -551,7 +649,7 @@ function openHero(id){
     ["📦","Rare finds",h.records.itemsFound],["🥕","Food gathered",h.records.foodGathered],["⛓️","Metal mined",h.records.metalMined],["🪵","Wood gathered",h.records.woodGathered],
     ["🧰","Repair kits forged",h.records.kitsForged],["📋","Work actions",h.records.workActions],["🛒","Defeats",h.records.defeats],["⏳","Time active",formatDuration(h.records.secondsActive)],
   ];
-  openDrawer(h.name,`${h.className} · Combat Level ${h.level}`,`<div class="character-banner" style="--hero-color:${h.color}"><span>${heroImage(h)}</span><div><strong>${escapeHTML(h.name)}</strong><small>${h.className} · ${escapeHTML(statusFor(h))}</small></div></div><div class="drawer-section"><h3>Rename this hero</h3><div class="rename-row"><input id="heroNameInput" maxlength="24" value="${escapeHTML(h.name)}" aria-label="New hero name"><button class="primary-button" data-action="rename-hero" data-hero="${h.id}">Save name</button></div></div><div class="drawer-section"><h3>Combat Sheet</h3><div class="combat-stat-grid"><div><span>⚔️</span><strong>${fmt(heroAttack(h))}</strong><small>Attack</small></div><div><span>🛡️</span><strong>${fmt(heroDefense(h))}</strong><small>Defense</small></div><div><span>❤️</span><strong>${fmt(Math.min(h.hp??maxHP,maxHP))} / ${fmt(maxHP)}</strong><small>HP</small></div><div><span>✦</span><strong>${fmt(heroPower(h))}</strong><small>Combat strength</small></div></div>${specials.length?`<div class="special-chip-list">${specials.map(x=>`<span>${escapeHTML(x)}</span>`).join("")}</div>`:`<p class="profile-empty-note">No special effects yet. Dungeon gear, pets, and trinkets can add them.</p>`}</div><div class="drawer-section"><div class="profile-section-title"><h3>Equipment</h3><button class="text-button" data-action="open-view" data-view="warehouse">Open Warehouse</button></div><div class="profile-equipment-grid">${profileEquipmentSlot(h,"weapon","Weapon")}${profileEquipmentSlot(h,"armor","Armor")}${profileEquipmentSlot(h,"pet","Pet")}${profileEquipmentSlot(h,"trinket","Trinket")}</div></div><div class="drawer-section"><h3>${escapeHTML(h.name)}'s Story</h3><div class="hero-record-grid">${records.map(([icon,label,value])=>`<div><span>${icon}</span><strong>${typeof value==="number"?fmt(value):escapeHTML(value)}</strong><small>${label}</small></div>`).join("")}</div></div><div class="drawer-section"><h3>Independent Work Skills</h3>${workActionStatus(h)?`<div class="notice work-timer">⏱️ Next timed action: <strong data-work-timer="${h.id}">${escapeHTML(workActionStatus(h))}</strong></div>`:""}<div class="skill-list">${Object.entries(h.skills).map(([k,s])=>`<div class="skill-row"><span>${skillNames[k]}</span><b>Lv ${s.level}</b><div class="meter"><span style="--value:${s.xp/xpForLevel(s.level)*100}%"></span></div></div>`).join("")}</div></div><div class="drawer-section"><h3>Quick Assignment</h3><div class="choice-grid">${["idle","farm","mine","forest","smith","tavern"].map(a=>`<button class="choice-card ${h.assignment===a?"selected":""}" data-action="assign" data-hero="${h.id}" data-assignment="${a}"><span>${ASSIGNMENTS[a].icon}</span><strong>${ASSIGNMENTS[a].name}</strong><small>${ASSIGNMENTS[a].detail}</small></button>`).join("")}</div></div>`);
+  openDrawer(h.name,`${h.className} · Combat Level ${h.level}`,`<div class="character-banner" style="--hero-color:${h.color}"><span>${heroImage(h)}</span><div><strong>${escapeHTML(h.name)}</strong><small>${h.className} · ${escapeHTML(statusFor(h))}</small></div></div><div class="drawer-section"><h3>Rename this hero</h3><div class="rename-row"><input id="heroNameInput" maxlength="24" value="${escapeHTML(h.name)}" aria-label="New hero name"><button class="primary-button" data-action="rename-hero" data-hero="${h.id}">Save name</button></div></div><div class="drawer-section"><h3>Combat Sheet</h3><div class="combat-stat-grid"><div><span>⚔️</span><strong>${fmt(heroAttack(h))}</strong><small>Attack</small></div><div><span>💥</span><strong>${fmt(heroMaxHit(h))}</strong><small>Max hit</small></div><div><span>🛡️</span><strong>${fmt(heroDefense(h))}</strong><small>Defense</small></div><div><span>❤️</span><strong>${fmt(Math.min(h.hp??maxHP,maxHP))} / ${fmt(maxHP)}</strong><small>HP</small></div><div><span>✦</span><strong>${fmt(heroPower(h))}</strong><small>Combat strength</small></div></div>${specials.length?`<div class="special-chip-list">${specials.map(x=>`<span>${escapeHTML(x)}</span>`).join("")}</div>`:`<p class="profile-empty-note">No special effects yet. Dungeon gear, pets, and trinkets can add them.</p>`}</div><div class="drawer-section"><div class="profile-section-title"><h3>Equipment</h3><button class="text-button" data-action="open-view" data-view="warehouse">Open Warehouse</button></div><div class="profile-equipment-grid">${profileEquipmentSlot(h,"weapon","Weapon")}${profileEquipmentSlot(h,"armor","Armor")}${profileEquipmentSlot(h,"pet","Pet")}${profileEquipmentSlot(h,"trinket","Trinket")}</div></div><div class="drawer-section"><h3>${escapeHTML(h.name)}'s Story</h3><div class="hero-record-grid">${records.map(([icon,label,value])=>`<div><span>${icon}</span><strong>${typeof value==="number"?fmt(value):escapeHTML(value)}</strong><small>${label}</small></div>`).join("")}</div></div><div class="drawer-section"><h3>Independent Work Skills</h3>${workActionStatus(h)?`<div class="notice work-timer">⏱️ Next timed action: <strong data-work-timer="${h.id}">${escapeHTML(workActionStatus(h))}</strong></div>`:""}<div class="skill-list">${Object.entries(h.skills).map(([k,s])=>`<div class="skill-row"><span>${skillNames[k]}</span><b>Lv ${s.level}</b><div class="meter"><span style="--value:${s.xp/xpForLevel(s.level)*100}%"></span></div></div>`).join("")}</div></div><div class="drawer-section"><h3>Quick Assignment</h3><div class="choice-grid">${["idle","farm","mine","forest","smith","tavern"].map(a=>`<button class="choice-card ${h.assignment===a?"selected":""}" data-action="assign" data-hero="${h.id}" data-assignment="${a}"><span>${ASSIGNMENTS[a].icon}</span><strong>${ASSIGNMENTS[a].name}</strong><small>${ASSIGNMENTS[a].detail}</small></button>`).join("")}</div></div>`);
 }
 
 function resourceTierHTML(id){
@@ -563,14 +661,15 @@ function smithCraftHTML(){const keys=["goodSword","goodWand","goodBow","goodStaf
 function craftItem(key){const d=ITEMS[key];if(!d?.metalCost)return;if(occupiedSlots()>=warehouseCapacity())return toast("📦","Warehouse is full");if(state.resources.metal<d.metalCost||state.resources.wood<d.woodCost)return toast("⚒️","Not enough crafting materials",`Need ${d.metalCost} Metal and ${d.woodCost} Wood.`);spendTieredResource("metal",d.metalCost);spendTieredResource("wood",d.woodCost);state.inventory.push({id:uid(),key,durability:100,acquiredAt:Date.now()});notify("Equipment crafted",`${d.name} was delivered to the Warehouse.`,d.icon);markDirty();renderAll();openBuilding("smith");}
 
 function openCombat(combatId){
-  const c=COMBAT[combatId];if(!c)return;const available=state.heroes.filter(h=>h.assignment!=="combat"&&h.assignment!=="inn"&&h.sanity>0),max=c.maxParty,entry=[c.keys?`${c.keys} Key${c.keys===1?"":"s"}`:"",c.essence?`${c.essence} Essence`:""].filter(Boolean).join(" + ")||"No key or Essence";
-  openDrawer(c.name,c.eyebrow,`<div class="drawer-section"><p>${c.description}</p><div class="info-grid"><div class="info-tile"><small>Base duration</small><strong>${formatDuration(c.duration)}</strong></div><div class="info-tile"><small>Required level</small><strong>Combat ${c.minLevel}+</strong></div><div class="info-tile"><small>Party size</small><strong>Up to ${max}</strong></div><div class="info-tile"><small>Food cost</small><strong>${c.food} per hero</strong></div><div class="info-tile"><small>Entry</small><strong>${entry}</strong></div><button class="info-tile loot-preview" data-action="open-loot" data-combat="${c.id}"><small>Possible rewards</small><strong><span class="loot-chest-icon" aria-hidden="true"></span> View loot & rates</strong></button></div></div><div class="drawer-section"><h3>Choose the party</h3><div class="choice-grid" id="partyChoices">${available.map(h=>`<button class="choice-card hero-choice ${h.level<c.minLevel?"locked":""}" data-action="toggle-party" data-hero="${h.id}" data-max="${max}" data-combat="${c.id}" ${h.level<c.minLevel?"disabled":""}><span>${heroImage(h)}</span><strong>${escapeHTML(h.name)} · Lv ${h.level}</strong><small>${h.level<c.minLevel?`Needs Level ${c.minLevel}`:`Power ${Math.floor(heroPower(h))} · Sanity ${Math.floor(h.sanity)}`}</small></button>`).join("")}</div></div><div id="combatPartyPreview" class="combat-party-preview empty"><div><span>🎯</span><strong id="partySuccess">Choose heroes</strong><small>Success chance</small></div><div><span>✦</span><strong id="partyPower">—</strong><small>Party power</small></div><div><span>⏱️</span><strong id="partyDuration">${formatDuration(c.duration)}</strong><small id="partySpeed">Base duration</small></div><div><span>🥕</span><strong id="partyFood">—</strong><small>Food supply cost</small></div></div><p id="combatPreviewNote" class="combat-preview-note">Select heroes to calculate this party’s exact odds and clear speed.</p><label class="notice"><input id="autoRepeatChoice" type="checkbox" checked> Automatically repeat while supplies and heroes allow.</label><div class="drawer-footer"><button class="soft-button" data-action="close-drawer">Cancel</button><button class="primary-button" data-action="start-run" data-combat="${c.id}">Begin ${c.short}</button></div>`);
+  const c=COMBAT[combatId];if(!c)return;const available=state.heroes.filter(h=>h.assignment!=="combat"&&h.assignment!=="inn"&&h.sanity>0&&(h.hp||0)>0),max=c.maxParty,entry=[c.keys?`${c.keys} Key${c.keys===1?"":"s"}`:"",c.essence?`${c.essence} Essence`:""].filter(Boolean).join(" + ")||"Free entry",layout=COMBAT_LAYOUTS[c.id];
+  openDrawer(c.name,c.eyebrow,`<div class="drawer-section"><p>${c.description}</p><div class="info-grid"><div class="info-tile"><small>Route</small><strong>${combatRoomsFor(c).length} fights · ${layout.filter(r=>r.type==="skill").length} skill rooms</strong></div><div class="info-tile"><small>Required level</small><strong>Combat ${c.minLevel}+</strong></div><div class="info-tile"><small>Party size</small><strong>Up to ${max}</strong></div><div class="info-tile"><small>Auto-healing</small><strong>Eat below 45% HP</strong></div><div class="info-tile"><small>Entry per clear</small><strong>${entry}</strong></div><button class="info-tile loot-preview" data-action="open-loot" data-combat="${c.id}"><small>Possible rewards</small><strong><span class="loot-chest-icon" aria-hidden="true"></span> View loot & rates</strong></button></div></div><div class="drawer-section"><h3>Rooms in this route</h3><div class="route-preview">${layout.map((r,i)=>`<div><span>${r.icon}</span><div><strong>${i+1}. ${escapeHTML(r.name)}</strong><small>${r.type==="skill"?`${r.skill} obstacle · time scales with party skill`:r.boss?"Boss fight":"Enemy fight"}</small></div></div>`).join("")}</div></div><div class="drawer-section"><h3>Choose the party</h3><div class="choice-grid" id="partyChoices">${available.map(h=>`<button class="choice-card hero-choice ${h.level<c.minLevel?"locked":""}" data-action="toggle-party" data-hero="${h.id}" data-max="${max}" data-combat="${c.id}" ${h.level<c.minLevel?"disabled":""}><span>${heroImage(h)}</span><strong>${escapeHTML(h.name)} · Lv ${h.level}</strong><small>${h.level<c.minLevel?`Needs Level ${c.minLevel}`:`Max hit ${heroMaxHit(h)} · ${heroAttackSpeed(h).toFixed(2)}s · HP ${fmt(h.hp)}`}</small></button>`).join("")}</div></div><div id="combatPartyPreview" class="combat-party-preview empty"><div><span>💥</span><strong id="partyMaxHit">Choose heroes</strong><small>Highest max hit</small></div><div><span>⚔️</span><strong id="partyDps">—</strong><small>Estimated DPS</small></div><div><span>⏱️</span><strong id="partyDuration">—</strong><small id="partySpeed">Estimated clear</small></div><div><span>🥕</span><strong id="partyFood">${fmt(state.resources.food)}</strong><small>Food supply stored</small></div></div><p id="combatPreviewNote" class="combat-preview-note">There is no pass/fail roll. The party must survive every room; more damage means faster kills, XP, and chest rolls.</p><label class="notice"><input id="autoRepeatChoice" type="checkbox" checked> Automatically repeat while entry supplies, food, Sanity, and heroes allow.</label><div class="drawer-footer"><button class="soft-button" data-action="close-drawer">Cancel</button><button class="primary-button" data-action="start-run" data-combat="${c.id}">Enter ${c.short}</button></div>`);
   updateCombatPreview(c.id);
 }
+function estimatedClearTime(c,party){const dps=Math.max(.1,estimatedPartyDPS(party,c));return COMBAT_LAYOUTS[c.id].reduce((total,room)=>{if(room.type==="combat")return total+createEnemy(c,room).maxHP/dps;const ranked=party.map(h=>h.skills[room.skill]?.level||1).sort((a,b)=>b-a),effective=ranked.reduce((n,l,i)=>n+l*(i?0.25:1),0);return total+room.baseSeconds/(1+effective/25);},0);}
 function updateCombatPreview(combatId){
-  const c=COMBAT[combatId],panel=$("#combatPartyPreview");if(!c||!panel)return;const heroIds=$$("#partyChoices .selected").map(x=>x.dataset.hero),party=heroIds.map(heroById).filter(Boolean),success=$("#partySuccess"),power=$("#partyPower"),duration=$("#partyDuration"),speed=$("#partySpeed"),food=$("#partyFood"),note=$("#combatPreviewNote");
-  if(!party.length){panel.classList.add("empty");success.textContent="Choose heroes";power.textContent="—";duration.textContent=formatDuration(c.duration);speed.textContent="Base duration";food.textContent="—";note.textContent="Select heroes to calculate this party’s exact odds and clear speed.";return;}
-  const totalPower=partyPower(party),chance=combatSuccessChance(c,party),clearTime=combatDuration(c,party),multiplier=combatSpeedMultiplier(c,party);panel.classList.remove("empty");panel.dataset.risk=chance>=.85?"high":chance>=.6?"medium":"low";success.textContent=chanceLabel(chance);power.textContent=fmt(totalPower);duration.textContent=formatDuration(clearTime);speed.textContent=`${multiplier.toFixed(2)}× clear speed`;food.textContent=fmt(runFoodCost(c,heroIds));note.textContent=`More party power improves both success chance and clear speed. Success chance is capped at 96%; clear speed is capped at 3×.`;
+  const c=COMBAT[combatId],panel=$("#combatPartyPreview");if(!c||!panel)return;const party=$$("#partyChoices .selected").map(x=>heroById(x.dataset.hero)).filter(Boolean),maxHit=$("#partyMaxHit"),dps=$("#partyDps"),duration=$("#partyDuration"),speed=$("#partySpeed"),food=$("#partyFood"),note=$("#combatPreviewNote");food.textContent=fmt(state.resources.food);
+  if(!party.length){panel.classList.add("empty");maxHit.textContent="Choose heroes";dps.textContent="—";duration.textContent="—";speed.textContent="Estimated clear";note.textContent="There is no pass/fail roll. Select heroes to see their real damage and route time.";return;}
+  const partyDPS=estimatedPartyDPS(party,c),clearTime=estimatedClearTime(c,party),highest=Math.max(...party.map(heroMaxHit)),avgDef=party.reduce((n,h)=>n+heroDefense(h),0)/party.length;panel.classList.remove("empty");maxHit.textContent=fmt(highest);dps.textContent=partyDPS.toFixed(1);duration.textContent=formatDuration(clearTime);speed.textContent=`Avg DEF ${Math.floor(avgDef)}`;note.textContent=`Weapons directly raise max hit. Work-skilled Raid parties also shorten obstacle rooms. ${state.resources.food?"Stored meals will be eaten automatically below 45% HP.":"Warning: no food is stored, so this party cannot auto-heal."}`;
 }
 function openCombatCategory(category){closeDrawer();openView("combat");setTimeout(()=>document.querySelector(`#combat-${category}`)?.scrollIntoView({behavior:"smooth",block:"start"}),80);}
 
@@ -628,6 +727,7 @@ document.addEventListener("click",async event=>{
   else if(a==="open-auth"){closeDrawer();$("#authDialog").showModal();}
   else if(a==="assign")assignHero(b.dataset.hero,b.dataset.assignment);
   else if(a==="stop-run")stopRun(b.dataset.run);
+  else if(a==="watch-run"){watchedRunId=b.dataset.run;renderCombatLive();$("#combatBattlefield")?.scrollIntoView({behavior:"smooth",block:"start"});}
   else if(a==="toggle-party"){const max=Number(b.dataset.max);if(!b.classList.contains("selected")&&$$("#partyChoices .selected").length>=max)return toast("⚠️",`This activity allows ${max} heroes`);b.classList.toggle("selected");updateCombatPreview(b.dataset.combat);}
   else if(a==="start-run")startRun(b.dataset.combat,$$("#partyChoices .selected").map(x=>x.dataset.hero),$("#autoRepeatChoice").checked);
   else if(a==="upgrade-building")upgradeBuilding(b.dataset.building);
@@ -655,14 +755,14 @@ document.addEventListener("click",async event=>{
   else if(a==="reset-game" && await confirmAction("Begin a new town?","This replaces the current town on this device and, after syncing, in the cloud.","🏰")){state=freshState();saveLocal();closeDrawer();renderAll();}
 });
 
-function showOffline(report){if(!report||report.seconds<60)return;const entries=[["Time away",formatDuration(report.seconds)],...(report.tierChanges||[]).map(change=>[`${change.icon} ${change.name}`,change.quantity]),["🪙 Gold",report.gold],["✨ Essence",report.essence],["🗝️ Raid Keys",report.keys],["🧰 Repair Kits",report.kits],["📦 Items",report.items],["⚔️ Runs completed",report.runs]].filter(([,v],i)=>i===0||Math.abs(v)>.01);$("#offlineReport").innerHTML=entries.map(([k,v],i)=>`<div class="offline-line"><span>${k}</span><strong>${i===0?v:`${v>=0?"+":""}${fmt(v)}`}</strong></div>`).join("");$("#offlineDialog").showModal();}
+function showOffline(report){if(!report||report.seconds<60)return;const entries=[["Time away",formatDuration(report.seconds)],...(report.tierChanges||[]).map(change=>[`${change.icon} ${change.name}`,change.quantity]),["🪙 Gold",report.gold],["✨ Essence",report.essence],["🗝️ Raid Keys",report.keys],["🧰 Repair Kits",report.kits],["📦 Items",report.items],["💀 Enemies slain",report.kills],["⚔️ Routes cleared",report.runs]].filter(([,v],i)=>i===0||Math.abs(v)>.01);$("#offlineReport").innerHTML=entries.map(([k,v],i)=>`<div class="offline-line"><span>${k}</span><strong>${i===0?v:`${v>=0?"+":""}${fmt(v)}`}</strong></div>`).join("");$("#offlineDialog").showModal();}
 
 async function init(){
   const raw=JSON.parse(localStorage.getItem(SAVE_KEY)||"null");state=migrate(raw);const now=Date.now(),elapsed=Math.min(OFFLINE_LIMIT,Math.max(0,(now-(state.lastTick||now))/1000));const report=simulate(elapsed,true);state.lastTick=now;saveLocal();renderAll();
   $("#loadingText").textContent="The town is ready.";setTimeout(()=>{$("#loadingScreen").classList.add("fade");$("#app").hidden=false;setTimeout(()=>$("#loadingScreen").remove(),500);if(!settings.authDismissed)setTimeout(()=>$("#authDialog").showModal(),450);showOffline(report);},500);
   initializeFirebase();
   if("serviceWorker" in navigator)navigator.serviceWorker.register("./service-worker.js").catch(()=>{});
-  setInterval(()=>{const now=Date.now(),delta=Math.min(5,(now-lastFrame)/1000);lastFrame=now;simulate(delta);renderResources();renderTown();renderCombat();if(currentView==="warehouse")renderWarehouse();refreshWorkTimers();markDirty();},1000);
+  setInterval(()=>{const now=Date.now(),delta=Math.min(5,(now-lastFrame)/1000);lastFrame=now;simulate(delta);if(currentView==="combat")renderCombatLive();if(now-lastSlowRender>=1000){lastSlowRender=now;renderResources();renderTown();if(currentView==="warehouse")renderWarehouse();refreshWorkTimers();markDirty();}},250);
 }
 
 init();
