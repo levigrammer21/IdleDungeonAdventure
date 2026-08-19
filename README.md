@@ -30,7 +30,7 @@ Adventure Town is a mobile-first, persistent idle RPG built around six permanent
 - Firestore player marketplace, delayed seller payouts, and leaderboards
 - Building upgrades, milestones, town reports, save export, and installable PWA support
 
-The visible game version is `1.6.0`.
+The visible game version is `1.6.1`.
 
 New towns begin with zero Gold, meals, ores, woods, Essence, Raid Keys, and Repair Kits. Existing named stacks are preserved; use **Account → Begin a new town** to test the new starting experience.
 
@@ -59,7 +59,7 @@ The free-tier build supports a functional Firestore marketplace for trusted play
 
 ## Custom artwork
 
-The town map, six hero portraits, complete combat enemy roster, pets, raid eggs, all normal/Dungeon/Raid equipment and trinket art, loot chest, and the unified hand-painted map/navigation icon atlas are loaded from `img/`. Enemy artwork appears in route previews, active-run summaries, timelines, and the live battlefield. Every one of the 228 item records resolves to custom art anywhere it is shown, including old save-compatible equipment definitions.
+The premium hand-painted Adventure Town crest, town map, six hero portraits, complete combat enemy roster, pets, raid eggs, all normal/Dungeon/Raid equipment and trinket art, loot chest, and the unified hand-painted map/navigation icon atlas are loaded from `img/`. The logo includes optimized header, browser, Apple touch, standard PWA, and maskable PWA variants; the full-resolution master is retained as `img/adventure-town-logo-master.png`. Enemy artwork appears in route previews, active-run summaries, timelines, and the live battlefield. Every one of the 228 item records resolves to custom art anywhere it is shown, including old save-compatible equipment definitions.
 
 Startup preloads the complete local art catalog behind a real progress screen. A failed image never blocks entry into the game and falls back to its interface symbol when rendered. The service worker also caches the full catalog for subsequent visits and offline play.
 

@@ -7,14 +7,15 @@
   <meta name="description" content="Adventure Town — a living, persistent idle RPG with six heroes, a player economy, dungeons, and raids.">
   <title>Adventure Town</title>
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="icon" href="img/icon.svg" type="image/svg+xml">
+  <link rel="icon" href="img/icon-192.png" type="image/png" sizes="192x192">
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <noscript><div class="fatal-message">Adventure Town needs JavaScript enabled.</div></noscript>
 
   <div id="loadingScreen" class="loading-screen" aria-live="polite">
-    <div class="loading-crest"><img src="img/icon.svg" alt="" aria-hidden="true"></div>
+    <div class="loading-crest"><img src="img/icon-header.webp" alt="" aria-hidden="true"></div>
     <h1>Adventure Town</h1>
     <p id="loadingText">Opening the town gates…</p>
     <div class="loading-track" role="progressbar" aria-label="Loading game artwork" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0"><span id="loadingProgress"></span></div>
@@ -24,8 +25,8 @@
   <div id="app" class="app" hidden>
     <header class="topbar">
       <button class="brand" data-action="open-view" data-view="town" aria-label="Return to town">
-        <span class="brand-crest"><img src="img/icon.svg" alt="" aria-hidden="true"></span>
-        <span><strong>Adventure Town</strong><small id="versionLabel">v1.6.0</small></span>
+        <span class="brand-crest"><img src="img/icon-header.webp" alt="" aria-hidden="true"></span>
+        <span><strong>Adventure Town</strong><small id="versionLabel">v1.6.1</small></span>
       </button>
       <div class="top-actions">
         <button id="syncButton" class="status-pill" data-action="sync" aria-label="Cloud save status">

@@ -1,4 +1,4 @@
-const VERSION = "1.6.0";
+const VERSION = "1.6.1";
 const SAVE_KEY = "adventure-town-save-v1";
 const SETTINGS_KEY = "adventure-town-settings-v1";
 const OFFLINE_LIMIT = 12 * 60 * 60;
@@ -439,7 +439,7 @@ const roomImage = (room,className="room-art") => room?.type==="combat"&&room.ima
 
 function assetCatalog(){
   return [...new Set([
-    "img/icon.svg","img/fantasy-town-map.webp","img/loot-chest.svg","img/ui-icon-atlas.webp","img/item-thornroot-warrior-weapon.webp",
+    "img/icon-header.webp","img/icon-192.png","img/icon-512.png","img/icon-maskable-512.png","img/apple-touch-icon.png","img/fantasy-town-map.webp","img/loot-chest.svg","img/ui-icon-atlas.webp","img/item-thornroot-warrior-weapon.webp",
     ...Object.values(SWORD_TIER_IMAGES),...HEROES.map(h=>h.portrait),...Object.values(COMBAT_LAYOUTS).flatMap(rooms=>rooms.filter(room=>room.type==="combat").map(room=>room.image)),...Object.values(ITEMS).map(item=>item.image).filter(Boolean),
   ])];
 }
