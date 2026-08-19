@@ -1,4 +1,4 @@
-const VERSION = "1.5.6";
+const VERSION = "1.5.7";
 const SAVE_KEY = "adventure-town-save-v1";
 const SETTINGS_KEY = "adventure-town-settings-v1";
 const OFFLINE_LIMIT = 12 * 60 * 60;
@@ -225,6 +225,42 @@ const UTILITY_RESOURCE_STACKS=[
 const emptyResourceTiers=()=>Object.fromEntries(Object.entries(RESOURCE_TIERS).map(([resource,tiers])=>[resource,Object.fromEntries(tiers.map(t=>[t.id,0]))]));
 const TIER_ACTION_SECONDS={starter:10,weak:12,average:15,good:18,great:22,epic:28,legendary:35,divine:45};
 const REPAIR_KIT_RECIPE={metalTier:"starter",metalCost:4,woodTier:"starter",woodCost:3};
+const NORMAL_GEAR_TIER_SPECS=[
+  {id:"starter",combatLevel:1,attack:1,defense:2,costScale:1,weaponValue:40,armorValue:50},
+  {id:"weak",combatLevel:3,attack:2,defense:3,costScale:2,weaponValue:120,armorValue:140},
+  {id:"average",combatLevel:6,attack:4,defense:5,costScale:3,weaponValue:280,armorValue:310},
+  {id:"good",combatLevel:10,attack:6,defense:8,costScale:5,weaponValue:520,armorValue:560},
+  {id:"great",combatLevel:20,attack:9,defense:12,costScale:7,weaponValue:1000,armorValue:1100},
+  {id:"epic",combatLevel:35,attack:14,defense:18,costScale:10,weaponValue:2200,armorValue:2400},
+  {id:"legendary",combatLevel:55,attack:22,defense:28,costScale:14,weaponValue:4800,armorValue:5200},
+  {id:"divine",combatLevel:75,attack:32,defense:40,costScale:20,weaponValue:10000,armorValue:10800},
+].map(spec=>{const material=RESOURCE_TIERS.metal.find(tier=>tier.id===spec.id);return {...spec,name:material.tier,smithLevel:material.level,building:material.building};});
+const NORMAL_GEAR_ARCHETYPES=[
+  {key:"warrior",weaponNoun:"Sword",armorNoun:"Plate",weaponMaterial:"metal",armorMaterial:"metal",weaponBase:[14,5],armorBase:[17,4]},
+  {key:"wizard",weaponNoun:"Wand",armorNoun:"Robes",weaponMaterial:"wood",armorMaterial:"wood",weaponBase:[7,12],armorBase:[6,13]},
+  {key:"archer",weaponNoun:"Bow",armorNoun:"Leathers",weaponMaterial:"wood",armorMaterial:"wood",weaponBase:[5,14],armorBase:[9,10]},
+  {key:"druid",weaponNoun:"Staff",armorNoun:"Mantle",weaponMaterial:"wood",armorMaterial:"wood",weaponBase:[4,15],armorBase:[5,14]},
+  {key:"assassin",weaponNoun:"Daggers",armorNoun:"Shroud",weaponMaterial:"metal",armorMaterial:"metal",weaponBase:[15,4],armorBase:[11,8]},
+  {key:"summoner",weaponNoun:"Tome",armorNoun:"Vestments",weaponMaterial:"wood",armorMaterial:"wood",weaponBase:[5,13],armorBase:[6,13]},
+];
+const LEGACY_NORMAL_GEAR_KEYS={
+  starter:{warrior:{weapon:"rustySword"},wizard:{weapon:"apprenticeWand"},archer:{weapon:"huntingBow"},druid:{weapon:"oakStaff"},assassin:{weapon:"wornDaggers"},summoner:{weapon:"noviceTome"}},
+  good:{warrior:{weapon:"goodSword",armor:"warriorArmor"},wizard:{weapon:"goodWand",armor:"wizardArmor"},archer:{weapon:"goodBow",armor:"archerArmor"},druid:{weapon:"goodStaff",armor:"druidArmor"},assassin:{weapon:"goodDaggers",armor:"assassinArmor"},summoner:{weapon:"goodTome",armor:"summonerArmor"}},
+};
+const NORMAL_GEAR_NAME_MATERIALS={starter:{metal:"Scrapforged",wood:"Branchwoven"},weak:{metal:"Copper",wood:"Pine"},average:{metal:"Iron",wood:"Oak"},good:{metal:"Steel",wood:"Ironwood"},great:{metal:"Mithril",wood:"Elderwood"},epic:{metal:"Adamant",wood:"Moonwood"},legendary:{metal:"Starsteel",wood:"Worldwood"},divine:{metal:"Divine",wood:"Divine"}};
+const normalGearKey=(tierId,classKey,slot)=>LEGACY_NORMAL_GEAR_KEYS[tierId]?.[classKey]?.[slot]||`normal_${tierId}_${classKey}_${slot}`;
+const normalGearDisplayName=(tier,archetype,slot)=>`${NORMAL_GEAR_NAME_MATERIALS[tier.id][archetype[`${slot}Material`]]} ${archetype[`${slot}Noun`]}`;
+const NORMAL_GEAR_RECIPE_KEYS=Object.fromEntries(NORMAL_GEAR_TIER_SPECS.map(tier=>[tier.id,{weapon:[],armor:[]} ]));
+for(const tier of NORMAL_GEAR_TIER_SPECS){
+  for(const archetype of NORMAL_GEAR_ARCHETYPES){
+    const classGear=CLASS_GEAR.find(entry=>entry.key===archetype.key);
+    for(const slot of ["weapon","armor"]){
+      const key=normalGearKey(tier.id,archetype.key,slot),existing=ITEMS[key]||{},[metalBase,woodBase]=archetype[`${slot}Base`];
+      ITEMS[key]={...existing,name:normalGearDisplayName(tier,archetype,slot),type:slot,className:classGear.className,icon:slot==="weapon"?classGear.weaponIcon:classGear.armorIcon,image:slot==="weapon"&&archetype.key==="warrior"?`img/item-sword-${tier.id}.webp`:existing.image,tier:tier.name,[slot==="weapon"?"attack":"defense"]:slot==="weapon"?tier.attack:tier.defense,requiredLevel:tier.combatLevel,value:slot==="weapon"?tier.weaponValue:tier.armorValue,recipeTier:tier.id,smithLevel:tier.smithLevel,buildingLevel:tier.building,metalCost:metalBase*tier.costScale,woodCost:woodBase*tier.costScale,normalGear:true};
+      NORMAL_GEAR_RECIPE_KEYS[tier.id][slot].push(key);
+    }
+  }
+}
 const SKILL_PETS={farm:"cowPet",mine:"molePet",forest:"beaverPet",smith:"forgeSpritePet"};
 const SKILL_PET_CHANCE=1/250000;
 const HERO_RECORD_DEFAULTS={kills:0,expeditions:0,dungeons:0,raids:0,raidBosses:0,dungeonBosses:0,goldEarned:0,beers:0,defeats:0,itemsFound:0,foodGathered:0,metalMined:0,woodGathered:0,kitsForged:0,workActions:0,secondsActive:0};
@@ -732,8 +768,19 @@ function resourceTierHTML(id){
 }
 function openBuilding(id){const b=BUILDINGS[id],level=state.buildings[id],cost=Math.floor(b.baseCost*Math.pow(1.55,level-1));const workers=state.heroes.filter(h=>h.assignment===id);openDrawer(b.name,`Building level ${level}`,`<div class="drawer-section"><div class="info-grid"><div class="info-tile"><small>Assigned heroes</small><strong>${workers.length} / 6</strong></div><div class="info-tile"><small>Action speed</small><strong>+${(level-1)*8}%</strong></div><div class="info-tile"><small>Next upgrade</small><strong>🪙 ${fmt(cost)}</strong></div><div class="info-tile"><small>Role</small><strong>${escapeHTML(b.description)}</strong></div></div></div>${resourceTierHTML(id)}${id==="smith"?smithCraftHTML():""}<div class="drawer-section"><h3>Heroes here</h3><div class="action-list">${workers.length?workers.map(h=>`<button data-action="open-hero" data-hero="${h.id}"><span class="inline-hero">${heroImage(h)} ${escapeHTML(h.name)}</span><small data-work-timer="${h.id}">${escapeHTML(workActionStatus(h))}</small></button>`).join(""):`<div class="empty-state">No heroes are assigned here.</div>`}</div></div><div class="drawer-footer"><button class="soft-button" data-action="open-view" data-view="assign">Assignments</button><button class="primary-button" data-action="upgrade-building" data-building="${id}">Upgrade · 🪙 ${fmt(cost)}</button></div>`);}
 function itemCraftingRecipe(d){const tierId=d.recipeTier||String(d.tier||"starter").toLowerCase(),metal=resourceTierData("metal",tierId)||RESOURCE_TIERS.metal[0],wood=resourceTierData("wood",tierId)||RESOURCE_TIERS.wood[0];return {metal,wood,metalCost:d.metalCost||0,woodCost:d.woodCost||0};}
-function smithCraftHTML(){const keys=["goodSword","goodWand","goodBow","goodStaff","goodDaggers","goodTome","warriorArmor","wizardArmor","archerArmor","druidArmor","assassinArmor","summonerArmor"],repairMetal=resourceTierData("metal",REPAIR_KIT_RECIPE.metalTier),repairWood=resourceTierData("wood",REPAIR_KIT_RECIPE.woodTier);return `<div class="drawer-section"><h3>Repair Kit Work Recipe</h3><div class="notice">Each timed Smithing action uses ${repairMetal.icon} ${REPAIR_KIT_RECIPE.metalCost} ${repairMetal.name} + ${repairWood.icon} ${REPAIR_KIT_RECIPE.woodCost} ${repairWood.name}.</div></div><div class="drawer-section"><h3>Good Equipment Recipes</h3><p class="tier-explainer">Good equipment requires Good-tier materials. Lower metals and woods cannot substitute.</p><div class="action-list">${keys.map(key=>{const d=ITEMS[key],r=itemCraftingRecipe(d);return `<button data-action="craft-item" data-key="${key}"><span class="recipe-item">${itemImage(d,"recipe-item-art")} ${d.name}</span><small>${r.metal.icon} ${r.metalCost} ${r.metal.name} (${fmt(resourceTierCount("metal",r.metal.id))}) · ${r.wood.icon} ${r.woodCost} ${r.wood.name} (${fmt(resourceTierCount("wood",r.wood.id))})</small></button>`}).join("")}</div></div>`;}
-function craftItem(key){const d=ITEMS[key];if(!d?.metalCost)return;const r=itemCraftingRecipe(d),metalOwned=resourceTierCount("metal",r.metal.id),woodOwned=resourceTierCount("wood",r.wood.id);if(occupiedSlots()>=warehouseCapacity())return toast("📦","Warehouse is full");if(metalOwned<r.metalCost||woodOwned<r.woodCost)return toast("⚒️","Not enough exact materials",`Need ${r.metalCost} ${r.metal.name} and ${r.woodCost} ${r.wood.name}. You have ${metalOwned} and ${woodOwned}.`);spendSpecificResource("metal",r.metal.id,r.metalCost);spendSpecificResource("wood",r.wood.id,r.woodCost);state.inventory.push({id:uid(),key,durability:100,acquiredAt:Date.now()});notify("Equipment crafted",`${d.name} used ${r.metalCost} ${r.metal.name} and ${r.woodCost} ${r.wood.name}.`,d.icon);markDirty();renderAll();openBuilding("smith");}
+function smithingCapability(){return {level:Math.max(...state.heroes.map(hero=>hero.skills.smithing.level)),building:state.buildings.smith};}
+function normalGearTierUnlocked(tier,capability=smithingCapability()){return capability.level>=tier.smithLevel&&capability.building>=tier.building;}
+function smithRecipeButton(key){const d=ITEMS[key],r=itemCraftingRecipe(d),metalOwned=resourceTierCount("metal",r.metal.id),woodOwned=resourceTierCount("wood",r.wood.id),stat=d.type==="weapon"?`+${d.attack} ATK`:`+${d.defense} DEF`,ready=metalOwned>=r.metalCost&&woodOwned>=r.woodCost;return `<button class="smith-recipe ${ready?"ready":"missing-materials"}" data-action="craft-item" data-key="${key}"><span class="recipe-item">${itemImage(d,"recipe-item-art")}<span><strong>${escapeHTML(d.name)}</strong><small>${stat} · Combat ${d.requiredLevel}</small></span></span><span class="recipe-cost"><strong>${r.metal.icon} ${r.metalCost} · ${r.wood.icon} ${r.woodCost}</strong><small>${fmt(metalOwned)} ${escapeHTML(r.metal.name)} · ${fmt(woodOwned)} ${escapeHTML(r.wood.name)}</small></span></button>`;}
+function smithTierHTML(tier,capability,currentTier){
+  const metal=resourceTierData("metal",tier.id),wood=resourceTierData("wood",tier.id),unlocked=normalGearTierUnlocked(tier,capability),requirement=`Smithing ${tier.smithLevel} + Blacksmith ${tier.building}`,materialText=`${metal.icon} ${metal.name} + ${wood.icon} ${wood.name}`;
+  if(!unlocked)return `<div class="smith-tier locked"><span class="smith-tier-badge">🔒</span><div><strong>${tier.name} Equipment</strong><small>${escapeHTML(materialText)} · Requires ${escapeHTML(requirement)}</small></div><b>Locked</b></div>`;
+  return `<details class="smith-tier unlocked" ${tier.id===currentTier.id?"open":""}><summary><span class="smith-tier-badge">${metal.icon}</span><span><strong>${tier.name} Equipment</strong><small>${escapeHTML(materialText)} · ${escapeHTML(requirement)}</small></span><b>12 recipes</b></summary><div class="smith-tier-recipes"><h4>Weapons</h4><div class="action-list">${NORMAL_GEAR_RECIPE_KEYS[tier.id].weapon.map(smithRecipeButton).join("")}</div><h4>Armor</h4><div class="action-list">${NORMAL_GEAR_RECIPE_KEYS[tier.id].armor.map(smithRecipeButton).join("")}</div></div></details>`;
+}
+function smithCraftHTML(){
+  const capability=smithingCapability(),unlocked=NORMAL_GEAR_TIER_SPECS.filter(tier=>normalGearTierUnlocked(tier,capability)),currentTier=unlocked[unlocked.length-1],nextTier=NORMAL_GEAR_TIER_SPECS.find(tier=>!normalGearTierUnlocked(tier,capability)),repairMetal=resourceTierData("metal",REPAIR_KIT_RECIPE.metalTier),repairWood=resourceTierData("wood",REPAIR_KIT_RECIPE.woodTier);
+  return `<div class="drawer-section"><h3>Smithing Progression</h3><p class="tier-explainer">Normal equipment follows the same eight exact material tiers as Mining and Woodcutting. A recipe needs both the listed Smithing level and Blacksmith level; lower materials never substitute.</p><div class="smith-capability"><div><small>Highest Smithing</small><strong>Level ${capability.level}</strong></div><div><small>Blacksmith</small><strong>Level ${capability.building}</strong></div><div><small>Next equipment tier</small><strong>${nextTier?`${nextTier.name} · Smithing ${nextTier.smithLevel} / Blacksmith ${nextTier.building}`:"All tiers mastered"}</strong></div></div><div class="smith-tier-list">${NORMAL_GEAR_TIER_SPECS.map(tier=>smithTierHTML(tier,capability,currentTier)).join("")}</div></div><div class="drawer-section"><h3>Assigned Smith Work</h3><div class="notice">Assigned Smiths continuously forge Repair Kits and gain Smithing XP. Each action uses ${repairMetal.icon} ${REPAIR_KIT_RECIPE.metalCost} ${repairMetal.name} + ${repairWood.icon} ${REPAIR_KIT_RECIPE.woodCost} ${repairWood.name}.</div></div>`;
+}
+function craftItem(key){const d=ITEMS[key];if(!d?.metalCost)return;const tier=d.normalGear?NORMAL_GEAR_TIER_SPECS.find(entry=>entry.id===d.recipeTier):null;if(tier&&!normalGearTierUnlocked(tier))return toast("🔒",`${tier.name} equipment is locked`,`Requires Smithing ${tier.smithLevel} and Blacksmith Level ${tier.building}.`);const r=itemCraftingRecipe(d),metalOwned=resourceTierCount("metal",r.metal.id),woodOwned=resourceTierCount("wood",r.wood.id);if(occupiedSlots()>=warehouseCapacity())return toast("📦","Warehouse is full");if(metalOwned<r.metalCost||woodOwned<r.woodCost)return toast("⚒️","Not enough exact materials",`Need ${r.metalCost} ${r.metal.name} and ${r.woodCost} ${r.wood.name}. You have ${metalOwned} and ${woodOwned}.`);spendSpecificResource("metal",r.metal.id,r.metalCost);spendSpecificResource("wood",r.wood.id,r.woodCost);state.inventory.push({id:uid(),key,durability:100,acquiredAt:Date.now()});notify("Equipment crafted",`${d.name} used ${r.metalCost} ${r.metal.name} and ${r.woodCost} ${r.wood.name}.`,d.icon);markDirty();renderAll();openBuilding("smith");}
 
 function openCombat(combatId){
   const c=COMBAT[combatId];if(!c)return;const available=state.heroes.filter(h=>h.assignment!=="combat"&&h.assignment!=="inn"&&h.sanity>0&&(h.hp||0)>0),max=c.maxParty,entry=[c.keys?`${c.keys} Key${c.keys===1?"":"s"}`:"",c.essence?`${c.essence} Essence`:""].filter(Boolean).join(" + ")||"Free entry",layout=COMBAT_LAYOUTS[c.id];

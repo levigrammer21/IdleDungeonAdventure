@@ -17,7 +17,7 @@ Adventure Town is a mobile-first, persistent idle RPG built around six permanent
 - Party previews showing max hit, estimated DPS, Defence, real room lists, and estimated clear time—there is no pass/fail roll
 - Clickable loot chests with exact reward ranges and per-victory drop rates
 - Eight discrete named items each for food, metal, and wood from Starter through Divine; there is no generic-resource conversion
-- Quality-matched equipment recipes: Good gear uses Steel and Ironwood, while Repair Kits use Scrap Metal and Fallen Branches
+- Complete eight-tier normal equipment progression for every class: Starter through Divine recipes use their exact matching metal and wood, with Smithing and Blacksmith requirements enforced
 - Per-hero task selection so workers stay on the exact unlocked resource tier chosen by the player
 - Named Warehouse meals with explicit HP values that heroes auto-eat below 45% HP, plus exact-material crafting, Sanity, defeat, Inn, Tavern, durability, repairs, Essence, and Raid Keys
 - Complete, individually named 12-item class sets in every Dungeon and Raid, with transparent rare-table rates
@@ -26,7 +26,7 @@ Adventure Town is a mobile-first, persistent idle RPG built around six permanent
 - Firestore player marketplace, delayed seller payouts, and leaderboards
 - Building upgrades, milestones, town reports, save export, and installable PWA support
 
-The visible game version is `1.5.6`.
+The visible game version is `1.5.7`.
 
 New towns begin with zero Gold, meals, ores, woods, Essence, Raid Keys, and Repair Kits. Existing named stacks are preserved; use **Account → Begin a new town** to test the new starting experience.
 
@@ -66,3 +66,7 @@ Startup preloads the complete local art catalog behind a real progress screen. A
 - The account panel downloads a readable JSON backup.
 - Offline progress is simulated for up to 12 hours, including after a mobile browser suspends and resumes the page. Starting a combat run immediately checkpoints it; hidden-page timers cannot consume the away-time window, and freeze, page-hide, and unload lifecycle events also checkpoint synchronously. Active combat resumes from the saved room, enemy HP, hero HP, attack timers, and cycle state.
 - The return report audits each saved route with clears, kills, continuation/stop reason, and exact Combat XP per participating hero, alongside chest rewards and town production.
+
+## Smithing progression
+
+The Blacksmith exposes the full normal weapon-and-armor ladder for all six classes. Starter recipes begin at Smithing 1 and Blacksmith 1; Weak, Average, Good, Great, Epic, Legendary, and Divine tiers unlock against the same established skill/building thresholds as their exact Mining and Woodcutting materials. Existing Starter and Good equipment keys are retained so older saves, equipped items, and market listings remain valid.

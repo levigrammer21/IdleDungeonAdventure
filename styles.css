@@ -475,7 +475,37 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .action-list button { display:flex; align-items:center; justify-content:space-between; min-height:44px; padding:9px 11px; border:1px solid var(--line); border-radius:12px; color:var(--forest-800); background:white; text-align:left; font-weight:800; }
 .action-list button small { color:var(--muted); font-weight:600; }
 .recipe-item { display:flex; align-items:center; gap:7px; }
+.recipe-item > span { min-width:0; }
+.recipe-item strong,.recipe-item small,.recipe-cost strong,.recipe-cost small { display:block; }
+.recipe-item strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:.68rem; }
+.recipe-item small { margin-top:2px; font-size:.54rem; }
 .recipe-item-art { width:32px; height:32px; object-fit:contain; }
+.smith-capability { display:grid; grid-template-columns:.75fr .75fr 1.5fr; gap:7px; margin:10px 0; }
+.smith-capability > div { min-width:0; padding:9px 10px; border:1px solid var(--line); border-radius:12px; background:white; }
+.smith-capability small,.smith-capability strong { display:block; }
+.smith-capability small { color:var(--muted); font-size:.5rem; font-weight:800; text-transform:uppercase; }
+.smith-capability strong { margin-top:3px; color:var(--forest-900); font-size:.64rem; line-height:1.35; }
+.smith-tier-list { display:grid; gap:7px; }
+.smith-tier { border:1px solid var(--line); border-radius:13px; background:white; overflow:hidden; }
+.smith-tier > summary,.smith-tier.locked { display:grid; gap:9px; align-items:center; min-height:58px; padding:9px 10px; list-style:none; }
+.smith-tier > summary { grid-template-columns:38px 1fr auto 12px; cursor:pointer; }
+.smith-tier.locked { grid-template-columns:38px 1fr auto; }
+.smith-tier > summary::-webkit-details-marker { display:none; }
+.smith-tier > summary::after { content:"›"; grid-column:4; grid-row:1; color:var(--muted); font-size:1rem; transform:rotate(90deg); transition:transform .16s ease; }
+.smith-tier:not([open]) > summary::after { transform:rotate(0); }
+.smith-tier-badge { display:grid; width:36px; height:36px; place-items:center; border-radius:10px; background:#eee6d0; font-size:1.15rem; }
+.smith-tier summary strong,.smith-tier summary small,.smith-tier.locked strong,.smith-tier.locked small { display:block; }
+.smith-tier summary strong,.smith-tier.locked strong { font-size:.7rem; }
+.smith-tier summary small,.smith-tier.locked small { margin-top:2px; color:var(--muted); font-size:.55rem; line-height:1.35; }
+.smith-tier summary b,.smith-tier.locked b { color:var(--forest-700); font-size:.58rem; white-space:nowrap; }
+.smith-tier.locked { opacity:.66; background:#edf0e9; }
+.smith-tier-recipes { padding:2px 9px 10px; border-top:1px solid var(--line); background:#f9f6eb; }
+.smith-tier-recipes h4 { margin:10px 1px 6px; color:var(--forest-800); font-size:.58rem; letter-spacing:.08em; text-transform:uppercase; }
+.smith-recipe { gap:12px; }
+.smith-recipe.missing-materials { background:#fbfaf6; }
+.recipe-cost { flex:0 0 auto; text-align:right; }
+.recipe-cost strong { color:var(--forest-800); font-size:.61rem; }
+.recipe-cost small { margin-top:2px; max-width:190px; font-size:.51rem; line-height:1.3; }
 .choice-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
 .choice-card { padding:12px; border:1px solid var(--line); border-radius:14px; background:white; text-align:left; }
 .choice-card.selected { border-color:var(--forest-700); box-shadow:inset 0 0 0 1px var(--forest-700); background:#ebf0e4; }
@@ -635,6 +665,11 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
   .combat-xp-progress { grid-template-columns:1fr; gap:8px; }
   .combat-stat-grid,.hero-record-grid { grid-template-columns:repeat(2,1fr); }
   .combat-party-preview { grid-template-columns:repeat(2,1fr); }
+  .smith-capability { grid-template-columns:1fr 1fr; }
+  .smith-capability > div:last-child { grid-column:1/-1; }
+  .smith-recipe { align-items:flex-start !important; flex-direction:column; }
+  .recipe-item { width:100%; }
+  .recipe-cost { width:100%; padding-left:39px; text-align:left; }
 }
 
 @media (max-width: 410px) {

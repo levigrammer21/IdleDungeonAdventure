@@ -1,4 +1,4 @@
-const CACHE="adventure-town-v1.5.6";
+const CACHE="adventure-town-v1.5.7";
 const CORE=[
   "./","./index.html","./styles.css","./game.js","./manifest.webmanifest",
   "./img/icon.svg","./img/fantasy-town-map.webp","./img/loot-chest.svg","./img/ui-icon-atlas.webp",
