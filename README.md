@@ -5,14 +5,15 @@ Adventure Town is a mobile-first, persistent idle RPG built around six permanent
 ## Included systems
 
 - Hand-painted responsive fantasy town map in portrait and landscape
-- Six fixed classes: Warrior, Wizard, Archer, Druid, Assassin, and Summoner
+- Six fixed classes with custom portraits: Warrior, Wizard, Archer, Druid, Assassin, and Summoner
 - Per-hero Combat Level and independent Farming, Mining, Woodcutting, and Smithing levels
 - Full hero character pages with renaming, combat stats, four equipment slots, special effects, and lifetime records
 - Timed work, combat, recovery, and supplies with a 12-hour offline progress cap
 - Four-hero combat cap with 6 Expeditions, 5 solo/duo Dungeons, and 3 four-person Raids
-- Live party previews showing exact success chance, total power, Food cost, and power-adjusted clear time
+- Live party previews showing exact success chance, total power, food-supply cost, and power-adjusted clear time
 - Clickable loot chests with exact reward ranges and per-victory drop rates
-- Eight tiers each of Food, Metal, and Wood from Starter through Divine
+- Eight named tiers each of food, metal, and wood from Starter through Divine, stored as whole Warehouse item stacks
+- Per-hero task selection so workers stay on the exact unlocked resource tier chosen by the player
 - Food, Sanity, defeat, Inn, Tavern, durability, repairs, Essence, and Raid Keys
 - Complete, individually named 12-item class sets in every Dungeon and Raid, with transparent rare-table rates
 - Account-bound pets, raid-boss eggs, Dungeon trinkets, equipping, repairs, and salvage
@@ -20,7 +21,7 @@ Adventure Town is a mobile-first, persistent idle RPG built around six permanent
 - Firestore player marketplace, delayed seller payouts, and leaderboards
 - Building upgrades, milestones, town reports, save export, and installable PWA support
 
-The visible game version is `1.3.0`.
+The visible game version is `1.4.0`.
 
 New towns begin with zero Gold, Food, Metal, Wood, Essence, Raid Keys, and Repair Kits. Existing saves are preserved; use **Account → Begin a new town** to test the new starting experience.
 
@@ -49,7 +50,7 @@ The free-tier build supports a functional Firestore marketplace for trusted play
 
 ## Custom artwork
 
-The game currently uses emoji and CSS illustration. Put future hero, equipment, and building files directly inside `img/`. Stable hero and item keys make it possible to add image lookups later without changing the save format.
+The town map and six hero portraits are loaded from `img/`. Equipment and building icons still use lightweight interface symbols until their custom art sets are added.
 
 ## Saving
 

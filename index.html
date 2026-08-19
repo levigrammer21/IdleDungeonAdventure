@@ -24,7 +24,7 @@
     <header class="topbar">
       <button class="brand" data-action="open-view" data-view="town" aria-label="Return to town">
         <span class="brand-crest">🏰</span>
-        <span><strong>Adventure Town</strong><small id="versionLabel">v1.3.0</small></span>
+        <span><strong>Adventure Town</strong><small id="versionLabel">v1.4.0</small></span>
       </button>
       <div class="top-actions">
         <button id="syncButton" class="status-pill" data-action="sync" aria-label="Cloud save status">
@@ -63,10 +63,10 @@
             </button>
 
             <button class="location building farm" data-action="open-building" data-building="farm" style="--x:20;--y:37">
-              <span class="level-badge" data-level-for="farm">1</span><span class="location-icon">🌾</span><strong>Farm</strong><small>Food</small>
+              <span class="level-badge" data-level-for="farm">1</span><span class="location-icon">🌾</span><strong>Farm</strong><small>Stored food</small>
             </button>
             <button class="location building forest" data-action="open-building" data-building="forest" style="--x:15;--y:62">
-              <span class="level-badge" data-level-for="forest">1</span><span class="location-icon">🌲</span><strong>Forest</strong><small>Wood</small>
+              <span class="level-badge" data-level-for="forest">1</span><span class="location-icon">🌲</span><strong>Forest</strong><small>Stored wood</small>
             </button>
             <button class="location building market" data-action="open-view" data-view="market" style="--x:39;--y:44">
               <span class="level-badge" data-level-for="market">1</span><span class="location-icon">⚖️</span><strong>Marketplace</strong><small>Player trade</small>
@@ -84,7 +84,7 @@
               <span class="level-badge" data-level-for="inn">1</span><span class="location-icon">🛏️</span><strong>Inn</strong><small>Defeat recovery</small>
             </button>
             <button class="location building mine" data-action="open-building" data-building="mine" style="--x:80;--y:34">
-              <span class="level-badge" data-level-for="mine">1</span><span class="location-icon">⛏️</span><strong>Mine</strong><small>Metal</small>
+              <span class="level-badge" data-level-for="mine">1</span><span class="location-icon">⛏️</span><strong>Mine</strong><small>Stored metal</small>
             </button>
 
             <div id="heroLayer" class="hero-layer" aria-live="polite"></div>
@@ -125,9 +125,10 @@
       </section>
 
       <section id="warehouseView" class="view" data-view-panel="warehouse">
-        <div class="section-heading"><div><span class="eyebrow">Everything earned comes here</span><h2>Warehouse</h2><p>Equip, repair, salvage, or prepare valuable finds for the player marketplace.</p></div><div class="capacity-ring"><strong id="warehouseCount">0</strong><span id="warehouseCapacity">/60 slots</span></div></div>
+        <div class="section-heading"><div><span class="eyebrow">Everything earned comes here</span><h2>Warehouse</h2><p>Every ration, metal, wood, supply, and equipment find is stored here as its own item type.</p></div><div class="capacity-ring"><strong id="warehouseCount">0</strong><span id="warehouseCapacity">/60 slots</span></div></div>
         <div class="segmented" role="tablist" aria-label="Warehouse filters">
           <button class="active" data-action="warehouse-filter" data-filter="all">All</button>
+          <button data-action="warehouse-filter" data-filter="resource">Resources</button>
           <button data-action="warehouse-filter" data-filter="weapon">Weapons</button>
           <button data-action="warehouse-filter" data-filter="armor">Armor</button>
           <button data-action="warehouse-filter" data-filter="pet">Pets</button>
