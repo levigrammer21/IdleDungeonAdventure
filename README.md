@@ -6,9 +6,10 @@ Adventure Town is a mobile-first, persistent idle RPG built around six permanent
 
 - Hand-painted responsive fantasy town map in portrait and landscape
 - Six fixed classes with custom portraits: Warrior, Wizard, Archer, Druid, Assassin, and Summoner
-- Per-hero Combat Level and independent Farming, Mining, Woodcutting, and Smithing levels
+- Per-hero Combat Level on a steep OSRS/Melvor-shaped curve, plus independent Farming, Mining, Woodcutting, and Smithing levels
+- Every Combat Level directly adds Attack, Defence, and Max HP; Max Hit also rises every four levels
 - Full hero character pages with renaming, combat stats, four equipment slots, special effects, and lifetime records
-- Timed work, room-by-room combat, recovery, and supplies with a 12-hour offline progress cap
+- Timed work, room-by-room combat, recovery, and supplies with exact active-run restoration and a 12-hour offline progress cap
 - Four-hero combat cap with 6 Expeditions, 5 solo/duo Dungeons, and 3 four-person Raids
 - Live HP combat with individual attack timers, visible max hits, hitsplats, critical hits, class actions, enemy retaliation, healing, battle logs, and DPS tracking
 - Three enemies in every Expedition; three shared enemies plus a unique boss in every Dungeon; fully unique Raid enemies and bosses
@@ -25,7 +26,7 @@ Adventure Town is a mobile-first, persistent idle RPG built around six permanent
 - Firestore player marketplace, delayed seller payouts, and leaderboards
 - Building upgrades, milestones, town reports, save export, and installable PWA support
 
-The visible game version is `1.5.3`.
+The visible game version is `1.5.4`.
 
 New towns begin with zero Gold, meals, ores, woods, Essence, Raid Keys, and Repair Kits. Existing named stacks are preserved; use **Account → Begin a new town** to test the new starting experience.
 
@@ -63,4 +64,4 @@ Startup preloads the complete local art catalog behind a real progress screen. A
 - Signed-out play uses a local device save.
 - Signed-in play keeps a Firebase cloud save and local fallback.
 - The account panel downloads a readable JSON backup.
-- Offline progress is simulated for up to 12 hours.
+- Offline progress is simulated for up to 12 hours, including after a mobile browser suspends and resumes the page. Active combat resumes from the saved room, enemy HP, hero HP, attack timers, and cycle state.
