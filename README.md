@@ -32,7 +32,7 @@ Adventure Town is a mobile-first, persistent idle RPG built around six permanent
 - Firestore player marketplace, delayed seller payouts, and leaderboards
 - Building upgrades, milestones, town reports, save export, and installable PWA support
 
-The visible game version is `1.6.5`.
+The visible game version is `1.6.6`.
 
 New towns begin with zero Gold, meals, ores, woods, Essence, Raid Keys, and Repair Kits. Existing named stacks are preserved; use **Account → Begin a new town** to test the new starting experience.
 

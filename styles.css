@@ -58,6 +58,10 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .loading-count { margin-top:.65rem; color:rgba(231,236,223,.72); font-size:.65rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
 @keyframes crestFloat { 50%{transform:translateY(-7px) rotate(-2deg)} }
 
+.logo-crest { position:relative; }
+.logo-crest::before { content:"🏰"; display:grid; position:absolute; inset:0; place-items:center; }
+.logo-crest img { position:relative; z-index:1; object-fit:cover; background:#173121; }
+
 .art-fallback { display:grid !important; place-items:center; font-style:normal; }
 
 .app { min-height: 100dvh; padding-top: calc(var(--safe-top) + var(--header-h) + var(--resource-h)); padding-bottom: calc(var(--safe-bottom) + var(--nav-h)); }

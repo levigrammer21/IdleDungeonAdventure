@@ -1,4 +1,4 @@
-const VERSION = "1.6.5";
+const VERSION = "1.6.6";
 const SAVE_KEY = "adventure-town-save-v1";
 const SETTINGS_KEY = "adventure-town-settings-v1";
 const OFFLINE_LIMIT = 12 * 60 * 60;
@@ -450,12 +450,12 @@ const roomImage = (room,className="room-art") => room?.type==="combat"&&room.ima
 
 function assetCatalog(){
   return [...new Set([
-    "img/icon-header.webp","img/icon-192.png","img/icon-512.png","img/icon-maskable-512.png","img/apple-touch-icon.png","img/fantasy-town-map.webp","img/loot-chest.svg","img/ui-icon-atlas.webp","img/item-thornroot-warrior-weapon.webp",
+    "img/icon-192.png","img/icon-512.png","img/icon-maskable-512.png","img/apple-touch-icon.png","img/fantasy-town-map.webp","img/loot-chest.svg","img/ui-icon-atlas.webp","img/item-thornroot-warrior-weapon.webp",
     ...Object.values(SWORD_TIER_IMAGES),...HEROES.map(h=>h.portrait),...Object.values(COMBAT_LAYOUTS).flatMap(rooms=>rooms.filter(room=>room.type==="combat").map(room=>room.image)),...Object.values(ITEMS).map(item=>item.image).filter(Boolean),
   ])];
 }
 
-const STARTUP_ASSETS=["img/icon-header.webp","img/fantasy-town-map.webp","img/ui-icon-atlas.webp","img/loot-chest.svg",...HEROES.map(hero=>hero.portrait)];
+const STARTUP_ASSETS=["img/icon-192.png","img/fantasy-town-map.webp","img/ui-icon-atlas.webp","img/loot-chest.svg",...HEROES.map(hero=>hero.portrait)];
 
 async function preloadAssetBatch(sources,{showProgress=false,timeoutMs=4000,concurrency=6}={}){
   const assets=[...new Set(sources)],bar=showProgress?$("#loadingProgress"):null,track=showProgress?$(".loading-track"):null,count=showProgress?$("#loadingCount"):null,failed=[];let complete=0;
