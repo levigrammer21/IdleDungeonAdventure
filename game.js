@@ -1,4 +1,4 @@
-const VERSION = "1.6.4";
+const VERSION = "1.6.5";
 const SAVE_KEY = "adventure-town-save-v1";
 const SETTINGS_KEY = "adventure-town-settings-v1";
 const OFFLINE_LIMIT = 12 * 60 * 60;
@@ -398,7 +398,11 @@ const ACHIEVEMENTS = [
 ];
 
 let state;
-let settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}") || {};
+function storedJSON(key,fallback){
+  try{const value=localStorage.getItem(key);return value===null?fallback:(JSON.parse(value)??fallback);}
+  catch(err){console.warn(`Could not read ${key}; using safe defaults.`,err);return fallback;}
+}
+let settings = storedJSON(SETTINGS_KEY,{}) || {};
 if(typeof settings.soundEnabled!=="boolean")settings.soundEnabled=true;
 let currentUser = null;
 let firebaseApi = null;
@@ -451,14 +455,23 @@ function assetCatalog(){
   ])];
 }
 
-async function preloadAssets(){
-  const assets=assetCatalog(),bar=$("#loadingProgress"),track=$(".loading-track"),count=$("#loadingCount"),failed=[];let complete=0;
+const STARTUP_ASSETS=["img/icon-header.webp","img/fantasy-town-map.webp","img/ui-icon-atlas.webp","img/loot-chest.svg",...HEROES.map(hero=>hero.portrait)];
+
+async function preloadAssetBatch(sources,{showProgress=false,timeoutMs=4000,concurrency=6}={}){
+  const assets=[...new Set(sources)],bar=showProgress?$("#loadingProgress"):null,track=showProgress?$(".loading-track"):null,count=showProgress?$("#loadingCount"):null,failed=[];let complete=0;
   const update=()=>{const pct=assets.length?Math.round(complete/assets.length*100):100;if(bar)bar.style.width=`${pct}%`;if(track){track.setAttribute("aria-valuenow",String(complete));track.setAttribute("aria-valuemax",String(assets.length));}if(count)count.textContent=`${complete} / ${assets.length} assets`;};
-  $("#loadingText").textContent="Preparing the town artwork…";update();
-  let cursor=0;const load=src=>new Promise(resolve=>{const image=new Image();let settled=false;const timeout=setTimeout(()=>finish(false),15000),finish=ok=>{if(settled)return;settled=true;clearTimeout(timeout);if(!ok)failed.push(src);complete++;update();resolve();};image.onload=()=>finish(true);image.onerror=()=>finish(false);image.src=src;});
+  if(showProgress)$("#loadingText").textContent="Preparing the town essentials…";update();
+  let cursor=0;const load=src=>new Promise(resolve=>{const image=new Image();let settled=false;const finish=ok=>{if(settled)return;settled=true;clearTimeout(timeout);image.onload=null;image.onerror=null;if(!ok)failed.push(src);complete++;update();resolve();},timeout=setTimeout(()=>finish(false),timeoutMs);image.onload=()=>finish(true);image.onerror=()=>finish(false);image.src=src;});
   const worker=async()=>{while(cursor<assets.length){const src=assets[cursor++];await load(src);}};
-  await Promise.all(Array.from({length:Math.min(10,assets.length)},worker));
+  await Promise.all(Array.from({length:Math.min(concurrency,assets.length)},worker));
   return failed;
+}
+
+let artworkWarmScheduled=false;
+function warmRemainingAssets(){
+  if(artworkWarmScheduled)return;artworkWarmScheduled=true;
+  const essential=new Set(STARTUP_ASSETS),remaining=assetCatalog().filter(src=>!essential.has(src)),warm=()=>preloadAssetBatch(remaining,{timeoutMs:6000,concurrency:4}).catch(err=>console.warn("Background artwork preload stopped",err));
+  if("requestIdleCallback" in window)window.requestIdleCallback(warm,{timeout:1600});else setTimeout(warm,500);
 }
 
 function recalculateTieredTotal(resource){state.resources[resource]=RESOURCE_TIERS[resource].reduce((total,tier)=>total+Math.floor(state.resourceTiers[resource][tier.id]||0),0);}
@@ -708,7 +721,7 @@ function toast(icon,title,text=""){
 }
 
 function saveLocal(){
-  state.updatedAt=Date.now(); state.lastTick=Math.min(state.updatedAt,lastSimulationAt||state.updatedAt); localStorage.setItem(SAVE_KEY,JSON.stringify(state));
+  state.updatedAt=Date.now(); state.lastTick=Math.min(state.updatedAt,lastSimulationAt||state.updatedAt);try{localStorage.setItem(SAVE_KEY,JSON.stringify(state));}catch(err){console.warn("Device save unavailable",err);}
   if(currentUser && firebaseApi) queueCloudSave();
 }
 function markDirty(){ clearTimeout(saveTimer); saveTimer=setTimeout(saveLocal,650); }
@@ -1257,12 +1270,22 @@ function showOffline(report){
   $("#offlineReport").innerHTML=html;const dialog=$("#offlineDialog");if(!dialog.open)dialog.showModal();
 }
 
+let startupReleased=false;
+function releaseStartup(report,failedAssets=[]){
+  if(startupReleased)return;startupReleased=true;const screen=$("#loadingScreen"),app=$("#app"),text=$("#loadingText");if(text)text.textContent=failedAssets.length?"The town is ready. Remaining artwork will finish in the background.":"The town is ready.";if(app)app.hidden=false;setTimeout(()=>{screen?.classList.add("fade");setTimeout(()=>screen?.remove(),500);if(!settings.authDismissed)setTimeout(()=>$("#authDialog")?.showModal(),450);showOffline(report);},180);
+}
+function registerServiceWorker(){
+  if(!("serviceWorker" in navigator))return;const registration=navigator.serviceWorker.register("./service-worker.js");Promise.race([registration,new Promise((_,reject)=>setTimeout(()=>reject(new Error("Service worker registration timed out")),3500))]).catch(err=>console.warn("Offline cache will retry later",err));
+}
 async function init(){
-  const raw=JSON.parse(localStorage.getItem(SAVE_KEY)||"null");state=migrate(raw);const now=Date.now(),elapsed=Math.min(OFFLINE_LIMIT,Math.max(0,(now-(state.lastTick||now))/1000));const report=simulate(elapsed,true);postOfflineProgressChat(report);lastSimulationAt=now;state.lastTick=now;saveLocal();
-  initializeFirebase();
-  if("serviceWorker" in navigator){try{await navigator.serviceWorker.register("./service-worker.js");await navigator.serviceWorker.ready;}catch{}}
-  const failedAssets=await preloadAssets();renderAll();
-  $("#loadingText").textContent=failedAssets.length?"The town is ready. Missing artwork will retry when needed.":"The town is ready.";setTimeout(()=>{$("#loadingScreen").classList.add("fade");$("#app").hidden=false;setTimeout(()=>$("#loadingScreen").remove(),500);if(!settings.authDismissed)setTimeout(()=>$("#authDialog").showModal(),450);showOffline(report);},250);
+  let report=null;const watchdog=setTimeout(()=>{if(startupReleased)return;console.warn("Startup artwork budget reached; opening the town.");try{if(!state)state=freshState();renderAll();releaseStartup(report,["startup-time-budget"]);warmRemainingAssets();}catch(err){console.error("Startup recovery failed",err);}},9000);
+  try{
+    const raw=storedJSON(SAVE_KEY,null);state=migrate(raw);const now=Date.now(),elapsed=Math.min(OFFLINE_LIMIT,Math.max(0,(now-(state.lastTick||now))/1000));report=simulate(elapsed,true);postOfflineProgressChat(report);lastSimulationAt=now;state.lastTick=now;saveLocal();
+    initializeFirebase();registerServiceWorker();
+    const failedAssets=await preloadAssetBatch(STARTUP_ASSETS,{showProgress:true,timeoutMs:3500,concurrency:6});renderAll();releaseStartup(report,failedAssets);warmRemainingAssets();
+  }catch(err){
+    console.error("Adventure Town startup recovered from an error",err);if(!state)state=freshState();try{renderAll();releaseStartup(report,["startup-error"]);warmRemainingAssets();}catch(renderError){console.error("Adventure Town could not render",renderError);const text=$("#loadingText");if(text)text.textContent="The town could not open. Please refresh once; your device save is still intact.";}
+  }finally{clearTimeout(watchdog);}
   setInterval(()=>{if(document.visibilityState==="hidden")return;const now=Date.now();settleToNow(true);if(currentView==="combat")renderCombatLive();if(now-lastSlowRender>=1000){lastSlowRender=now;renderResources();renderTown();if(currentView==="warehouse")renderWarehouse();refreshWorkTimers();refreshTavernMarket();refreshBattleStats();markDirty();}},100);
 }
 

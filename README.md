@@ -5,6 +5,7 @@ Adventure Town is a mobile-first, persistent idle RPG built around six permanent
 ## Included systems
 
 - Hand-painted responsive fantasy town map in portrait and landscape
+- Chromebook-safe staged startup: essential town artwork opens first, the remaining library warms in the background, and neither a slow image nor service worker can trap the loading screen
 - Six fixed classes with custom portraits: Warrior, Wizard, Archer, Druid, Assassin, and Summoner
 - Per-hero Combat Level on a steep OSRS/Melvor-shaped curve, plus independent Farming, Mining, Woodcutting, and Smithing levels
 - Every Combat Level directly improves class-weighted Attack, Defence, Max HP, and Max Hit
@@ -31,7 +32,7 @@ Adventure Town is a mobile-first, persistent idle RPG built around six permanent
 - Firestore player marketplace, delayed seller payouts, and leaderboards
 - Building upgrades, milestones, town reports, save export, and installable PWA support
 
-The visible game version is `1.6.4`.
+The visible game version is `1.6.5`.
 
 New towns begin with zero Gold, meals, ores, woods, Essence, Raid Keys, and Repair Kits. Existing named stacks are preserved; use **Account → Begin a new town** to test the new starting experience.
 
