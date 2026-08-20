@@ -1,4 +1,4 @@
-const VERSION = "1.7.2";
+const VERSION = "1.7.3";
 const SAVE_KEY = "adventure-town-save-v1";
 const SETTINGS_KEY = "adventure-town-settings-v1";
 const OFFLINE_LIMIT = 12 * 60 * 60;
@@ -617,6 +617,26 @@ function migrateCombatRun(saved,combatId,heroIds,heroes){
   return run;
 }
 
+const QUEST_BOARD_SIZE=3;
+function totalMonsterKills(){return state?.heroes?.reduce((n,h)=>n+(h.records?.kills||0),0)||0;}
+function questResourceCount(resource){return RESOURCE_TIERS[resource].reduce((n,tier)=>n+(state.resourceTiers?.[resource]?.[tier.id]||0),0);}
+function questRoll(){return Math.random();}
+function questReward(){const roll=questRoll();return {gold:Math.floor(55+questRoll()*146),essence:roll<.28?1+(questRoll()<.18?1:0):0,keys:roll<.018?1:0};}
+function makeQuest(slot=0){
+  const killBase=totalMonsterKills(),types=["resource","resource","kill"],type=types[Math.floor(questRoll()*types.length)],reward=questReward();
+  if(type==="kill"){const amount=8+Math.floor(questRoll()*18);return {id:uid(),type,amount,baseline:killBase,title:["Clear the Roads","Monster Trouble","Bounty Notice"][slot%3],icon:"⚔️",reward};}
+  const resources=["food","metal","wood"],resource=resources[Math.floor(questRoll()*resources.length)],amount=10+Math.floor(questRoll()*31),names={food:"Food",metal:"Metal",wood:"Wood"},icons={food:"🥕",metal:"⛏️",wood:"🪵"};return {id:uid(),type,resource,amount,title:`${names[resource]} Requisition`,icon:icons[resource],reward};
+}
+function freshQuestBoard(){return Array.from({length:QUEST_BOARD_SIZE},(_,i)=>makeQuest(i));}
+function migrateQuestBoard(raw){const board=Array.isArray(raw)?raw.filter(q=>q&&q.id&&["resource","kill"].includes(q.type)).slice(0,QUEST_BOARD_SIZE):[];while(board.length<QUEST_BOARD_SIZE)board.push(makeQuest(board.length));return board;}
+function questProgress(q){return q.type==="kill"?Math.max(0,totalMonsterKills()-(q.baseline||0)):questResourceCount(q.resource);}
+function questRewardText(q){const bits=[`🪙 ${fmt(q.reward.gold)} Gold`];if(q.reward.essence)bits.push(`✨ ${q.reward.essence} Essence`);if(q.reward.keys)bits.push(`🗝️ ${q.reward.keys} Raid Key`);return bits.join(" · ");}
+function spendQuestResource(resource,amount){if(questResourceCount(resource)<amount)return false;let left=amount;for(const tier of RESOURCE_TIERS[resource]){const have=state.resourceTiers[resource][tier.id]||0,take=Math.min(have,left);state.resourceTiers[resource][tier.id]=have-take;left-=take;if(left<=0)break;}recalculateTieredTotal(resource);return true;}
+function questBoardHTML(){
+  return `<div class="drawer-section quest-board"><div class="profile-section-title"><div><small>Town contracts</small><h3>📜 Quest Board</h3></div><small>3 posted</small></div><p class="section-copy">Help Briarwatch with supply requests and monster bounties. Claim completed contracts for Gold and occasional rarer rewards.</p><div class="action-list">${state.questBoard.map(q=>{const progress=questProgress(q),done=progress>=q.amount,objective=q.type==="kill"?`Defeat ${q.amount} monsters`:`Turn in ${q.amount} ${q.resource}`,shown=Math.min(progress,q.amount);return `<button class="quest-contract ${done?"ready":""}" data-action="claim-quest" data-quest="${q.id}" ${done?"":"disabled"}><span><strong>${q.icon} ${escapeHTML(q.title)}</strong><small>${escapeHTML(objective)} · ${fmt(shown)} / ${fmt(q.amount)}</small><small>${escapeHTML(questRewardText(q))}</small></span><b>${done?"Claim":"In progress"}</b></button>`;}).join("")}</div></div>`;
+}
+function claimQuest(id){const index=state.questBoard.findIndex(q=>q.id===id),q=state.questBoard[index];if(!q)return;if(questProgress(q)<q.amount)return toast("📜","Quest is not complete yet");if(q.type==="resource"&&!spendQuestResource(q.resource,q.amount))return toast("📦","Those supplies are no longer available");state.resources.gold+=q.reward.gold;state.stats.goldEarned+=q.reward.gold;state.resources.essence+=q.reward.essence||0;state.resources.keys+=q.reward.keys||0;state.stats.questsCompleted=(state.stats.questsCompleted||0)+1;state.questBoard[index]=makeQuest(index);notify("Quest complete",`${q.title}: ${questRewardText(q)}. A new contract has been posted.`,"📜");markDirty();renderAll();openBuilding("tavern");}
+
 function freshState(){
   return {
     version:VERSION, combatXpCurve:1, townName:"Briarwatch", createdAt:Date.now(), updatedAt:Date.now(), lastTick:Date.now(), randomSeed:987654321,
@@ -629,7 +649,7 @@ function freshState(){
     inventory:[], combatRuns:[], notifications:[{id:uid(),time:Date.now(),title:"The town awakens",text:"Your six adventurers are ready. Every choice of how they spend their time will shape Briarwatch."}],
     partyChat:starterPartyChat(), chatMeta:{lastReadAt:0,ambientProgress:0,nextAmbientAt:55,lastSpeakerId:null,cooldowns:{}},
     stockMarket:freshStockMarket(),
-    achievements:[], stats:{expeditions:0,dungeons:0,raids:0,defeats:0,goldEarned:0,itemsFound:0,marketSales:0,offlineSeconds:0},
+    achievements:[], questBoard:freshQuestBoard(), stats:{expeditions:0,dungeons:0,raids:0,defeats:0,goldEarned:0,itemsFound:0,marketSales:0,offlineSeconds:0,questsCompleted:0},
     pendingFractions:{food:0,metal:0,wood:0,kits:0}, settings:{autoSave:true,reducedMotion:false},
   };
 }
@@ -656,6 +676,7 @@ function migrate(raw){
   merged.partyChat=(Array.isArray(raw.partyChat)?raw.partyChat:base.partyChat).filter(message=>message&&merged.heroes.some(hero=>hero.id===message.heroId)&&typeof message.text==="string").slice(-PARTY_CHAT_LIMIT);
   merged.chatMeta={...base.chatMeta,...(raw.chatMeta||{}),cooldowns:{...base.chatMeta.cooldowns,...(raw.chatMeta?.cooldowns||{})}};
   merged.stockMarket=migrateStockMarket(raw.stockMarket,base.stockMarket);
+  merged.questBoard=migrateQuestBoard(raw.questBoard);
   return merged;
 }
 
@@ -1310,7 +1331,7 @@ function buildingWorkersHTML(id,workers){
   return `<div class="building-worker-list">${workers.map(hero=>{const task=workTaskForHero(hero,id);return `<article class="building-worker"><button class="worker-identity" data-action="open-hero" data-hero="${hero.id}"><span class="inline-hero">${heroImage(hero)}</span><span><strong>${escapeHTML(hero.name)}</strong><small>${hero.className} · ${WORK_SKILL_NAMES[BUILDINGS[id].skill]} ${hero.skills[BUILDINGS[id].skill]?.level||1}</small></span></button><div class="worker-task"><strong>${task?.icon||ASSIGNMENTS[id].icon} ${escapeHTML(task?.name||ASSIGNMENTS[id].name)}</strong><small data-work-timer="${hero.id}">${escapeHTML(workActionStatus(hero))}</small><button class="text-button" data-action="open-hero-work-picker" data-hero="${hero.id}" data-assignment="${id}">Change task</button></div></article>`;}).join("")}</div>`;
 }
 function openBuilding(id){
-  const b=BUILDINGS[id],level=state.buildings[id],cost=Math.floor(b.baseCost*Math.pow(1.55,level-1)),workers=state.heroes.filter(hero=>hero.assignment===id),activity=id==="tavern"?tavernMarketHTML():"",tasks=resourceTierHTML(id)||(id==="smith"?smithWorkTaskHTML():"");
+  const b=BUILDINGS[id],level=state.buildings[id],cost=Math.floor(b.baseCost*Math.pow(1.55,level-1)),workers=state.heroes.filter(hero=>hero.assignment===id),activity=id==="tavern"?tavernMarketHTML()+questBoardHTML():"",tasks=resourceTierHTML(id)||(id==="smith"?smithWorkTaskHTML():"");
   openDrawer(b.name,`Building level ${level}`,`<div class="drawer-section"><div class="info-grid"><div class="info-tile"><small>Assigned heroes</small><strong>${workers.length} / 6</strong></div><div class="info-tile"><small>Action speed</small><strong>+${(level-1)*8}%</strong></div><div class="info-tile"><small>Next upgrade</small><strong>🪙 ${fmt(cost)}</strong></div><div class="info-tile"><small>Role</small><strong>${escapeHTML(b.description)}</strong></div></div></div>${activity}${tasks}${id==="smith"?smithCraftHTML():""}<div class="drawer-section"><h3>Heroes here</h3>${buildingWorkersHTML(id,workers)}</div><div class="drawer-footer"><button class="soft-button" data-action="open-view" data-view="assign">Assignments</button><button class="primary-button" data-action="upgrade-building" data-building="${id}">Upgrade · 🪙 ${fmt(cost)}</button></div>`,id==="tavern"?"tavern":`building-${id}`);
 }
 function itemCraftingRecipe(d){const tierId=d.recipeTier||String(d.tier||"starter").toLowerCase(),metal=resourceTierData("metal",tierId)||RESOURCE_TIERS.metal[0],wood=resourceTierData("wood",tierId)||RESOURCE_TIERS.wood[0];return {metal,wood,metalCost:d.metalCost||0,woodCost:d.woodCost||0};}
@@ -1421,6 +1442,7 @@ document.addEventListener("click",async event=>{
   else if(a==="toggle-party"){const max=Number(b.dataset.max);if(!b.classList.contains("selected")&&$$("#partyChoices .selected").length>=max)return toast("⚠️",`This activity allows ${max} heroes`);b.classList.toggle("selected");updateCombatPreview(b.dataset.combat);}
   else if(a==="start-run")startRun(b.dataset.combat,$$("#partyChoices .selected").map(x=>x.dataset.hero),$("#autoRepeatChoice").checked);
   else if(a==="upgrade-building")upgradeBuilding(b.dataset.building);
+  else if(a==="claim-quest")claimQuest(b.dataset.quest);
   else if(a==="craft-item")craftItem(b.dataset.key);
   else if(a==="warehouse-filter"){warehouseFilter=b.dataset.filter;renderWarehouse();}
   else if(a==="equip-item")equipItem(b.dataset.item);
