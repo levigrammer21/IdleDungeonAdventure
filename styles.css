@@ -847,7 +847,12 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .stock-title > b { font-size:.6rem; }
 .stock-sparkline { display:block; width:100%; height:48px; margin:6px 0; overflow:visible; }
 .stock-sparkline polyline { fill:none; stroke:var(--stock-color); stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; filter:drop-shadow(0 2px 3px rgba(0,0,0,.25)); }
-.stock-quote { display:grid; grid-template-columns:1.1fr 1fr .8fr; gap:6px; }
+.stock-reference { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin:0 0 6px; }
+.stock-reference > div { padding:6px 7px; border:1px solid rgba(255,225,139,.11); border-radius:9px; background:rgba(213,166,63,.055); }
+.stock-reference small,.stock-reference strong { display:block; }
+.stock-reference small { color:#879c89; font-size:.4rem; font-weight:800; text-transform:uppercase; }
+.stock-reference strong { margin-top:2px; color:#dbc98d; font-size:.54rem; }
+.stock-quote { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
 .stock-quote > div { padding:7px; border-radius:9px; background:rgba(0,0,0,.16); }
 .stock-quote small,.stock-quote strong { display:block; }
 .stock-quote small { color:#90a492; font-size:.43rem; text-transform:uppercase; }
@@ -981,7 +986,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
   .portfolio-strip { grid-template-columns:repeat(2,1fr); }
   .fantasy-stocks { padding:7px; }
   .stock-title { grid-template-columns:31px 1fr auto; }
-  .stock-quote { grid-template-columns:1fr 1fr 1fr; }
+  .stock-quote { grid-template-columns:1fr 1fr; }
   .hero-league-heading { align-items:start; flex-direction:column; }
   .hero-league-row { grid-template-columns:24px 40px minmax(0,1fr); }
   .skill-mini-chart { display:none; }
