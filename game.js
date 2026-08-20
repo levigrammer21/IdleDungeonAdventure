@@ -1,4 +1,4 @@
-const VERSION = "1.6.8";
+const VERSION = "1.6.9";
 const SAVE_KEY = "adventure-town-save-v1";
 const SETTINGS_KEY = "adventure-town-settings-v1";
 const OFFLINE_LIMIT = 12 * 60 * 60;
@@ -22,9 +22,28 @@ const HEROES = [
 
 const PARTY_CHAT_LIMIT = 80;
 const PARTY_CHAT_MILESTONES = [25,100,250,500,1000,2500,5000,10000,25000,50000,100000];
+const ENEMY_STAT_MULTIPLIER = 1.12;
 const WORK_SKILL_NAMES = {farming:"Farming",mining:"Mining",woodcutting:"Woodcutting",smithing:"Smithing"};
 const HERO_CHAT_VOICES = {
   warrior:{
+    banter:[
+      "I sharpened my sword. Then Vex sharpened it again without asking. I am choosing gratitude.",
+      "A good shield solves most problems. The rest usually require a bigger shield.",
+      "Someone moved my helmet. It was on my head. Nobody say anything.",
+      "I have counted our emergency rations twice. Orin has named three of them.",
+      "If the plan is 'Bram goes first,' I would at least like the courtesy of calling it a plan.",
+      "The Tavern stew is improving. I can no longer identify the spoon marks afterward.",
+      "Armor maintenance is mostly finding new places for dents to live.",
+      "I do enjoy quiet days. I just don't trust them.",
+      "Rowan says I walk too loudly. I say enemies deserve fair warning.",
+      "My sword has one setting: useful. Vex claims that is two settings fewer than ideal.",
+      "If anyone needs me, I will be doing the glamorous work of checking buckles.",
+      "We should put a sign at the gate: 'Briarwatch—please attack in an orderly line.'",
+      "Elowen called my fighting style 'repeatable blunt-force methodology.' I think that was praise.",
+      "There is no shame in retreating. There is some paperwork, apparently.",
+      "I can carry more. I should not have said that out loud.",
+      "Nothing builds team spirit like everyone pretending they did not hear the ominous noise."
+    ],
     assignment:{idle:"Shield is down. Call when something needs hitting—or carrying.",farm:"A stocked pantry wins more fights than bravado. I'll see to it.",mine:"I'll bring back enough metal to make this sword jealous.",forest:"Trees, axes, honest work. I can do that.",smith:"Good. I trust equipment more when I've watched it being forged.",tavern:"One bowl, one chair, and absolutely no quests until my head clears."},
     danger:["Did someone turn up the difficulty in here, or did my sword get nerfed?","This armor is earning its keep. A little help would still be welcome."],
     combatLevel:level=>`Combat Level ${level}. Harder to knock down, easier to annoy.`,
@@ -38,6 +57,24 @@ const HERO_CHAT_VOICES = {
     broken:item=>`My ${item} is broken. That was not part of the battle plan.`,
   },
   wizard:{
+    banter:[
+      "I labeled my spell components. Orin relabeled them with names like 'sparkly bit.' We are in negotiations.",
+      "There is a measurable difference between 'magic' and 'reckless magic.' Mostly paperwork.",
+      "Bram asked if I could enchant his shield. I asked what he wanted. He said 'more shield.'",
+      "I have discovered three new laws of arcana today. Two are probably accidents.",
+      "The correct number of books to bring on an expedition is all of them. Pack accordingly.",
+      "I would like it recorded that the explosion was educational.",
+      "Vex keeps appearing behind me while I read. I am considering a proximity glyph. A loud one.",
+      "Tea improves concentration. This is empirical fact and not personal bias.",
+      "If a rune is glowing, do not touch it. If it is whispering, definitely do not touch it.",
+      "My robe pocket contains chalk, crystals, two biscuits, and a mystery I am postponing.",
+      "Rowan says the weather is changing. My instruments agree, but with much better handwriting.",
+      "I have optimized our route by 3.7 percent. Bram has optimized it by walking straight through the problem.",
+      "Magic is ninety percent preparation and ten percent pretending the preparation covered this exact situation.",
+      "Mira keeps plants on my windowsill. One of them has begun leaning away from my experiments.",
+      "There is technically no rule against casting indoors. There are several new rules because I cast indoors.",
+      "I am not overthinking it. I am thinking the appropriate amount with excellent coverage."
+    ],
     assignment:{idle:"I have finished reorganizing my notes. Twice. I am available.",farm:"Agriculture is applied alchemy with fewer explosions.",mine:"Every vein tells a geological story. Most of them are very long.",forest:"I'll catalogue what we cut. Waste is simply poor scholarship.",smith:"Heat, pressure, structure—smithing is magic that admits it uses a hammer.",tavern:"Rest is not laziness. It is mana management."},
     danger:["My calculations did not include quite this much bleeding.","A brief defensive adjustment would be academically prudent."],
     combatLevel:level=>`Combat Level ${level}. The practical results agree with the theory.`,
@@ -51,6 +88,24 @@ const HERO_CHAT_VOICES = {
     broken:item=>`The structural integrity of my ${item} has reached exactly zero.`,
   },
   archer:{
+    banter:[
+      "I can tell who raided the pantry by the footprints. I can also tell it was Orin.",
+      "Wind from the west, clear sky, and Bram is clanking from three buildings away. Normal day.",
+      "You learn a lot by watching quietly. Mostly that nobody else is quiet.",
+      "I made six new arrows. Vex borrowed one. Somehow I now have five new arrows and a lockpick.",
+      "The best place to stand in a fight is somewhere the enemy is not looking.",
+      "I tried explaining fletching to Orin. One of his spirits is now wearing feathers.",
+      "There is a bird on the watchtower that has beaten me at staring contests three days running.",
+      "Bram calls this bow delicate. Bram also uses a sword to open crates.",
+      "Tracks outside town look normal. Which is exactly what suspicious tracks would want me to think.",
+      "I like the forest. It rarely asks follow-up questions.",
+      "Elowen calculates trajectories. I point the sharp end away from us. Both methods have merit.",
+      "I have spare bowstrings in three places. I am not telling Vex where any of them are.",
+      "If you hear me say 'duck,' please skip the discussion and duck.",
+      "Good news: I found our missing target. Bad news: Bram was using it as a table.",
+      "Rain makes archery harder. It also makes everyone else complain louder, so it balances out.",
+      "The horizon is clear. I will distrust it professionally."
+    ],
     assignment:{idle:"Quiver checked, boots tied. I'm ready.",farm:"I'll keep the rows straight and the pests nervous.",mine:"Not much range in a mine, but I can spot a good seam.",forest:"I know which trees make good bows. The others can relax.",smith:"A balanced tool matters. A balanced weapon matters more.",tavern:"I'll take the quiet corner and keep an eye on the door."},
     danger:["I'm running out of room to dodge—and health to spend.","A clean retreat is still a strategy. Just mentioning it."],
     combatLevel:level=>`Combat Level ${level}. Faster eyes, steadier hands.`,
@@ -64,6 +119,24 @@ const HERO_CHAT_VOICES = {
     broken:item=>`My ${item} won't survive another trip. It barely survived this one.`,
   },
   druid:{
+    banter:[
+      "The herb garden is doing well. The mint is planning a territorial expansion.",
+      "I told Bram to rest his shoulder. He interpreted that as carrying things with the other shoulder.",
+      "There is a fox near the forest path. We have agreed not to discuss who stole whose lunch.",
+      "Plants are excellent listeners. They are less useful when I need someone to admit they broke a chair.",
+      "Orin's spirits keep watering the same flower. It is now the most supported flower in Briarwatch.",
+      "Vex insists they do not need healing. Their bandages have submitted a different opinion.",
+      "The breeze smells like rain, pine, and whatever Elowen just burned.",
+      "I made tea for everyone. Bram asked whether it counts as a potion if it tastes suspicious.",
+      "Nature rewards patience. Adventurers usually reward whoever brought snacks.",
+      "A small mushroom has appeared beside the Tavern. Please do not eat mysterious civic mushrooms.",
+      "Rowan knows every bird call. I know which birds are complaining about Rowan.",
+      "The old oak by the square is healthy. It also thinks our market prices are ridiculous.",
+      "Healing magic works better when the patient stops walking away mid-spell. A general reminder.",
+      "Some days the town needs a hero. Some days it needs everyone to drink water.",
+      "I have asked the weeds to leave the Farm. They have requested better terms.",
+      "Even Vex smiles sometimes. Usually when nobody else is looking. I am not looking, officially."
+    ],
     assignment:{idle:"The town is breathing easily. So am I.",farm:"The soil remembers kindness. The harvest usually does too.",mine:"I'll take only what the town needs and leave the mountain stable.",forest:"A careful cut makes room for new growth.",smith:"Even iron has a rhythm if you listen past the hammer.",tavern:"Warm food, good company, and no poison clouds. Lovely."},
     danger:["I can mend wounds, but I would prefer fewer of them.","The roots are holding me up. Barely."],
     combatLevel:level=>`Combat Level ${level}. Stronger roots, steadier heart.`,
@@ -77,6 +150,24 @@ const HERO_CHAT_VOICES = {
     broken:item=>`My ${item} has given all it can. We should repair it.`,
   },
   assassin:{
+    banter:[
+      "For the record, I was never on the roof. The roof is an unreliable witness.",
+      "Bram's idea of stealth is lowering his voice while wearing several pans worth of armor.",
+      "Someone locked the Warehouse. Adorable.",
+      "I have not stolen Rowan's spare bowstring. I have merely relocated an unguarded resource.",
+      "Orin asked if shadows have feelings. Mine is filing for reassignment.",
+      "The best hiding place in town remains directly behind whoever claims they checked everywhere.",
+      "Elowen installed a proximity glyph. It now screams when a cat walks past. Progress.",
+      "I sharpened Bram's sword. He said thank you. This arrangement is becoming dangerously wholesome.",
+      "There are seven squeaky floorboards in the Tavern. Six after tonight.",
+      "I enjoy team meetings. They tell me exactly where everyone will be at once.",
+      "Mira left tea outside my room. I drank it. This information goes no further.",
+      "If a guard says 'nobody could get through there,' I consider it a personal invitation.",
+      "My knives are organized by purpose. 'Emergency cheese' is a purpose.",
+      "I heard a suspicious noise near the gate. It was Bram sitting down.",
+      "Rowan keeps finding my footprints. I may have to start respecting them professionally.",
+      "I am not brooding. I am standing efficiently in low light."
+    ],
     assignment:{idle:"Standing visibly in the town square feels deeply unnatural.",farm:"If anyone asks, these vegetables harvested themselves.",mine:"Dark tunnels, sharp tools, no small talk. Perfect.",forest:"Quiet work. Until the tree falls, anyway.",smith:"I need the edges sharp and the questions dull.",tavern:"I'm not resting. I'm gathering intelligence near the soup."},
     danger:["Either they got stronger or I got significantly more perforated.","I prefer danger behind me, not distributed through my organs."],
     combatLevel:level=>`Combat Level ${level}. I was already dangerous. Now it is documented.`,
@@ -90,6 +181,24 @@ const HERO_CHAT_VOICES = {
     broken:item=>`My ${item} broke. Whoever laughs is testing the replacement.`,
   },
   summoner:{
+    banter:[
+      "One of the spirits learned to knock. Unfortunately it only knocks from inside walls.",
+      "I named a summon Sir Wobbles. Bram says this harms battlefield morale. Sir Wobbles disagrees.",
+      "Elowen says my notes need structure. They have structure. It is just mostly arrows and exclamation marks.",
+      "Good news! The pantry is not haunted. Bad news! Something else ate the biscuits.",
+      "I asked the spirits to help clean. We now have six very clean spoons and a floating broom problem.",
+      "Vex says I talk too much on stealth missions. So I have been whispering more enthusiastically.",
+      "Mira's plants like my summons. One vine has adopted a tiny ghost.",
+      "Bram told me not to summon anything in the Tavern again. The wording leaves several loopholes.",
+      "Does anyone know why there is a chicken following me? No? Great, new friend.",
+      "I tried to summon courage. I got a small blue creature holding a flag. Close enough.",
+      "Rowan says I scare the wildlife. I think the wildlife is fascinated by me.",
+      "There are twelve voices in my head right now, but eleven are invited.",
+      "My tome opened itself to the page labeled 'Do Not.' I respect its optimism.",
+      "The spirits voted on dinner. Soup won, somehow, despite none of them eating.",
+      "I can absolutely explain the glowing footprints. I would prefer not to.",
+      "If anyone finds a purple wisp wearing my hat, please tell it we are still arguing."
+    ],
     assignment:{idle:"The spirits and I are ready. Mostly the spirits.",farm:"I asked the seedlings what they need. They were surprisingly specific.",mine:"I can summon help, but apparently the pickaxe builds character.",forest:"The little spirits keep naming the trees. This may take a while.",smith:"The forge sprites have suggestions. Many involve more fire.",tavern:"I ordered for two. My summon insists it counts."},
     danger:["My summons would like everyone to know this is going badly.","I may have brought too many spell pages and not enough armor."],
     combatLevel:level=>`Combat Level ${level}! The spirits are cheering in at least four languages.`,
@@ -702,7 +811,7 @@ function postBrokenGearChat(hero,item){postHeroChat(hero,HERO_CHAT_VOICES[hero.i
 function postAssignmentChat(hero,assignment){const text=HERO_CHAT_VOICES[hero.id]?.assignment?.[assignment];if(text)postHeroChat(hero,text,"assignment",{cooldownKey:`assignment-${hero.id}-${assignment}`,cooldownSeconds:20});}
 function postTierChat(hero,assignment,tier){const highest=unlockedResourceTiers(hero,assignment).slice(-1)[0],voice=HERO_CHAT_VOICES[hero.id],text=highest&&highest.rank>tier.rank?voice.outdated(tier.name,highest.name):`I'll focus on ${tier.name}. The Warehouse has ${fmt(resourceTierCount(RESOURCE_ASSIGNMENTS[assignment],tier.id))} stored.`;postHeroChat(hero,text,"assignment",{cooldownKey:`tier-${hero.id}-${assignment}-${tier.id}`,cooldownSeconds:20});}
 function contextualAmbientChat(hero){
-  const assignment=hero.assignment,voice=HERO_CHAT_VOICES[hero.id];if(RESOURCE_ASSIGNMENTS[assignment]){const resource=RESOURCE_ASSIGNMENTS[assignment],tier=resourceTierForHero(hero,assignment),best=unlockedResourceTiers(hero,assignment).slice(-1)[0];if(best&&best.rank>tier.rank)return voice.outdated(tier.name,best.name);const skillKey=BUILDINGS[assignment].skill,skill=hero.skills[skillKey],next=RESOURCE_TIERS[resource].find(candidate=>candidate.rank>(best?.rank||0));if(next&&skill.level>=next.level&&state.buildings[assignment]<next.building)return `I can work ${next.name}, but the ${BUILDINGS[assignment].name} needs Level ${next.building}.`;const stored=resourceTierCount(resource,tier.id),nextNote=next?` ${Math.max(0,next.level-skill.level)} skill level${Math.max(0,next.level-skill.level)===1?"":"s"} until ${next.name}.`:" This is the best material we know.";return `${tier.name}: ${fmt(stored)} stored.${nextNote}`;}
+  const assignment=hero.assignment,voice=HERO_CHAT_VOICES[hero.id];if(voice?.banter?.length&&Math.random()<.5)return chatPick(voice.banter);if(RESOURCE_ASSIGNMENTS[assignment]){const resource=RESOURCE_ASSIGNMENTS[assignment],tier=resourceTierForHero(hero,assignment),best=unlockedResourceTiers(hero,assignment).slice(-1)[0];if(best&&best.rank>tier.rank)return voice.outdated(tier.name,best.name);const skillKey=BUILDINGS[assignment].skill,skill=hero.skills[skillKey],next=RESOURCE_TIERS[resource].find(candidate=>candidate.rank>(best?.rank||0));if(next&&skill.level>=next.level&&state.buildings[assignment]<next.building)return `I can work ${next.name}, but the ${BUILDINGS[assignment].name} needs Level ${next.building}.`;const stored=resourceTierCount(resource,tier.id),nextNote=next?` ${Math.max(0,next.level-skill.level)} skill level${Math.max(0,next.level-skill.level)===1?"":"s"} until ${next.name}.`:" This is the best material we know.";return `${tier.name}: ${fmt(stored)} stored.${nextNote}`;}
   if(assignment==="smith"){const metal=resourceTierData("metal",REPAIR_KIT_RECIPE.metalTier),wood=resourceTierData("wood",REPAIR_KIT_RECIPE.woodTier),metalCount=resourceTierCount("metal",metal.id),woodCount=resourceTierCount("wood",wood.id),skill=hero.skills.smithing,next=NORMAL_GEAR_TIER_SPECS.find(tier=>skill.level<tier.smithLevel||state.buildings.smith<tier.building);if(metalCount<REPAIR_KIT_RECIPE.metalCost||woodCount<REPAIR_KIT_RECIPE.woodCost)return `The forge is waiting. We need ${REPAIR_KIT_RECIPE.metalCost} ${metal.name} and ${REPAIR_KIT_RECIPE.woodCost} ${wood.name} per Repair Kit.`;if(next&&skill.level>=next.smithLevel)return `I am ready for ${next.name} equipment, but the Blacksmith needs Level ${next.building}.`;return `${fmt(state.resources.repairKits)} Repair Kits stored.${next?` ${Math.max(0,next.smithLevel-skill.level)} Smithing level${Math.max(0,next.smithLevel-skill.level)===1?"":"s"} until ${next.name} equipment.`:" Every normal equipment tier is mastered."}`;}
   if(assignment==="combat"){const run=state.combatRuns.find(candidate=>candidate.heroIds.includes(hero.id)),cfg=COMBAT[run?.combatId],room=COMBAT_LAYOUTS[run?.combatId]?.[run?.roomIndex];if(cfg&&room)return run.enemy?`Still in ${cfg.short}. ${run.enemy.name} has ${fmt(run.enemy.hp)} of ${fmt(run.enemy.maxHP)} HP left.`:`Working through ${room.name} in ${cfg.short}.`;}
   if(assignment==="tavern")return `Sanity is back to ${Math.floor(hero.sanity)}. A little longer at the Tavern.`;
@@ -804,7 +913,7 @@ function processWork(h,seconds){
 
 function createEnemy(cfg,room){
   const level=cfg.minLevel,baseHP=cfg.category==="raid"?160+level*11:cfg.category==="dungeon"?50+level*5.5:18+level*3.5,baseAttack=5+level*1.7,baseDefense=4+level*1.2,baseMax=cfg.category==="raid"?6+level*.5:cfg.category==="dungeon"?4+level*.38:2+level*.28;
-  const maxHP=Math.max(8,Math.round(baseHP*room.hp));return {name:room.name,icon:room.icon,image:room.image,boss:!!room.boss,combatStyle:room.combatStyle||"melee",hp:maxHP,maxHP,attack:Math.round(baseAttack*room.attack),defense:Math.round(baseDefense*room.defense),maxHit:Math.max(2,Math.round(baseMax*(room.boss?1.18:1))),speed:room.speed,attacks:0,status:{},room};
+  const maxHP=Math.max(8,Math.round(baseHP*room.hp*ENEMY_STAT_MULTIPLIER));return {name:room.name,icon:room.icon,image:room.image,boss:!!room.boss,combatStyle:room.combatStyle||"melee",hp:maxHP,maxHP,attack:Math.round(baseAttack*room.attack*ENEMY_STAT_MULTIPLIER),defense:Math.round(baseDefense*room.defense*ENEMY_STAT_MULTIPLIER),maxHit:Math.max(2,Math.round(baseMax*(room.boss?1.18:1)*ENEMY_STAT_MULTIPLIER)),speed:room.speed,attacks:0,status:{},room};
 }
 function combatRoomsFor(cfg){return (COMBAT_LAYOUTS[cfg.id]||[]).filter(room=>room.type==="combat");}
 function pushCombatEvent(run,text,type="info",target="enemy",amount=null,attackerId=null,offline=false){if(offline||quietSimulation)return;run.recentEvents=(run.recentEvents||[]).concat({id:uid(),at:Date.now(),text,type,target,amount,attackerId}).slice(-30);}
