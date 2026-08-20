@@ -97,6 +97,10 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .resource-chip small { color: var(--muted); font-size: .56rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
 .resource-chip strong { font-size: .78rem; line-height: 1.05; }
 .resource-chip.flash { animation: chipFlash .65s ease; }
+.resource-heroes { display:flex; align-items:center; gap:5px; min-width:max-content; padding-left:2px; }
+.resource-hero-button { display:grid; place-items:center; width:34px; height:34px; flex:0 0 34px; padding:0; overflow:hidden; border:2px solid var(--hero-color,var(--sage-200)); border-radius:50%; background:var(--paper); box-shadow:0 2px 7px rgba(39,58,43,.12); }
+.resource-hero-button .hero-image { width:100%; height:100%; object-fit:cover; }
+.resource-hero-button:active { transform:scale(.94); }
 @keyframes chipFlash { 45%{transform:translateY(-2px);border-color:var(--gold);box-shadow:0 5px 15px rgba(213,166,63,.28)} }
 
 .main-stage { width: min(1500px,100%); margin: 0 auto; }

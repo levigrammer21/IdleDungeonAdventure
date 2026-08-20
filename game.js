@@ -1,4 +1,4 @@
-const VERSION = "1.7.0";
+const VERSION = "1.7.1";
 const SAVE_KEY = "adventure-town-save-v1";
 const SETTINGS_KEY = "adventure-town-settings-v1";
 const OFFLINE_LIMIT = 12 * 60 * 60;
@@ -1048,8 +1048,10 @@ function checkAchievements(){for(const a of ACHIEVEMENTS){if(!state.achievements
 function renderAll(){renderResources();renderTown();renderHeroes();renderAssignments();renderCombat();renderWarehouse();renderMarket();renderProgress();renderSyncUser();renderPartyChat();}
 function refreshWorkTimers(){$$("[data-work-timer]").forEach(el=>{const h=heroById(el.dataset.workTimer);if(h)el.textContent=workActionStatus(h);});}
 function renderResources(){
-  const data=[['gold','🪙','Gold']];
-  $("#resourceBar").innerHTML=data.map(([k,i,n])=>`<div class="resource-chip" data-resource="${k}"><span class="resource-icon">${i}</span><span><small>${n}</small><strong>${fmt(state.resources[k])}</strong></span></div>`).join("");
+  const data=[['gold','🪙','Gold'],['essence','✨','Essence']];
+  const resources=data.map(([k,i,n])=>`<div class="resource-chip" data-resource="${k}"><span class="resource-icon">${i}</span><span><small>${n}</small><strong>${fmt(state.resources[k])}</strong></span></div>`).join("");
+  const heroes=`<div class="resource-heroes" aria-label="Hero profiles">${state.heroes.map(h=>`<button class="resource-hero-button" data-action="open-hero" data-hero="${h.id}" style="--hero-color:${h.color}" aria-label="Open ${escapeHTML(h.name)} profile" title="${escapeHTML(h.name)} · ${escapeHTML(statusFor(h))}">${heroImage(h)}</button>`).join("")}</div>`;
+  $("#resourceBar").innerHTML=resources+heroes;
 }
 
 function statusFor(h){if(h.assignment==="combat"){const r=state.combatRuns.find(x=>x.heroIds.includes(h.id));return r&&COMBAT[r.combatId]?COMBAT[r.combatId].short:"Fighting";}const rotation=expeditionRunForRestingHero(h.id);if(rotation){const name=COMBAT[rotation.combatId]?.short||"expedition";return h.sanity>=EXPEDITION_RETURN_SANITY?`Ready to rejoin ${name}`:`Tavern break · ${Math.floor(h.sanity)} Sanity`;}return ASSIGNMENTS[h.assignment]?.name||"Available";}
