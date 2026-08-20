@@ -1,4 +1,4 @@
-const VERSION = "1.6.7";
+const VERSION = "1.6.8";
 const SAVE_KEY = "adventure-town-save-v1";
 const SETTINGS_KEY = "adventure-town-settings-v1";
 const OFFLINE_LIMIT = 12 * 60 * 60;
@@ -423,7 +423,7 @@ let combatVisualFrame = null;
 let activeSimulationAudit = null;
 let activeMapSpeech = null;
 let mapSpeechTimer = null;
-let heroLeagueMetric = "power";
+let heroLeagueMetric = "overview";
 let audioContext = null;
 const soundCooldowns = new Map();
 const seenCombatEventIds = new Set();
@@ -1071,8 +1071,67 @@ function renderProgress(){
   const board=leaderboard.length?leaderboard:[{displayName:"Your town",totalLevel,raidWins:state.stats.raids,local:true}];$("#leaderboardList").innerHTML=board.map((x,i)=>`<article class="leaderboard-row"><span class="rank">${i+1}</span><span class="board-avatar">${i===0?"👑":"🛡️"}</span><div><strong>${escapeHTML(x.displayName||"Adventurer")}</strong><small>${x.raidWins||0} raid victories</small></div><b>Lv ${x.totalLevel||0}</b></article>`).join("");
   renderHeroLeague();
 }
-function heroLeagueValue(hero,metric){if(metric==="damage")return hero.records.damageDealt||0;if(metric==="combat")return hero.level;if(metric==="work")return Object.values(hero.skills).reduce((sum,skill)=>sum+skill.level,0);return Math.floor(heroPower(hero));}
-function renderHeroLeague(){const host=$("#heroLeague");if(!host)return;$$('[data-action="hero-league-metric"]').forEach(button=>button.classList.toggle("active",button.dataset.metric===heroLeagueMetric));const labels={power:"Combat power",damage:"Lifetime damage",combat:"Combat level",work:"Combined work levels"},sorted=[...state.heroes].sort((a,b)=>heroLeagueValue(b,heroLeagueMetric)-heroLeagueValue(a,heroLeagueMetric)),max=Math.max(1,...sorted.map(hero=>heroLeagueValue(hero,heroLeagueMetric)));host.innerHTML=`<div class="hero-league-list">${sorted.map((hero,index)=>{const value=heroLeagueValue(hero,heroLeagueMetric),skills=Object.entries(hero.skills);return `<button class="hero-league-row" data-action="open-hero" data-hero="${hero.id}"><span class="league-rank">${index+1}</span><span class="league-portrait">${heroImage(hero)}</span><div class="league-main"><div><strong>${escapeHTML(hero.name)}</strong>${combatStyleBadge(heroCombatStyle(hero),true)}<b>${fmt(value)}</b></div><div class="league-bar"><span style="--league-width:${value/max*100}%;--hero-color:${hero.color}"></span></div><small>${labels[heroLeagueMetric]} · ${CLASS_COMBAT[hero.className].identity}</small></div><div class="skill-mini-chart" aria-label="Work skill levels">${skills.map(([key,skill])=>`<i title="${WORK_SKILL_NAMES[key]} ${skill.level}" style="--skill-height:${Math.max(8,skill.level)}%"><span></span></i>`).join("")}</div></button>`;}).join("")}</div><div class="skill-chart-key"><span>Four small bars per hero:</span><b>Farm</b><b>Mine</b><b>Wood</b><b>Smith</b></div>`;}
+function heroWorkTotalLevel(hero){return Object.values(hero.skills).reduce((total,skill)=>total+skill.level,0);}
+function workSkillTotalXP(skill){let total=0,level=clamp(Math.floor(Number(skill.level)||1),1,100);for(let current=1;current<level;current++)total+=xpForLevel(current);return total+(level>=100?0:Math.max(0,Number(skill.xp)||0));}
+function heroWorkTotalXP(hero){return Object.values(hero.skills).reduce((total,skill)=>total+workSkillTotalXP(skill),0);}
+function heroTotalLevel(hero){return hero.level+heroWorkTotalLevel(hero);}
+function heroTotalXP(hero){return heroCombatTotalXP(hero)+heroWorkTotalXP(hero);}
+function heroAdventureTotal(hero){return (hero.records.expeditions||0)+(hero.records.dungeons||0)+(hero.records.raids||0);}
+function heroBossTotal(hero){return (hero.records.raidBosses||0)+(hero.records.dungeonBosses||0);}
+function heroGatheredTotal(hero){return (hero.records.foodGathered||0)+(hero.records.metalMined||0)+(hero.records.woodGathered||0);}
+
+const HERO_LEAGUE_CATEGORIES={
+  overview:{label:"Overview",metrics:[
+    {key:"totalLevel",icon:"🏆",label:"Total Level",detail:"Combat plus all four work skills"},
+    {key:"totalXP",icon:"✨",label:"Total XP",detail:"Lifetime Combat and work XP"},
+    {key:"power",icon:"⚔️",label:"Combat Power",detail:"Current equipment and combat progression"},
+    {key:"combatLevel",icon:"🛡️",label:"Combat Level",detail:"Individual Combat progression"},
+  ]},
+  combat:{label:"Combat",metrics:[
+    {key:"damage",icon:"💥",label:"Damage Dealt",detail:"Lifetime damage successfully inflicted"},
+    {key:"kills",icon:"☠️",label:"Enemies Killed",detail:"Finishing blows against all enemies"},
+    {key:"combatXP",icon:"⭐",label:"Combat XP",detail:"Lifetime Combat experience"},
+    {key:"healing",icon:"💚",label:"Healing Done",detail:"HP restored to the party"},
+    {key:"damageTaken",icon:"🩸",label:"Damage Endured",detail:"Lifetime incoming damage survived"},
+    {key:"combatActions",icon:"⚡",label:"Combat Actions",detail:"Attacks and class actions performed"},
+  ]},
+  bosses:{label:"Bosses",metrics:[
+    {key:"raidBosses",icon:"🐲",label:"Raid Boss Victories",detail:"Raid clears this hero survived"},
+    {key:"dungeonBosses",icon:"🗝️",label:"Dungeon Boss Victories",detail:"Dungeon clears this hero survived"},
+    {key:"totalBosses",icon:"👑",label:"Total Boss Victories",detail:"Raid and Dungeon bosses combined"},
+    {key:"raids",icon:"🌑",label:"Raids Completed",detail:"Successful Raid returns"},
+    {key:"dungeons",icon:"🏰",label:"Dungeons Completed",detail:"Successful Dungeon returns"},
+    {key:"expeditions",icon:"🧭",label:"Expeditions Completed",detail:"Successful Expedition returns"},
+    {key:"adventures",icon:"🗺️",label:"All Adventures",detail:"Expeditions, Dungeons, and Raids"},
+  ]},
+  work:{label:"Work",metrics:[
+    {key:"workLevel",icon:"📈",label:"Total Work Level",detail:"All four independent skills"},
+    {key:"workXP",icon:"📚",label:"Total Work XP",detail:"Lifetime XP across all work skills"},
+    {key:"workActions",icon:"📋",label:"Work Actions",detail:"Completed town and obstacle actions"},
+    {key:"food",icon:"🥕",label:"Food Gathered",detail:"Meal items produced"},
+    {key:"metal",icon:"⛏️",label:"Metal Mined",detail:"Ore items extracted"},
+    {key:"wood",icon:"🌲",label:"Wood Gathered",detail:"Wood items harvested"},
+    {key:"kits",icon:"🧰",label:"Repair Kits Forged",detail:"Completed Smithing kits"},
+    {key:"gathered",icon:"📦",label:"Total Materials",detail:"Food, metal, and wood combined"},
+  ]},
+  legacy:{label:"Legacy",metrics:[
+    {key:"gold",icon:"🪙",label:"Gold Earned",detail:"Personal share of adventure rewards"},
+    {key:"items",icon:"💎",label:"Rare Finds",detail:"Equipment, pets, and treasures found"},
+    {key:"activeTime",icon:"⌛",label:"Time Active",detail:"Lifetime assigned time",format:"duration"},
+    {key:"beers",icon:"🍺",label:"Tavern Visits",detail:"Recovery sessions started"},
+    {key:"defeats",icon:"🛒",label:"Trips to the Inn",detail:"Times defeated in combat"},
+  ]},
+};
+
+function heroLeagueValue(hero,metric){
+  const records=hero.records||{},values={totalLevel:heroTotalLevel(hero),totalXP:heroTotalXP(hero),power:Math.floor(heroPower(hero)),combatLevel:hero.level,workLevel:heroWorkTotalLevel(hero),activeTime:records.secondsActive,damage:records.damageDealt,kills:records.kills,combatXP:heroCombatTotalXP(hero),healing:records.healingDone,damageTaken:records.damageTaken,combatActions:records.combatActions,raidBosses:records.raidBosses,dungeonBosses:records.dungeonBosses,totalBosses:heroBossTotal(hero),raids:records.raids,dungeons:records.dungeons,expeditions:records.expeditions,adventures:heroAdventureTotal(hero),workXP:heroWorkTotalXP(hero),workActions:records.workActions,food:records.foodGathered,metal:records.metalMined,wood:records.woodGathered,kits:records.kitsForged,gathered:heroGatheredTotal(hero),gold:records.goldEarned,items:records.itemsFound,beers:records.beers,defeats:records.defeats};return Math.max(0,Number(values[metric])||0);
+}
+function heroLeagueMetricDefinition(key){return Object.values(HERO_LEAGUE_CATEGORIES).flatMap(category=>category.metrics).find(metric=>metric.key===key);}
+function heroLeagueStandings(metric){return state.heroes.map(hero=>({hero,value:heroLeagueValue(hero,metric.key)})).sort((a,b)=>b.value-a.value||heroTotalLevel(b.hero)-heroTotalLevel(a.hero)||a.hero.name.localeCompare(b.hero.name));}
+function formatHeroLeagueValue(value,metric){return metric.format==="duration"?formatDuration(value):fmt(value);}
+function heroLeagueBoard(metric){const entries=heroLeagueStandings(metric),max=Math.max(1,...entries.map(entry=>entry.value));return `<article class="league-board"><header><span>${metric.icon}</span><div><strong>${escapeHTML(metric.label)}</strong><small>${escapeHTML(metric.detail)}</small></div></header><div class="league-board-rows">${entries.map((entry,index)=>{const first=entries.findIndex(candidate=>candidate.value===entry.value),rank=first+1,rankLabel=first===index?rank:`=${rank}`;return `<button class="league-standing ${index===0&&entry.value>0?"champion":""}" data-action="open-hero" data-hero="${entry.hero.id}"><b>${rankLabel}</b><span class="league-standing-portrait" style="--hero-color:${entry.hero.color}">${heroImage(entry.hero)}</span><span class="league-standing-main"><strong>${escapeHTML(entry.hero.name)}</strong><small>${entry.hero.className}</small><i><span style="--standing-width:${entry.value/max*100}%;--hero-color:${entry.hero.color}"></span></i></span><em>${formatHeroLeagueValue(entry.value,metric)}</em></button>`;}).join("")}</div></article>`;}
+function heroLeagueSummary(metricKey){const metric=heroLeagueMetricDefinition(metricKey),standings=heroLeagueStandings(metric),leader=standings[0];if(!leader?.value)return `<article class="league-summary-card empty"><span>${metric.icon}</span><div><small>${escapeHTML(metric.label)} leader</small><strong>No record yet</strong><b>0</b></div></article>`;const tied=standings.filter(entry=>entry.value===leader.value);if(tied.length>1)return `<article class="league-summary-card tie"><span>${metric.icon}</span><div><small>${escapeHTML(metric.label)} leaders</small><strong>${tied.length}-way tie</strong><b>${formatHeroLeagueValue(leader.value,metric)}</b></div></article>`;return `<button class="league-summary-card" data-action="open-hero" data-hero="${leader.hero.id}"><span class="league-summary-portrait" style="--hero-color:${leader.hero.color}">${heroImage(leader.hero)}</span><div><small>${escapeHTML(metric.label)} leader</small><strong>${escapeHTML(leader.hero.name)}</strong><b>${formatHeroLeagueValue(leader.value,metric)}</b></div></button>`;}
+function renderHeroLeague(){const host=$("#heroLeague");if(!host)return;if(!HERO_LEAGUE_CATEGORIES[heroLeagueMetric])heroLeagueMetric="overview";$$('[data-action="hero-league-metric"]').forEach(button=>button.classList.toggle("active",button.dataset.metric===heroLeagueMetric));const category=HERO_LEAGUE_CATEGORIES[heroLeagueMetric];host.innerHTML=`<div class="league-summary-grid">${["totalLevel","totalXP","kills","raidBosses"].map(heroLeagueSummary).join("")}</div><div class="league-category-intro"><strong>${category.label} standings</strong><span>All six heroes · highest record first · select a hero for their full story</span></div><div class="league-board-grid">${category.metrics.map(heroLeagueBoard).join("")}</div>`;}
 
 function renderSyncUser(){
   $("#versionLabel").textContent=`v${VERSION}`;const label=currentUser?(currentUser.displayName||currentUser.email||"A").charAt(0).toUpperCase():"G";$("#accountButton").textContent=label;

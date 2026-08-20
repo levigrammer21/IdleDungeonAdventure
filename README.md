@@ -24,7 +24,7 @@ Adventure Town is a mobile-first, persistent idle RPG built around six permanent
 - Persistent live-styled party chat with distinct voices for all six heroes, conversational replies, stable non-repeating map speech, and real hooks for assignments, exact tasks, outdated work tiers, level gains, unlocks, milestones, combat danger, food shortages, victories, rare finds, broken gear, building upgrades, and offline progress
 - Tavern stock diversion with three volatile fantasy companies, persistent/offline quotes, whole-share trading, portfolio P/L, base anchors, rolling averages, fee-inclusive personal share averages, and live sparkline charts
 - Procedural, user-toggleable sound cues for interface actions, chat, combat, levels, loot, victories, and tavern trading—no external audio files required
-- A private Heroes' League with four sortable metrics and compact work-skill charts
+- A private Heroes' League with thirty real lifetime standings across total levels, total/Combat/work XP, power, kills, damage, healing, boss victories, route clears, production, gathering, gold, rare finds, active time, and more
 - Named Warehouse meals with explicit HP values that heroes auto-eat below 45% HP, plus exact-material crafting, Sanity, defeat, Inn, Tavern, durability, repairs, Essence, and Raid Keys
 - Complete, individually named 12-item class sets in every Dungeon and Raid, with transparent rare-table rates
 - Account-bound pets, raid-boss eggs, Dungeon trinkets, equipping, repairs, and salvage
@@ -32,7 +32,7 @@ Adventure Town is a mobile-first, persistent idle RPG built around six permanent
 - Firestore player marketplace, delayed seller payouts, and leaderboards
 - Building upgrades, milestones, town reports, save export, and installable PWA support
 
-The visible game version is `1.6.7`.
+The visible game version is `1.6.8`.
 
 New towns begin with zero Gold, meals, ores, woods, Essence, Raid Keys, and Repair Kits. Existing named stacks are preserved; use **Account → Begin a new town** to test the new starting experience.
 
