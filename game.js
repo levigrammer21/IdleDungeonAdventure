@@ -1,4 +1,4 @@
-const VERSION = "1.8.1";
+const VERSION = "1.8.2";
 const SAVE_KEY = "adventure-town-save-v1";
 const SETTINGS_KEY = "adventure-town-settings-v1";
 const OFFLINE_LIMIT = 12 * 60 * 60;
@@ -522,6 +522,8 @@ let cloudUnsubscribe = null;
 let saveTimer = null;
 let cloudSaveTimer = null;
 let lastCloudSave = 0;
+let startupHadLocalSave = false;
+let cloudReconciled = false;
 let quietSimulation = false;
 let currentView = "town";
 let warehouseFilter = "all";
@@ -867,9 +869,9 @@ function toast(icon,title,text=""){
   $("#toastRegion").append(el); setTimeout(()=>el.remove(),4200);
 }
 
-function saveLocal(){
-  state.updatedAt=Date.now(); state.lastTick=Math.min(state.updatedAt,lastSimulationAt||state.updatedAt);try{localStorage.setItem(SAVE_KEY,JSON.stringify(state));}catch(err){console.warn("Device save unavailable",err);}
-  if(currentUser && firebaseApi) queueCloudSave();
+function saveLocal({touchUpdatedAt=true}={}){
+  if(touchUpdatedAt)state.updatedAt=Date.now(); state.lastTick=Math.min(Date.now(),lastSimulationAt||Date.now());try{localStorage.setItem(SAVE_KEY,JSON.stringify(state));}catch(err){console.warn("Device save unavailable",err);}
+  if(currentUser && firebaseApi && cloudReconciled) queueCloudSave();
 }
 function markDirty(){ clearTimeout(saveTimer); saveTimer=setTimeout(saveLocal,650); }
 function queueCloudSave(){
@@ -1404,10 +1406,11 @@ async function initializeFirebase(){
   try{firebaseApi=await import("./firebase-config.js");firebaseApi.watchAuth(async user=>{
     currentUser=user;renderSyncUser();
     if(user){
-      setSync("saving");const cloud=await firebaseApi.loadGame(user.uid);
-      if(cloud?.updatedAt>state.updatedAt){const restoredAt=Date.now();state=migrate(cloud);const away=Math.min(OFFLINE_LIMIT,Math.max(0,(restoredAt-(state.lastTick||restoredAt))/1000)),report=simulate(away,true);postOfflineProgressChat(report);lastSimulationAt=restoredAt;state.lastTick=restoredAt;saveLocal();notify("Cloud town restored","Your latest Firebase save and its idle progress are now on this device.","☁️");showOffline(report);}
-      await claimPayouts();subscribeOnline();scheduleCloudSave();if($("#authDialog").open)$("#authDialog").close();
-    }else{setSync("device");unsubscribeOnline();}
+      setSync("saving");cloudReconciled=false;const cloud=await firebaseApi.loadGame(user.uid);
+      const shouldRestoreCloud=!!cloud&&(!startupHadLocalSave||Number(cloud.updatedAt||0)>Number(state.updatedAt||0));
+      if(shouldRestoreCloud){const restoredAt=Date.now();state=migrate(cloud);const away=Math.min(OFFLINE_LIMIT,Math.max(0,(restoredAt-(state.lastTick||restoredAt))/1000)),report=simulate(away,true);postOfflineProgressChat(report);lastSimulationAt=restoredAt;state.lastTick=restoredAt;saveLocal({touchUpdatedAt:false});notify("Cloud town restored","Your Firebase town was restored before this device was allowed to save over it.","☁️");showOffline(report);}
+      cloudReconciled=true;await claimPayouts();subscribeOnline();scheduleCloudSave();if($("#authDialog").open)$("#authDialog").close();
+    }else{cloudReconciled=false;setSync("device");unsubscribeOnline();}
     renderAll();
   });}
   catch(err){console.warn("Firebase unavailable",err);setSync("error");}
@@ -1508,7 +1511,7 @@ function registerServiceWorker(){
 async function init(){
   let report=null;const watchdog=setTimeout(()=>{if(startupReleased)return;console.warn("Startup artwork budget reached; opening the town.");try{if(!state)state=freshState();renderAll();releaseStartup(report,["startup-time-budget"]);warmRemainingAssets();}catch(err){console.error("Startup recovery failed",err);}},9000);
   try{
-    const raw=storedJSON(SAVE_KEY,null);state=migrate(raw);const now=Date.now(),elapsed=Math.min(OFFLINE_LIMIT,Math.max(0,(now-(state.lastTick||now))/1000));report=simulate(elapsed,true);postOfflineProgressChat(report);lastSimulationAt=now;state.lastTick=now;saveLocal();
+    const raw=storedJSON(SAVE_KEY,null);startupHadLocalSave=!!raw;state=migrate(raw);const now=Date.now(),elapsed=Math.min(OFFLINE_LIMIT,Math.max(0,(now-(state.lastTick||now))/1000));report=simulate(elapsed,true);postOfflineProgressChat(report);lastSimulationAt=now;state.lastTick=now;saveLocal({touchUpdatedAt:false});
     initializeFirebase();registerServiceWorker();
     const failedAssets=await preloadAssetBatch(STARTUP_ASSETS,{showProgress:true,timeoutMs:3500,concurrency:6});renderAll();releaseStartup(report,failedAssets);warmRemainingAssets();
   }catch(err){
