@@ -37,7 +37,13 @@ export async function loadGame(uid){
 }
 
 export async function saveGame(uid,game){
-  await setDoc(doc(db,"players",uid),{game,ownerId:uid,updatedAt:serverTimestamp()},{merge:true});
+  if(!auth.currentUser || auth.currentUser.uid!==uid)throw new Error("Cloud save blocked: sign in again.");
+  const safeGame=JSON.parse(JSON.stringify(game));
+  const ref=doc(db,"players",uid);
+  await setDoc(ref,{game:safeGame,ownerId:uid,updatedAt:serverTimestamp()},{merge:true});
+  const verify=await getDoc(ref);
+  if(!verify.exists() || !verify.data()?.game)throw new Error("Cloud save verification failed: Firebase did not return the saved town.");
+  return {updatedAt:Number(verify.data().game?.updatedAt||0)};
 }
 
 export async function writeLeaderboard(uid,data){

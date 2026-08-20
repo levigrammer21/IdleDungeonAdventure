@@ -1,4 +1,4 @@
-const VERSION = "1.8.2";
+const VERSION = "1.8.3";
 const SAVE_KEY = "adventure-town-save-v1";
 const SETTINGS_KEY = "adventure-town-settings-v1";
 const OFFLINE_LIMIT = 12 * 60 * 60;
@@ -879,9 +879,11 @@ function queueCloudSave(){
   const wait=Math.max(1000,30000-(Date.now()-lastCloudSave));
   cloudSaveTimer=setTimeout(()=>{cloudSaveTimer=null;scheduleCloudSave();},wait);
 }
-async function scheduleCloudSave(){
-  try{setSync("saving");await firebaseApi.saveGame(currentUser.uid,state);await firebaseApi.writeLeaderboard(currentUser.uid,{displayName:currentUser.displayName||currentUser.email?.split("@")[0]||"Adventurer",totalLevel:state.heroes.reduce((n,h)=>n+h.level,0),combatXP:state.heroes.reduce((n,h)=>n+COMBAT_XP_TOTALS[h.level]+(h.xp||0),0),wealth:Math.floor(state.resources.gold),raidWins:state.stats.raids,updatedAt:Date.now()});setSync("online");}
-  catch(err){console.warn(err);setSync("error");}
+async function scheduleCloudSave({manual=false}={}){
+  if(!currentUser||!firebaseApi||!cloudReconciled)return false;
+  const user=currentUser,snapshot=JSON.parse(JSON.stringify(state));
+  try{setSync("saving");await firebaseApi.saveGame(user.uid,snapshot);await firebaseApi.writeLeaderboard(user.uid,{displayName:user.displayName||user.email?.split("@")[0]||"Adventurer",totalLevel:snapshot.heroes.reduce((n,h)=>n+h.level,0),combatXP:snapshot.heroes.reduce((n,h)=>n+COMBAT_XP_TOTALS[h.level]+(h.xp||0),0),wealth:Math.floor(snapshot.resources.gold),raidWins:snapshot.stats.raids,updatedAt:Date.now()});setSync("online");if(manual)toast("☁️","Cloud save verified","Firebase confirmed this town was saved.");return true;}
+  catch(err){console.error("Cloud save failed",err);setSync("error");if(manual)toast("⚠️","Cloud save failed",friendlyError(err));return false;}
   finally{lastCloudSave=Date.now();}
 }
 
@@ -1482,7 +1484,7 @@ document.addEventListener("click",async event=>{
   else if(a==="buy-listing")buyListing(b.dataset.listing);
   else if(a==="cancel-listing")cancelListing(b.dataset.listing);
   else if(a==="clear-reports"){state.notifications=[];markDirty();closeDrawer();renderTown();}
-  else if(a==="sync"){saveLocal();if(currentUser&&firebaseApi)scheduleCloudSave();toast("☁️","Save requested");}
+  else if(a==="sync"){saveLocal();if(currentUser&&firebaseApi&&cloudReconciled)await scheduleCloudSave({manual:true});else toast("⚠️","Cloud is not ready yet");}
   else if(a==="export-save")exportSave();
   else if(a==="google-signin"){try{$("#authError").textContent="";await firebaseApi?.googleSignIn();}catch(err){$("#authError").textContent=friendlyError(err);}}
   else if(a==="email-signin"){try{$("#authError").textContent="";await firebaseApi?.emailSignIn($("#authEmail").value,$("#authPassword").value);}catch(err){$("#authError").textContent=friendlyError(err);}}
