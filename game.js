@@ -1,4 +1,4 @@
-const VERSION = "1.6.9";
+const VERSION = "1.7.0";
 const SAVE_KEY = "adventure-town-save-v1";
 const SETTINGS_KEY = "adventure-town-settings-v1";
 const OFFLINE_LIMIT = 12 * 60 * 60;
@@ -23,6 +23,7 @@ const HEROES = [
 const PARTY_CHAT_LIMIT = 80;
 const PARTY_CHAT_MILESTONES = [25,100,250,500,1000,2500,5000,10000,25000,50000,100000];
 const ENEMY_STAT_MULTIPLIER = 1.12;
+const ENEMY_DAMAGE_MULTIPLIER = 1.30;
 const WORK_SKILL_NAMES = {farming:"Farming",mining:"Mining",woodcutting:"Woodcutting",smithing:"Smithing"};
 const HERO_CHAT_VOICES = {
   warrior:{
@@ -331,26 +332,26 @@ const ITEMS = {
   druidArmor:{name:"Good Druid Garb",type:"armor",className:"Druid",icon:"🥻",tier:"Good",defense:8,requiredLevel:10,value:560,metalCost:25,woodCost:70},
   assassinArmor:{name:"Good Assassin Armor",type:"armor",className:"Assassin",icon:"🥷",tier:"Good",defense:8,requiredLevel:10,value:560,metalCost:55,woodCost:40},
   summonerArmor:{name:"Good Summoner Robes",type:"armor",className:"Summoner",icon:"🧣",tier:"Good",defense:8,requiredLevel:10,value:560,metalCost:30,woodCost:65},
-  verdantBlade:{name:"Greenwarden’s Edge",type:"weapon",className:"Warrior",icon:"🌿",tier:"Dungeon",attack:8,element:"+2 Nature Damage",requiredLevel:10,value:950,salvage:10,special:true},
-  briarRobes:{name:"Raiment of the Briar Saint",type:"armor",className:"Wizard",icon:"🍃",tier:"Dungeon",defense:11,element:"Root ward",requiredLevel:10,value:980,salvage:10,special:true},
-  frostBow:{name:"Winterglass",type:"weapon",className:"Archer",icon:"❄️",tier:"Dungeon",attack:10,element:"+2 Frost Damage",requiredLevel:24,value:1800,salvage:16,special:true},
+  verdantBlade:{name:"Greenwarden’s Edge",type:"weapon",className:"Warrior",icon:"🌿",tier:"Rare Expedition Drop",attack:8,element:"+2 Nature Damage",requiredLevel:10,value:950,salvage:10,special:true},
+  briarRobes:{name:"Raiment of the Briar Saint",type:"armor",className:"Wizard",icon:"🍃",tier:"Rare Expedition Drop",defense:11,element:"Root ward",requiredLevel:10,value:980,salvage:10,special:true},
+  frostBow:{name:"Winterglass",type:"weapon",className:"Archer",icon:"❄️",tier:"Rare Expedition Drop",attack:10,element:"+2 Frost Damage",requiredLevel:24,value:1800,salvage:16,special:true},
   burningSword:{name:"Emberwrought Oath",type:"weapon",className:"Warrior",icon:"🔥",tier:"Dungeon",attack:11,element:"+2 Fire Damage",requiredLevel:24,value:1900,salvage:16,special:true},
-  healingStaff:{name:"Staff of Returning Spring",type:"weapon",className:"Druid",icon:"💚",tier:"Dungeon",attack:9,element:"+8% recovery",requiredLevel:24,value:1750,salvage:15,special:true},
+  healingStaff:{name:"Staff of Returning Spring",type:"weapon",className:"Druid",icon:"💚",tier:"Rare Expedition Drop",attack:9,element:"+8% recovery",requiredLevel:24,value:1750,salvage:15,special:true},
   darkWand:{name:"Nightwhisper",type:"weapon",className:"Wizard",icon:"🌑",tier:"Dungeon",attack:11,element:"+2 Shadow Damage",requiredLevel:24,value:1850,salvage:16,special:true},
   poisonDaggers:{name:"Viper’s Kiss",type:"weapon",className:"Assassin",icon:"☠️",tier:"Dungeon",attack:10,element:"+3 Poison Damage",requiredLevel:24,value:1950,salvage:16,special:true},
   echoTome:{name:"Grimoire of Second Voices",type:"weapon",className:"Summoner",icon:"🔮",tier:"Dungeon",attack:10,element:"+1 summoned echo",requiredLevel:24,value:1900,salvage:16,special:true},
-  emberBow:{name:"Ashflight",type:"weapon",className:"Archer",icon:"🏹",tier:"Dungeon",attack:18,element:"+4 Fire Damage",requiredLevel:45,value:4200,salvage:28,special:true},
-  cinderTome:{name:"Testament of Living Flame",type:"weapon",className:"Summoner",icon:"📕",tier:"Dungeon",attack:18,element:"Burning summons",requiredLevel:45,value:4300,salvage:28,special:true},
+  emberBow:{name:"Ashflight",type:"weapon",className:"Archer",icon:"🏹",tier:"Rare Expedition Drop",attack:18,element:"+4 Fire Damage",requiredLevel:45,value:4200,salvage:28,special:true},
+  cinderTome:{name:"Testament of Living Flame",type:"weapon",className:"Summoner",icon:"📕",tier:"Rare Expedition Drop",attack:18,element:"Burning summons",requiredLevel:45,value:4300,salvage:28,special:true},
   tideSpear:{name:"Tidecaller’s Crook",type:"weapon",className:"Druid",icon:"🔱",tier:"Dungeon",attack:22,element:"Tidal recovery",requiredLevel:58,value:5900,salvage:35,special:true},
   coralArmor:{name:"Reefking’s Carapace",type:"armor",className:"Warrior",icon:"🪸",tier:"Dungeon",defense:29,element:"Wave ward",requiredLevel:58,value:6100,salvage:36,special:true},
-  stormStaff:{name:"Skyroot",type:"weapon",className:"Druid",icon:"⛈️",tier:"Dungeon",attack:25,element:"+6 Lightning Damage",requiredLevel:70,value:7600,salvage:42,special:true},
-  tempestDaggers:{name:"Thunderstep Twins",type:"weapon",className:"Assassin",icon:"⚡",tier:"Dungeon",attack:25,element:"Chain lightning",requiredLevel:70,value:7800,salvage:42,special:true},
+  stormStaff:{name:"Skyroot",type:"weapon",className:"Druid",icon:"⛈️",tier:"Rare Expedition Drop",attack:25,element:"+6 Lightning Damage",requiredLevel:70,value:7600,salvage:42,special:true},
+  tempestDaggers:{name:"Thunderstep Twins",type:"weapon",className:"Assassin",icon:"⚡",tier:"Rare Expedition Drop",attack:25,element:"Chain lightning",requiredLevel:70,value:7800,salvage:42,special:true},
   basiliskTooth:{name:"The King’s Venom",type:"weapon",className:"Assassin",icon:"🦷",tier:"Raid",attack:15,element:"+30% Crit · +3 Poison",requiredLevel:30,value:12000,salvage:80,special:true,raid:true},
   basiliskPlate:{name:"Stonegaze Carapace",type:"armor",className:"Warrior",icon:"🐲",tier:"Raid",defense:22,element:"Poison ward",requiredLevel:30,value:11500,salvage:75,special:true,raid:true},
   stormbreakerBow:{name:"Thunderhead",type:"weapon",className:"Archer",icon:"🌩️",tier:"Raid",attack:34,element:"+25% Crit · Thunder volley",requiredLevel:60,value:28000,salvage:150,special:true,raid:true},
   titanWard:{name:"Mantle of the Mountain Storm",type:"armor",className:"Druid",icon:"🗿",tier:"Raid",defense:38,element:"Party storm ward",requiredLevel:60,value:27000,salvage:145,special:true,raid:true},
-  voidWand:{name:"Scepter of Empty Stars",type:"weapon",className:"Wizard",icon:"🌌",tier:"Raid",attack:48,element:"Void surge",requiredLevel:90,value:68000,salvage:320,special:true,raid:true},
-  eclipseTome:{name:"Grimoire of the Devoured Moon",type:"weapon",className:"Summoner",icon:"🌘",tier:"Raid",attack:48,element:"Twin shadow summons",requiredLevel:90,value:70000,salvage:330,special:true,raid:true},
+  voidWand:{name:"Scepter of Empty Stars",type:"weapon",className:"Wizard",icon:"🌌",tier:"Rare Expedition Drop",attack:48,element:"Void surge",requiredLevel:90,value:68000,salvage:320,special:true,raid:true},
+  eclipseTome:{name:"Grimoire of the Devoured Moon",type:"weapon",className:"Summoner",icon:"🌘",tier:"Rare Expedition Drop",attack:48,element:"Twin shadow summons",requiredLevel:90,value:70000,salvage:330,special:true,raid:true},
   nightweave:{name:"Shroud Beyond Dawn",type:"armor",className:"Assassin",icon:"🕸️",tier:"Raid",defense:52,element:"Eclipse evasion",requiredLevel:90,value:72000,salvage:340,special:true,raid:true},
 };
 
@@ -913,7 +914,7 @@ function processWork(h,seconds){
 
 function createEnemy(cfg,room){
   const level=cfg.minLevel,baseHP=cfg.category==="raid"?160+level*11:cfg.category==="dungeon"?50+level*5.5:18+level*3.5,baseAttack=5+level*1.7,baseDefense=4+level*1.2,baseMax=cfg.category==="raid"?6+level*.5:cfg.category==="dungeon"?4+level*.38:2+level*.28;
-  const maxHP=Math.max(8,Math.round(baseHP*room.hp*ENEMY_STAT_MULTIPLIER));return {name:room.name,icon:room.icon,image:room.image,boss:!!room.boss,combatStyle:room.combatStyle||"melee",hp:maxHP,maxHP,attack:Math.round(baseAttack*room.attack*ENEMY_STAT_MULTIPLIER),defense:Math.round(baseDefense*room.defense*ENEMY_STAT_MULTIPLIER),maxHit:Math.max(2,Math.round(baseMax*(room.boss?1.18:1)*ENEMY_STAT_MULTIPLIER)),speed:room.speed,attacks:0,status:{},room};
+  const maxHP=Math.max(8,Math.round(baseHP*room.hp*ENEMY_STAT_MULTIPLIER));return {name:room.name,icon:room.icon,image:room.image,boss:!!room.boss,combatStyle:room.combatStyle||"melee",hp:maxHP,maxHP,attack:Math.round(baseAttack*room.attack*ENEMY_STAT_MULTIPLIER*ENEMY_DAMAGE_MULTIPLIER),defense:Math.round(baseDefense*room.defense*ENEMY_STAT_MULTIPLIER),maxHit:Math.max(2,Math.round(baseMax*(room.boss?1.18:1)*ENEMY_STAT_MULTIPLIER*ENEMY_DAMAGE_MULTIPLIER)),speed:room.speed,attacks:0,status:{},room};
 }
 function combatRoomsFor(cfg){return (COMBAT_LAYOUTS[cfg.id]||[]).filter(room=>room.type==="combat");}
 function pushCombatEvent(run,text,type="info",target="enemy",amount=null,attackerId=null,offline=false){if(offline||quietSimulation)return;run.recentEvents=(run.recentEvents||[]).concat({id:uid(),at:Date.now(),text,type,target,amount,attackerId}).slice(-30);}
@@ -1161,7 +1162,7 @@ function renderWarehouse(){
   const itemList=warehouseFilter==="resource"?[]:state.inventory.filter(i=>warehouseFilter==="all"||itemData(i).type===warehouseFilter||(warehouseFilter==="special"&&itemData(i).special));
   const resourceList=["all","resource"].includes(warehouseFilter)?warehouseResourceStacks():[];
   const resourceCards=resourceList.map(stack=>`<article class="item-card resource-stack"><div class="item-icon">${stack.icon}</div><div><h4>${escapeHTML(stack.name)}</h4><span class="item-meta">${escapeHTML(stack.category)} · Stored resource</span><p>${escapeHTML(stack.detail)}</p></div><div class="resource-quantity"><small>Stored</small><strong>×${fmt(stack.quantity)}</strong></div></article>`);
-  const itemCards=itemList.map(i=>{const d=itemData(i),gear=["weapon","armor"].includes(d.type),equippable=gear||["pet","trinket"].includes(d.type),stats=[d.attack?`+${d.attack} ATK`:"",d.defense?`+${d.defense} DEF`:"",d.element,d.effectText].filter(Boolean).join(" · ")||"A curious town treasure",actions=[equippable?`<button data-action="equip-item" data-item="${i.id}">Equip</button>`:"",d.type==="egg"?`<button data-action="hatch-egg" data-item="${i.id}">Hatch egg</button>`:"",gear?`<button data-action="repair-item" data-item="${i.id}">Repair</button>`:"",d.salvage?`<button data-action="salvage-item" data-item="${i.id}">Salvage +${d.salvage} ✨</button>`:"",!d.soulbound?`<button data-action="sell-item" data-item="${i.id}">List</button>`:""].filter(Boolean).join("");return `<article class="item-card ${d.special?"special":""}"><div class="item-icon">${itemImage(d,"item-art")}</div><div><h4>${escapeHTML(d.name)}</h4><span class="item-meta">${d.tier} ${d.type} · ${d.className||"Any hero"}</span><p>${escapeHTML(stats)}${gear?`<br>Durability ${Math.floor(d.durability??100)}%`:""}${d.soulbound?`<br><b>Non-tradeable</b>`:""}</p></div><div class="item-actions">${actions}</div></article>`});
+  const itemCards=itemList.map(i=>{const d=itemData(i),gear=["weapon","armor"].includes(d.type),equippable=gear||["pet","trinket"].includes(d.type),stats=[d.attack?`+${d.attack} ATK`:"",d.defense?`+${d.defense} DEF`:"",d.element,d.effectText].filter(Boolean).join(" · ")||"A curious town treasure",actions=[equippable?`<button data-action="equip-item" data-item="${i.id}">Equip</button>`:"",d.type==="egg"?`<button data-action="hatch-egg" data-item="${i.id}">Hatch egg</button>`:"",gear?`<button data-action="repair-item" data-item="${i.id}">Repair</button>`:"",d.salvage?`<button data-action="salvage-item" data-item="${i.id}">Salvage +${d.salvage} ✨</button>`:d.tier==="Starter"&&gear?`<button data-action="salvage-item" data-item="${i.id}">Salvage +1 🔩</button>`:"",!d.soulbound?`<button data-action="sell-item" data-item="${i.id}">List</button>`:""].filter(Boolean).join("");return `<article class="item-card ${d.special?"special":""}"><div class="item-icon">${itemImage(d,"item-art")}</div><div><h4>${escapeHTML(d.name)}</h4><span class="item-meta">${d.tier} ${d.type} · ${d.className||"Any hero"}</span><p>${escapeHTML(stats)}${gear?`<br>Durability ${Math.floor(d.durability??100)}%`:""}${d.soulbound?`<br><b>Non-tradeable</b>`:""}</p></div><div class="item-actions">${actions}</div></article>`});
   const cards=[...resourceCards,...itemCards];$("#inventoryGrid").innerHTML=cards.length?cards.join(""):`<div class="empty-state"><span>📦</span>No matching items in the Warehouse.</div>`;
 }
 
@@ -1283,8 +1284,8 @@ function heroTaskEligibility(hero,assignment,task){
   return {eligible:true,note:`${WORK_SKILL_NAMES[skill]} ${level}`};
 }
 function taskHeroChoiceHTML(hero,assignment,task){
-  const eligibility=heroTaskEligibility(hero,assignment,task),current=workTaskForHero(hero,assignment),working=hero.assignment===assignment&&current?.id===task.id,status=!eligibility.eligible?"Unavailable":working?"Working this task":hero.assignment===assignment?`Switch from ${current?.name||ASSIGNMENTS[assignment].name}`:hero.assignment==="tavern"?"Leave Tavern & assign":"Assign";
-  return `<button class="task-hero-card ${working?"selected":""}" data-action="assign-specific-task" data-hero="${hero.id}" data-assignment="${assignment}" data-task="${task.id}" ${!eligibility.eligible?"disabled":""}><span class="task-hero-portrait" style="--hero-color:${hero.color}">${heroImage(hero)}</span><span class="task-hero-copy"><strong>${escapeHTML(hero.name)} · ${hero.className}</strong><small>${escapeHTML(eligibility.note)}</small></span><b>${escapeHTML(status)}</b></button>`;
+  const eligibility=heroTaskEligibility(hero,assignment,task),current=workTaskForHero(hero,assignment),working=hero.assignment===assignment&&current?.id===task.id,currentAction=workActionStatus(hero)||statusFor(hero),status=!eligibility.eligible?"Unavailable":working?"Working this task":hero.assignment===assignment?`Switch from ${current?.name||ASSIGNMENTS[assignment].name}`:hero.assignment==="tavern"?"Leave Tavern & assign":"Assign";
+  return `<button class="task-hero-card ${working?"selected":""}" data-action="assign-specific-task" data-hero="${hero.id}" data-assignment="${assignment}" data-task="${task.id}" ${!eligibility.eligible?"disabled":""}><span class="task-hero-portrait" style="--hero-color:${hero.color}">${heroImage(hero)}</span><span class="task-hero-copy"><strong>${escapeHTML(hero.name)} · ${hero.className}</strong><small>Current: ${escapeHTML(currentAction)} · ${escapeHTML(eligibility.note)}</small></span><b>${escapeHTML(status)}</b></button>`;
 }
 function openTaskAssignment(assignment,taskId){
   const task=workTasksFor(assignment).find(candidate=>candidate.id===taskId);if(!task)return toast("⚠️","That task is unavailable");const output=taskOutputDetail(assignment,task),stored=assignment==="farm"?resourceTierCount("food",task.id):assignment==="mine"?resourceTierCount("metal",task.id):assignment==="forest"?resourceTierCount("wood",task.id):state.resources.repairKits;
@@ -1347,7 +1348,7 @@ function equipItemToHero(itemId,heroId){const idx=state.inventory.findIndex(i=>i
 function hatchEgg(itemId){const idx=state.inventory.findIndex(i=>i.id===itemId),egg=state.inventory[idx];if(idx<0||!egg)return;const d=itemData(egg),pet=ITEMS[d.hatchesTo];if(d.type!=="egg"||!pet)return toast("🥚","This egg cannot hatch");state.inventory.splice(idx,1);state.inventory.push({id:uid(),key:d.hatchesTo,acquiredAt:Date.now()});notify("The egg hatched!",`${pet.name} is ready to assist one of your heroes.`,pet.icon);markDirty();renderAll();}
 function renameHero(heroId){const h=heroById(heroId),input=$("#heroNameInput");if(!h||!input)return;const name=input.value.trim().replace(/\s+/g," ");if(!name)return toast("✏️","A hero needs a name");if(name.length>24)return toast("✏️","Keep hero names to 24 characters");h.name=name;notify("A new name",`${h.className} is now known as ${name}.`,h.icon);markDirty();renderAll();openHero(heroId);}
 function repairItem(id){const i=state.inventory.find(x=>x.id===id);if(!i)return;const d=itemData(i),needed=Math.ceil((100-(i.durability??100))/20);if(!needed)return toast("🧰","Item is already fully repaired");if(state.resources.repairKits<needed)return toast("🧰","Not enough Repair Kits");const essence=d.special?Math.ceil(needed/2):0;if(state.resources.essence<essence)return toast("✨","Special gear also needs Essence");state.resources.repairKits-=needed;state.resources.essence-=essence;i.durability=100;notify("Equipment repaired",`${d.name} is restored to full durability.`,"🧰");markDirty();renderAll();}
-function salvageItem(id){const idx=state.inventory.findIndex(x=>x.id===id),i=state.inventory[idx];if(!i)return;const d=itemData(i);if(!d.salvage)return;state.resources.essence+=d.salvage;state.inventory.splice(idx,1);notify("Item salvaged",`${d.name} became ${d.salvage} Essence.`,"✨");markDirty();renderAll();}
+function salvageItem(id){const idx=state.inventory.findIndex(x=>x.id===id),i=state.inventory[idx];if(!i)return;const d=itemData(i);if(d.salvage){state.resources.essence+=d.salvage;state.inventory.splice(idx,1);notify("Item salvaged",`${d.name} became ${d.salvage} Essence.`,"✨");markDirty();renderAll();return;}if(d.tier==="Starter"&&["weapon","armor"].includes(d.type)){state.resourceTiers.metal.starter=(state.resourceTiers.metal.starter||0)+1;recalculateTieredTotal("metal");state.inventory.splice(idx,1);notify("Item salvaged",`${d.name} became 1 Scrap Metal.`,"🔩");markDirty();renderAll();}}
 
 async function initializeFirebase(){
   try{firebaseApi=await import("./firebase-config.js");firebaseApi.watchAuth(async user=>{
@@ -1419,7 +1420,7 @@ document.addEventListener("click",async event=>{
   else if(a==="rename-hero")renameHero(b.dataset.hero);
   else if(a==="toggle-hero-rename"){const form=$("#heroRenameForm");if(form){form.hidden=!form.hidden;if(!form.hidden){const input=$("#heroNameInput");input?.focus();input?.select();}}}
   else if(a==="repair-item")repairItem(b.dataset.item);
-  else if(a==="salvage-item" && await confirmAction("Salvage this item?","The equipment will be permanently converted into its regional Essence.","❄️"))salvageItem(b.dataset.item);
+  else if(a==="salvage-item" && await confirmAction("Salvage this item?","The equipment will be permanently converted into salvage materials.","🔧"))salvageItem(b.dataset.item);
   else if(a==="sell-item")openSell(b.dataset.item);
   else if(a==="open-sell")openSell();
   else if(a==="confirm-listing")createListing($("#sellItemChoice").value,$("#sellPrice").value);
