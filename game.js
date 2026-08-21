@@ -1,4 +1,4 @@
-const VERSION = "2.1.0";
+const VERSION = "2.1.1";
 const SAVE_KEY = "adventure-town-save-v1";
 const SETTINGS_KEY = "adventure-town-settings-v1";
 const OFFLINE_LIMIT = 12 * 60 * 60;
@@ -47,7 +47,7 @@ const HERO_CHAT_VOICES = {
       "I can carry more. I should not have said that out loud.",
       "Nothing builds team spirit like everyone pretending they did not hear the ominous noise."
     ],
-    assignment:{idle:"Shield is down. Call when something needs hitting—or carrying.",farm:"A stocked pantry wins more fights than bravado. I'll see to it.",mine:"I'll bring back enough metal to make this sword jealous.",forest:"Trees, axes, honest work. I can do that.",smith:"Good. I trust equipment more when I've watched it being forged.",tavern:"One bowl, one chair, and absolutely no quests until my head clears."},
+    assignment:{idle:"Shield is down. Call when something needs hitting—or carrying.",farm:"A stocked pantry wins more fights than bravado. I'll see to it.",cook:"Kitchen duty. If the stew survives me, the party can survive the stew.",mine:"I'll bring back enough metal to make this sword jealous.",forest:"Trees, axes, honest work. I can do that.",smith:"Good. I trust equipment more when I've watched it being forged.",plunder:"Stealth is not my specialty. I can, however, look extremely convincing while carrying a crate away.",tavern:"One bowl, one chair, and absolutely no quests until my head clears."},
     danger:["Did someone turn up the difficulty in here, or did my sword get nerfed?","This armor is earning its keep. A little help would still be welcome."],
     combatLevel:level=>`Combat Level ${level}. Harder to knock down, easier to annoy.`,
     workLevel:(skill,level)=>`${skill} Level ${level}. Turns out repetition really does build muscle.`,
@@ -78,7 +78,7 @@ const HERO_CHAT_VOICES = {
       "There is technically no rule against casting indoors. There are several new rules because I cast indoors.",
       "I am not overthinking it. I am thinking the appropriate amount with excellent coverage."
     ],
-    assignment:{idle:"I have finished reorganizing my notes. Twice. I am available.",farm:"Agriculture is applied alchemy with fewer explosions.",mine:"Every vein tells a geological story. Most of them are very long.",forest:"I'll catalogue what we cut. Waste is simply poor scholarship.",smith:"Heat, pressure, structure—smithing is magic that admits it uses a hammer.",tavern:"Rest is not laziness. It is mana management."},
+    assignment:{idle:"I have finished reorganizing my notes. Twice. I am available.",farm:"Agriculture is applied alchemy with fewer explosions.",cook:"Cooking is chemistry with edible peer review. Ideally edible.",mine:"Every vein tells a geological story. Most of them are very long.",forest:"I'll catalogue what we cut. Waste is simply poor scholarship.",smith:"Heat, pressure, structure—smithing is magic that admits it uses a hammer.",plunder:"I prefer ‘unauthorized field acquisition.’ Plundering sounds terribly imprecise.",tavern:"Rest is not laziness. It is mana management."},
     danger:["My calculations did not include quite this much bleeding.","A brief defensive adjustment would be academically prudent."],
     combatLevel:level=>`Combat Level ${level}. The practical results agree with the theory.`,
     workLevel:(skill,level)=>`${skill} Level ${level}. My field notes are becoming rather convincing.`,
@@ -109,7 +109,7 @@ const HERO_CHAT_VOICES = {
       "Rain makes archery harder. It also makes everyone else complain louder, so it balances out.",
       "The horizon is clear. I will distrust it professionally."
     ],
-    assignment:{idle:"Quiver checked, boots tied. I'm ready.",farm:"I'll keep the rows straight and the pests nervous.",mine:"Not much range in a mine, but I can spot a good seam.",forest:"I know which trees make good bows. The others can relax.",smith:"A balanced tool matters. A balanced weapon matters more.",tavern:"I'll take the quiet corner and keep an eye on the door."},
+    assignment:{idle:"Quiver checked, boots tied. I'm ready.",farm:"I'll keep the rows straight and the pests nervous.",cook:"I can cook over a campfire. A kitchen is just a campfire with paperwork.",mine:"Not much range in a mine, but I can spot a good seam.",forest:"I know which trees make good bows. The others can relax.",smith:"A balanced tool matters. A balanced weapon matters more.",plunder:"I'll scout the exits first. Vex calls that pessimism. Vex is wrong.",tavern:"I'll take the quiet corner and keep an eye on the door."},
     danger:["I'm running out of room to dodge—and health to spend.","A clean retreat is still a strategy. Just mentioning it."],
     combatLevel:level=>`Combat Level ${level}. Faster eyes, steadier hands.`,
     workLevel:(skill,level)=>`${skill} Level ${level}. I can see the pattern now.`,
@@ -140,7 +140,7 @@ const HERO_CHAT_VOICES = {
       "I have asked the weeds to leave the Farm. They have requested better terms.",
       "Even Vex smiles sometimes. Usually when nobody else is looking. I am not looking, officially."
     ],
-    assignment:{idle:"The town is breathing easily. So am I.",farm:"The soil remembers kindness. The harvest usually does too.",mine:"I'll take only what the town needs and leave the mountain stable.",forest:"A careful cut makes room for new growth.",smith:"Even iron has a rhythm if you listen past the hammer.",tavern:"Warm food, good company, and no poison clouds. Lovely."},
+    assignment:{idle:"The town is breathing easily. So am I.",farm:"The soil remembers kindness. The harvest usually does too.",cook:"Good ingredients deserve patience. Orin deserves supervision.",mine:"I'll take only what the town needs and leave the mountain stable.",forest:"A careful cut makes room for new growth.",smith:"Even iron has a rhythm if you listen past the hammer.",plunder:"I am calling this ‘aggressive redistribution.’ The trees have declined to comment.",tavern:"Warm food, good company, and no poison clouds. Lovely."},
     danger:["I can mend wounds, but I would prefer fewer of them.","The roots are holding me up. Barely."],
     combatLevel:level=>`Combat Level ${level}. Stronger roots, steadier heart.`,
     workLevel:(skill,level)=>`${skill} Level ${level}. Practice has taken root.`,
@@ -171,7 +171,7 @@ const HERO_CHAT_VOICES = {
       "Rowan keeps finding my footprints. I may have to start respecting them professionally.",
       "I am not brooding. I am standing efficiently in low light."
     ],
-    assignment:{idle:"Standing visibly in the town square feels deeply unnatural.",farm:"If anyone asks, these vegetables harvested themselves.",mine:"Dark tunnels, sharp tools, no small talk. Perfect.",forest:"Quiet work. Until the tree falls, anyway.",smith:"I need the edges sharp and the questions dull.",tavern:"I'm not resting. I'm gathering intelligence near the soup."},
+    assignment:{idle:"Standing visibly in the town square feels deeply unnatural.",farm:"If anyone asks, these vegetables harvested themselves.",cook:"Knives, heat, timing. Finally, a job with transferable skills.",mine:"Dark tunnels, sharp tools, no small talk. Perfect.",forest:"Quiet work. Until the tree falls, anyway.",smith:"I need the edges sharp and the questions dull.",plunder:"At last, a job description written by someone sensible.",tavern:"I'm not resting. I'm gathering intelligence near the soup."},
     danger:["Either they got stronger or I got significantly more perforated.","I prefer danger behind me, not distributed through my organs."],
     combatLevel:level=>`Combat Level ${level}. I was already dangerous. Now it is documented.`,
     workLevel:(skill,level)=>`${skill} Level ${level}. Please contain your surprise.`,
@@ -202,7 +202,7 @@ const HERO_CHAT_VOICES = {
       "I can absolutely explain the glowing footprints. I would prefer not to.",
       "If anyone finds a purple wisp wearing my hat, please tell it we are still arguing."
     ],
-    assignment:{idle:"The spirits and I are ready. Mostly the spirits.",farm:"I asked the seedlings what they need. They were surprisingly specific.",mine:"I can summon help, but apparently the pickaxe builds character.",forest:"The little spirits keep naming the trees. This may take a while.",smith:"The forge sprites have suggestions. Many involve more fire.",tavern:"I ordered for two. My summon insists it counts."},
+    assignment:{idle:"The spirits and I are ready. Mostly the spirits.",farm:"I asked the seedlings what they need. They were surprisingly specific.",cook:"The recipe says ‘stir constantly.’ I have assigned three ghosts to the spoon.",mine:"I can summon help, but apparently the pickaxe builds character.",forest:"The little spirits keep naming the trees. This may take a while.",smith:"The forge sprites have suggestions. Many involve more fire.",plunder:"If a ghost carries the loot, technically nobody saw me take it. This feels airtight.",tavern:"I ordered for two. My summon insists it counts."},
     danger:["My summons would like everyone to know this is going badly.","I may have brought too many spell pages and not enough armor."],
     combatLevel:level=>`Combat Level ${level}! The spirits are cheering in at least four languages.`,
     workLevel:(skill,level)=>`${skill} Level ${level}! I knew the extra hands would help.`,
@@ -225,6 +225,84 @@ const HERO_CHAT_REPLIES = {
   summoner:{danger:name=>`Hang on, ${name}! I am sending everything I have!`,level:name=>`I knew you could do it, ${name}!`,milestone:name=>`That deserves a celebration, ${name}!`,rare:name=>`Can I hold it for one second, ${name}?`,start:name=>`Ready, ${name}! The spirits are too!`},
 };
 
+const HERO_PAIR_BANTER = [
+  {speaker:"warrior",reply:"assassin",lines:[
+    [()=>"Vex says I need to work on my footwork.",()=>"I said you need to stop announcing each footstep like a town crier."],
+    [()=>"I made a tactical checklist. Step one: protect everyone.",()=>"Step two: stop calling one step a checklist."],
+    [()=>"My shield has survived three bosses and Orin borrowing it as a table.",()=>"The bosses were probably gentler."],
+  ]},
+  {speaker:"wizard",reply:"summoner",lines:[
+    [()=>"I asked Orin to organize the spell shelf alphabetically.",()=>"I did. A for alarming, B for bigger alarming, C for probably cursed."],
+    [()=>"There is no such thing as 'too much magical preparation.'",()=>"Counterpoint: the ceiling is still glowing."],
+    [()=>"Your summon is sitting on my research notes.",()=>"He says your conclusion lacked spirit."],
+  ]},
+  {speaker:"archer",reply:"warrior",lines:[
+    [()=>"Bram, if I say duck, what do you do?",()=>"Raise my shield.",()=>"I knew I should have made this multiple choice."],
+    [()=>"I found tracks outside the gate. Heavy boots. Very subtle.",()=>"Good. I was worried I had lost them."],
+    [()=>"You know armor is not supposed to be audible from the next zone, right?",()=>"Then how will the enemies know the tank has arrived?"],
+  ]},
+  {speaker:"druid",reply:"assassin",lines:[
+    [()=>"Vex, I put fresh bandages in your pack.",()=>"I was not injured.",()=>"I put them next to the bloodstained old bandages."],
+    [()=>"You could try asking the plants before cutting through them.",()=>"I did. They said nothing. Consent achieved."],
+    [()=>"Tea?",()=>"No.",()=>"I made the bitter kind.",()=>"...Fine."],
+  ]},
+  {speaker:"summoner",reply:"warrior",lines:[
+    [()=>"Bram, one of my spirits wants to multiclass into Warrior.",()=>"Does it own a shield?",()=>"It owns strong opinions.",()=>"Close enough."],
+    [()=>"I taught a ghost to shout 'critical hit!' every time I attack.",()=>"Can you teach it to shout less?"],
+    [()=>"If I summon two helpers, does that make us an eight-person party?",()=>"No.",()=>"What if they wear little badges?"],
+  ]},
+  {speaker:"assassin",reply:"archer",lines:[
+    [()=>"Rowan keeps checking every shadow for me.",()=>"Only the smug-looking ones."],
+    [()=>"I could steal your arrows without you noticing.",()=>"You could. The poisoned practice arrow is third from the left."],
+    [()=>"You call it camping. I call it controlling the encounter.",()=>"You are hiding behind a barrel."],
+  ]},
+  {speaker:"wizard",reply:"druid",lines:[
+    [()=>"Mira, your plant has grown around my spellbook.",()=>"It may be trying to protect the town."],
+    [()=>"I can prove that magic accelerates crop growth.",()=>"Last time you proved that, the carrots hummed for a week."],
+    [()=>"Do you have anything for arcane exhaustion?",()=>"Sleep.",()=>"Something less radical?"],
+  ]},
+  {speaker:"archer",reply:"summoner",lines:[
+    [()=>"Orin, your ghost is wearing one of my fletching feathers again.",()=>"He says it gives +2 style.",()=>"It gives -1 feather."],
+    [()=>"Your summon scared every rabbit out of the north field.",()=>"So the field is safe! Quest complete."],
+    [()=>"Please stop naming my arrows.",()=>"Too late. That one is Pierce Brosnan."],
+  ]},
+  {speaker:"warrior",reply:"druid",lines:[
+    [()=>"Mira says I need to listen to my body.",()=>"Your body is saying 'stop blocking axes with your shoulder.'"],
+    [()=>"Does this dent look serious?",()=>"Bram, that is the third time today you have asked me about a dent in the shield."],
+    [()=>"I saved everyone half a loaf from breakfast.",()=>"That is very thoughtful.",()=>"Orin has already named it."],
+  ]},
+  {speaker:"assassin",reply:"summoner",lines:[
+    [()=>"Orin, stealth means nobody knows you are there.",()=>"Great. I told the ghosts to whisper my theme music."],
+    [()=>"Why is there a spectral hand in my pocket?",()=>"Inventory management."],
+    [()=>"If your summon touches my daggers again—",()=>"He says he was only checking the tooltip."],
+  ]},
+  {speaker:"wizard",reply:"archer",lines:[
+    [()=>"I calculated the perfect firing angle for Rowan.",()=>"I moved two steps left.",()=>"Which was included in appendix C."],
+    [()=>"Your arrows are remarkably consistent.",()=>"Your compliments are remarkably complicated."],
+    [()=>"Statistically, you cannot hit every impossible shot.",()=>"Good thing I do not ask statistics first."],
+  ]},
+  {speaker:"druid",reply:"summoner",lines:[
+    [()=>"Orin, something in the herb garden is glowing.",()=>"Good glowing or paperwork glowing?"],
+    [()=>"Your little ghost watered the flowers again.",()=>"He is leveling Gardening.",()=>"That is not a skill.",()=>"Not with that attitude."],
+    [()=>"Please do not feed summoned creatures after midnight.",()=>"What timezone?"],
+  ]},
+  {speaker:"warrior",reply:"wizard",lines:[
+    [()=>"Elowen says I should diversify my build.",()=>"I suggested one point of subtlety.",()=>"I put it in shield."],
+    [()=>"Can you enchant my sword to hit harder?",()=>"I already did.",()=>"Can you enchant it harder?"],
+    [()=>"I do not understand half the words in your battle plan.",()=>"That is why I underlined 'Bram goes first.'"],
+  ]},
+  {speaker:"archer",reply:"druid",lines:[
+    [()=>"Mira, the deer are eating the south crop again.",()=>"They were here first.",()=>"They are also terrible taxpayers."],
+    [()=>"You talk to trees. Do they ever answer?",()=>"Constantly. They mostly complain about axes.",()=>"Fair."],
+    [()=>"I found a perfect campsite.",()=>"How perfect?",()=>"Orin has not found it yet."],
+  ]},
+  {speaker:"assassin",reply:"wizard",lines:[
+    [()=>"Elowen put a magical lock on the pantry.",()=>"Correct.",()=>"It took me six seconds.",()=>"I will add another layer."],
+    [()=>"Your alarm rune screamed when I walked past.",()=>"Then it works.",()=>"It screamed before I got there."],
+    [()=>"Magic is just lockpicking with more sparks.",()=>"That sentence caused me physical discomfort."],
+  ]},
+];
+
 const CLASS_GEAR = [
   {key:"warrior",className:"Warrior",weapon:"Sword",armor:"Warrior Armor",weaponIcon:"⚔️",armorIcon:"🛡️"},
   {key:"wizard",className:"Wizard",weapon:"Wand",armor:"Wizard Robes",weaponIcon:"🪄",armorIcon:"🥼"},
@@ -245,7 +323,7 @@ const BUILDINGS = {
   market:{name:"Guild Hall",icon:"🏰",description:"The command center for contracts, taxes, guild reputation, hero records, and donated equipment.",baseCost:1200,position:[39,44]},
   inn:{name:"Inn",icon:"🛏️",description:"Physically restores heroes after defeat.",baseCost:850,position:[79,66]},
   tavern:{name:"Tavern",icon:"🍲",description:"Restores Sanity after battle; heroes pay their own tab.",baseCost:800,position:[35,70]},
-  plunder:{name:"Shady Quarter",icon:"🏴‍☠️",description:"Send a hero on risky timed plundering jobs for personal Gold and stolen supplies.",baseCost:1000,position:[50,82],skill:"plundering"},
+  plunder:{name:"Shady Quarter",icon:"🏴‍☠️",description:"Send a hero on risky timed plundering jobs for personal Gold and stolen supplies.",baseCost:1000,position:[88,80],skill:"plundering"},
 };
 
 const ASSIGNMENTS = {
@@ -814,7 +892,7 @@ function starterPartyChat(){
 function chatPick(values){return values?.length?values[Math.floor(Math.random()*values.length)]:null;}
 function chatHero(message){return heroById(message.heroId)||HEROES.find(hero=>hero.id===message.heroId);}
 function chatClock(time){return new Date(time).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});}
-function adaptHeroNames(text){let adapted=String(text??"");for(const def of HEROES){const live=heroById(def.id);if(!live?.name||live.name===def.name)continue;const escaped=def.name.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");adapted=adapted.replace(new RegExp(`\\b${escaped}\\b`,"g"),live.name);}return adapted;}
+function adaptHeroNames(text){let adapted=String(text??"");const replacements=[];for(const [index,def] of HEROES.entries()){const live=heroById(def.id);if(!live?.name||live.name===def.name)continue;const token=`\uE000hero${index}\uE001`,escaped=def.name.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");adapted=adapted.replace(new RegExp(`\\b${escaped}\\b`,"g"),token);replacements.push([token,live.name]);}for(const [token,name] of replacements)adapted=adapted.split(token).join(name);return adapted;}
 function partyChatMessageHTML(message,compact=false){const hero=chatHero(message);if(!hero)return "";return `<article class="party-chat-message ${compact?"compact":""} ${message.kind||"ambient"}" style="--chat-color:${hero.color}"><span class="chat-portrait">${heroImage(hero)}</span><div class="chat-bubble"><div class="chat-message-head"><strong><i></i>${escapeHTML(hero.name)}</strong><small>${escapeHTML(hero.className)} · ${chatClock(message.time)}</small></div><p>${escapeHTML(adaptHeroNames(message.text))}</p></div></article>`;}
 function partyChatUnread(){const lastRead=Number(state.chatMeta?.lastReadAt)||0;return (state.partyChat||[]).filter(message=>message.time>lastRead).length;}
 function syncMapSpeech(){
@@ -877,8 +955,11 @@ function contextualAmbientChat(hero){
   if(assignment==="inn")return `The Inn says ${formatDuration(Math.max(0,(hero.recoveryUntil-Date.now())/1000))} until I am back on my feet.`;
   return voice.assignment.idle;
 }
+function postPairBanter(){
+  const availableIds=new Set(state.heroes.filter(hero=>hero.assignment!=="inn").map(hero=>hero.id)),eligible=HERO_PAIR_BANTER.filter(entry=>availableIds.has(entry.speaker)&&availableIds.has(entry.reply));if(!eligible.length)return false;const entry=chatPick(eligible),speaker=heroById(entry.speaker),responder=heroById(entry.reply),sequence=chatPick(entry.lines);if(!speaker||!responder||!sequence?.length)return false;sequence.forEach((line,index)=>{const hero=index%2===0?speaker:responder;postHeroChat(hero,line(speaker,responder),index?"reply":"ambient",{mapBubble:index===sequence.length-1});});return true;
+}
 function maybeAmbientPartyChat(seconds){
-  if(quietSimulation||!state.chatMeta)return;state.chatMeta.ambientProgress=(Number(state.chatMeta.ambientProgress)||0)+seconds;if(state.chatMeta.ambientProgress<(Number(state.chatMeta.nextAmbientAt)||55))return;state.chatMeta.ambientProgress=0;state.chatMeta.nextAmbientAt=40+Math.floor(Math.random()*31);let candidates=state.heroes.filter(hero=>hero.assignment!=="inn");if(candidates.length>1)candidates=candidates.filter(hero=>hero.id!==state.chatMeta.lastSpeakerId);const hero=chatPick(candidates.length?candidates:state.heroes),text=contextualAmbientChat(hero);if(text)postHeroChat(hero,text,"ambient",{cooldownKey:`ambient-${hero.id}-${hero.assignment}`,cooldownSeconds:38});
+  if(quietSimulation||!state.chatMeta)return;state.chatMeta.ambientProgress=(Number(state.chatMeta.ambientProgress)||0)+seconds;if(state.chatMeta.ambientProgress<(Number(state.chatMeta.nextAmbientAt)||55))return;state.chatMeta.ambientProgress=0;state.chatMeta.nextAmbientAt=38+Math.floor(Math.random()*33);if(Math.random()<.48&&postPairBanter())return;let candidates=state.heroes.filter(hero=>hero.assignment!=="inn");if(candidates.length>1)candidates=candidates.filter(hero=>hero.id!==state.chatMeta.lastSpeakerId);const hero=chatPick(candidates.length?candidates:state.heroes),text=contextualAmbientChat(hero);if(text)postHeroChat(hero,text,"ambient",{cooldownKey:`ambient-${hero.id}-${hero.assignment}`,cooldownSeconds:38});
 }
 function postOfflineProgressChat(report){
   if(!report||report.seconds<60)return;const work=chatPick((report.workHeroes||[]).filter(hero=>hero.levels>0));if(work){const hero=heroById(work.id);if(hero)postHeroChat(hero,`While you were away, I gained ${work.levels} ${work.skill} level${work.levels===1?"":"s"} and reached Level ${work.levelAfter}.`,"offline",{mapBubble:false});return;}const combat=chatPick((report.combatHeroes||[]).filter(hero=>hero.levelAfter>hero.levelBefore));if(combat){const hero=heroById(combat.id);if(hero)postHeroChat(hero,`While you were away, I reached Combat Level ${combat.levelAfter}. The extra Attack, Defence, and HP are already noticeable.`,"offline",{mapBubble:false});}
@@ -1218,7 +1299,7 @@ function renderTown(){
   const fighting=state.heroes.filter(h=>h.assignment==="combat");$("#activePartyCount").textContent=`${fighting.length} / 4 fighting`;$("#activePartyMini").innerHTML=fighting.length?fighting.map(h=>`<span title="${escapeHTML(h.name)}">${heroImage(h)}</span>`).join(""):`<span class="empty-mini">No active combat party</span>`;
   const work=state.heroes.filter(h=>WORK_ASSIGNMENTS.includes(h.assignment));$("#townOutputText").textContent=work.length?`${work.length} heroes producing`:"No one working";
   const counts=["farm","cook","mine","forest","smith","plunder"].map(a=>[a,state.heroes.filter(h=>h.assignment===a).length]);$("#townOutputMini").innerHTML=counts.filter(x=>x[1]).map(([a,n])=>`<div class="mini-bar"><span>${ASSIGNMENTS[a].icon} ${ASSIGNMENTS[a].name}</span><i style="--w:${n/6*100}%"></i><b>${n}</b></div>`).join("")||`<span class="empty-mini">Assign heroes to begin production.</span>`;
-  const story=state.notifications[0];$("#latestStoryTitle").textContent=story?.title||"Quiet town";$("#latestStoryText").textContent=story?.text||"No town reports yet.";$("#notificationBadge").hidden=!state.notifications.length;$("#notificationBadge").textContent=Math.min(99,state.notifications.length);
+  const story=state.notifications[0];$("#latestStoryTitle").textContent=story?.title||"Quiet town";$("#latestStoryText").textContent=story?.text||"No town reports yet.";const notificationBadge=$("#notificationBadge");if(notificationBadge){notificationBadge.hidden=!state.notifications.length;notificationBadge.textContent=Math.min(99,state.notifications.length);}
 }
 
 function renderHeroes(){
