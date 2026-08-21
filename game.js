@@ -1,4 +1,4 @@
-const VERSION = "2.0.2";
+const VERSION = "2.0.3";
 const SAVE_KEY = "adventure-town-save-v1";
 const SETTINGS_KEY = "adventure-town-settings-v1";
 const OFFLINE_LIMIT = 12 * 60 * 60;
@@ -916,18 +916,18 @@ async function scheduleCloudSave({manual=false}={}){
 
 
 const PLUNDER_TARGETS=[
-{id:"caravan",name:"Merchant Caravan",icon:"🛒",level:1,building:1,seconds:120,success:.88,gold:[45,90],xp:18,risk:.08,loot:"supplies"},
-{id:"bandits",name:"Bandit Cache",icon:"🗡️",level:15,building:2,seconds:300,success:.78,gold:[140,260],xp:45,risk:.14,loot:"mixed"},
-{id:"convoy",name:"Noble Convoy",icon:"👑",level:30,building:3,seconds:600,success:.68,gold:[350,650],xp:90,risk:.22,loot:"gold"},
-{id:"smugglers",name:"Smuggler's Den",icon:"⚓",level:50,building:4,seconds:900,success:.60,gold:[700,1300],xp:150,risk:.30,loot:"mixed"},
-{id:"cult",name:"Cult Vault",icon:"🕯️",level:75,building:5,seconds:1500,success:.52,gold:[1500,2800],xp:260,risk:.40,loot:"vault"}
+{id:"caravan",name:"Merchant Caravan",icon:"🛒",level:1,building:1,seconds:120,success:.88,gold:[35,70],xp:18,risk:.08,loot:"supplies"},
+{id:"bandits",name:"Bandit Cache",icon:"🗡️",level:15,building:2,seconds:300,success:.78,gold:[100,180],xp:45,risk:.14,loot:"mixed"},
+{id:"convoy",name:"Noble Convoy",icon:"👑",level:30,building:3,seconds:600,success:.68,gold:[240,420],xp:90,risk:.22,loot:"gold"},
+{id:"smugglers",name:"Smuggler's Den",icon:"⚓",level:50,building:4,seconds:900,success:.60,gold:[450,800],xp:150,risk:.30,loot:"mixed"},
+{id:"cult",name:"Cult Vault",icon:"🕯️",level:75,building:5,seconds:1500,success:.52,gold:[900,1600],xp:260,risk:.40,loot:"vault"}
 ];
 function heroEarnGold(h,amount,source="loot"){amount=Math.max(0,Math.floor(amount));const tax=Math.floor(amount*(state.taxRate||0)/100),net=amount-tax;h.gold=(h.gold||0)+net;h.records.goldEarned=(h.records.goldEarned||0)+amount;state.resources.gold+=tax;state.stats.goldEarned+=tax;return {gross:amount,tax,net,source};}
 function heroSpendGold(h,amount){amount=Math.max(0,amount);const paid=Math.min(h.gold||0,amount);h.gold=Math.max(0,(h.gold||0)-paid);state.resources.gold+=paid;return paid;}
 function buildingUpgradeCost(id){const b=BUILDINGS[id],level=state.buildings[id]||1,gold=Math.floor(b.baseCost*Math.pow(1.55,level-1)),materialScale=Math.pow(1.48,level-1);return {gold,wood:Math.ceil((80+b.baseCost*.10)*materialScale),metal:Math.ceil((55+b.baseCost*.075)*materialScale)};}
-function plunderTarget(h){const unlocked=PLUNDER_TARGETS.filter(t=>(h.skills.plundering?.level||1)>=t.level);const selected=h.workTiers?.plunder;return unlocked.find(t=>t.id===selected)||unlocked[unlocked.length-1]||PLUNDER_TARGETS[0];}
+function plunderTarget(h){const level=h.skills.plundering?.level||1,building=state.buildings.plunder||1,unlocked=PLUNDER_TARGETS.filter(t=>level>=t.level&&building>=t.building),selected=h.workTiers?.plunder;return unlocked.find(t=>t.id===selected)||unlocked[unlocked.length-1]||PLUNDER_TARGETS[0];}
 function plunderActionTime(h,t){return t.seconds/(1+(h.skills.plundering.level-1)*.008+(state.buildings.plunder-1)*.06);}
-function completePlunder(h,t){const skill=h.skills.plundering,level=skill.level,chance=clamp(t.success+(level-t.level)*.004,.35,.95),success=random()<chance;h.records.workActions++;if(success){const gross=Math.floor(t.gold[0]+random()*(t.gold[1]-t.gold[0]+1)),pay=heroEarnGold(h,gross,"plunder");addXP(skill,t.xp);let extra="";if(t.loot!=="gold"&&random()<.55){const resource=random()<.5?"wood":"metal",tiers=RESOURCE_TIERS[resource].filter(x=>x.level<=level),tier=tiers[Math.floor(random()*tiers.length)]||tiers[0],qty=2+Math.floor(random()*(3+level/12));addTieredResource(resource,tier.id,qty);extra=` and ${qty} ${tier.name}`;}if(t.loot==="vault"&&random()<.025){state.resources.keys++;extra+=" and a Raid Key";}notify("Plunder successful",`${h.name} stole ${fmt(gross)} Gold${extra}. Tax: ${fmt(pay.tax)}. Hero kept ${fmt(pay.net)}.`,t.icon);}else{addXP(skill,Math.max(2,t.xp*.25));const damage=Math.max(1,Math.round(heroMaxHP(h)*(t.risk*(.7+random()*.6))));h.hp=Math.max(1,(h.hp??heroMaxHP(h))-damage);notify("Plunder failed",`${h.name} escaped ${t.name} empty-handed and lost ${damage} HP.`,"🚨");}}
+function completePlunder(h,t){const skill=h.skills.plundering,level=skill.level,chance=clamp(t.success+(level-t.level)*.004,.35,.95),success=random()<chance;h.records.workActions++;if(success){const gross=Math.floor(t.gold[0]+random()*(t.gold[1]-t.gold[0]+1)),pay=heroEarnGold(h,gross,"plunder");addXP(skill,t.xp);let extra="";if(t.loot!=="gold"&&random()<.55){const resource=random()<.5?"wood":"metal",tiers=RESOURCE_TIERS[resource].filter(x=>x.level<=level),tier=tiers[Math.floor(random()*tiers.length)]||tiers[0],qty=2+Math.floor(random()*(3+level/12));addTieredResource(resource,tier.id,qty);extra=` and ${qty} ${tier.name}`;}if(t.loot==="vault"&&random()<.01){state.resources.keys++;extra+=" and a Raid Key";}notify("Plunder successful",`${h.name} stole ${fmt(gross)} Gold${extra}. Tax: ${fmt(pay.tax)}. Hero kept ${fmt(pay.net)}.`,t.icon);}else{addXP(skill,Math.max(2,t.xp*.25));const damage=Math.max(1,Math.round(heroMaxHP(h)*(t.risk*(.7+random()*.6))));h.hp=Math.max(1,(h.hp??heroMaxHP(h))-damage);notify("Plunder failed",`${h.name} escaped ${t.name} empty-handed and lost ${damage} HP.`,"🚨");}}
 
 function sendToTavern(h){
   if(h.assignment!=="tavern")h.records.beers++;
@@ -987,7 +987,7 @@ function processWork(h,seconds){
     const task=workTaskForHero(h,"cook"),skill=h.skills.cooking;if(!task)return;h.workProgress=(h.workProgress||0)+seconds;let loops=0;
     while(loops++<50000){const actionTime=workActionTime(h,"cook",task);if(h.workProgress+1e-8<actionTime)break;if(resourceTierCount("rawFood",task.rawTier)<1){h.workProgress=Math.min(h.workProgress,actionTime);break;}h.workProgress-=actionTime;spendSpecificResource("rawFood",task.rawTier,1);const oldLevel=skill.level,before=h.records.foodCooked||0;addTieredResource("food",task.id,1);addXP(skill,7*Math.sqrt(task.rank));h.records.foodCooked=(h.records.foodCooked||0)+1;h.records.workActions++;postWorkLevelChat(h,"cook","cooking",oldLevel);postWorkMilestone(h,before,h.records.foodCooked,"meals cooked");}
   }else if(h.assignment==="plunder"){
-    const t=plunderTarget(h);h.workProgress=(h.workProgress||0)+seconds;let loops=0;while(loops++<1000){const actionTime=plunderActionTime(h,t);if(h.workProgress+1e-8<actionTime)break;h.workProgress-=actionTime;completePlunder(h,t);}
+    const t=plunderTarget(h),actionTime=plunderActionTime(h,t);h.workProgress=Math.min(actionTime,(h.workProgress||0)+seconds);if(h.workProgress+1e-8>=actionTime){h.workProgress=0;completePlunder(h,t);h.assignment="idle";postHeroChat(h,"Back from the job. I am available again.","assignment",{cooldownKey:`plunder-return-${h.id}`,cooldownSeconds:5});}
   }else if(h.assignment==="smith"){
     if(state.smithOrder)return;const skill=h.skills.smithing;h.workProgress=(h.workProgress||0)+seconds;let loops=0;
     while(loops++<50000){const actionTime=workActionTime(h,"smith");if(h.workProgress+1e-8<actionTime)break;if(resourceTierCount("metal",REPAIR_KIT_RECIPE.metalTier)<REPAIR_KIT_RECIPE.metalCost||resourceTierCount("wood",REPAIR_KIT_RECIPE.woodTier)<REPAIR_KIT_RECIPE.woodCost){h.workProgress=Math.min(h.workProgress,actionTime);break;}h.workProgress-=actionTime;spendSpecificResource("metal",REPAIR_KIT_RECIPE.metalTier,REPAIR_KIT_RECIPE.metalCost);spendSpecificResource("wood",REPAIR_KIT_RECIPE.woodTier,REPAIR_KIT_RECIPE.woodCost);const kits=random()<equipmentEffect(h,"smithDoubleChance")?2:1,oldLevel=skill.level,before=h.records.kitsForged;state.resources.repairKits+=kits;addXP(skill,28);h.records.kitsForged+=kits;h.records.workActions++;postWorkLevelChat(h,"smith","smithing",oldLevel);postWorkMilestone(h,before,h.records.kitsForged,"Repair Kits");rollSkillPet("smith",h);}
@@ -1391,7 +1391,7 @@ function openHero(id){
 
 function taskWorkerCount(assignment,taskId){return state.heroes.filter(hero=>hero.assignment===assignment&&workTaskForHero(hero,assignment)?.id===taskId).length;}
 function taskRequirementText(assignment,task){return `${WORK_SKILL_NAMES[BUILDINGS[assignment].skill]} ${task.level} + ${BUILDINGS[assignment].name} ${task.building}`;}
-function taskOutputDetail(assignment,task){if(assignment==="plunder")return `${formatDuration(task.seconds)} base · ${Math.round(task.success*100)}% base success · ${fmt(task.gold[0])}–${fmt(task.gold[1])} personal Gold`;
+function taskOutputDetail(assignment,task){if(assignment==="plunder")return `${formatDuration(task.seconds)} base · one trip · ${Math.round(task.success*100)}% base success · ${fmt(task.gold[0])}–${fmt(task.gold[1])} personal Gold`;
   if(assignment==="farm")return `Raw ingredient for Cooking · ${workTaskTime(task)}s base`;
   if(assignment==="cook"){const raw=resourceTierData("rawFood",task.rawTier);return `Uses 1 ${raw?.name||"ingredient"} → ${task.name} (${task.heal} HP) · ${workTaskTime(task)}s base`; }
   if(assignment==="mine"||assignment==="forest")return `${task.tier} recipe material · ${workTaskTime(task)}s base`;
