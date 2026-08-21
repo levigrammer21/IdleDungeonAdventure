@@ -137,7 +137,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .road-cross { left:6%; right:7%; top:55%; height:7%; transform:rotate(-2deg); }
 .map-label { position:absolute; z-index:0; color:rgba(255,255,255,.68); font-size:.62rem; font-weight:800; letter-spacing:.28em; text-shadow:0 1px 2px rgba(0,0,0,.3); }
 .wilds-label { top:3%; left:50%; transform:translateX(-50%); }
-.location { position:absolute; left:calc(var(--x) * 1%); top:calc(var(--y) * 1%); z-index:5; width:112px; min-height:58px; transform:translate(-50%,-50%); display:grid; justify-items:center; align-content:center; gap:1px; padding:7px 8px; border:1px solid rgba(255,244,205,.7); border-radius:14px; color:#fff8df; background:linear-gradient(145deg,rgba(27,49,35,.92),rgba(18,34,25,.88)); box-shadow:0 5px 0 rgba(37,30,20,.36),0 9px 22px rgba(14,25,17,.35); backdrop-filter:blur(5px); transition:transform .16s ease,filter .16s ease; }
+.location { position:absolute; left:calc(var(--x) * 1%); top:calc(var(--y) * 1%); z-index:5; width:88px; min-height:46px; transform:translate(-50%,-50%); display:grid; justify-items:center; align-content:center; gap:1px; padding:5px 6px; border:1px solid rgba(255,244,205,.7); border-radius:14px; color:#fff8df; background:linear-gradient(145deg,rgba(27,49,35,.92),rgba(18,34,25,.88)); box-shadow:0 5px 0 rgba(37,30,20,.36),0 9px 22px rgba(14,25,17,.35); backdrop-filter:blur(5px); transition:transform .16s ease,filter .16s ease; }
 .location:hover { transform:translate(-50%,-54%) scale(1.035); filter:brightness(1.05); }
 .location:active { transform:translate(-50%,-48%) scale(.98); box-shadow:0 4px 0 rgba(86,77,52,.24); }
 .game-icon { display:inline-block; flex:0 0 auto; background-image:url("img/ui-icon-atlas.webp"); background-repeat:no-repeat; background-size:400% 400%; background-position:var(--icon-x) var(--icon-y); image-rendering:auto; }
@@ -157,13 +157,15 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .icon-market { --icon-x:33.333%; --icon-y:100%; }
 .icon-tavern { --icon-x:66.667%; --icon-y:100%; }
 .icon-inn { --icon-x:100%; --icon-y:100%; }
-.location-icon { font-size:1.25rem; line-height:1.1; filter:drop-shadow(0 2px 1px rgba(0,0,0,.2)); }
-.location-icon.game-icon { width:30px; height:30px; font-size:0; filter:drop-shadow(0 3px 2px rgba(0,0,0,.35)); }
+.location-icon { font-size:1.05rem; line-height:1.1; filter:drop-shadow(0 2px 1px rgba(0,0,0,.2)); }
+.location-icon.game-icon { width:23px; height:23px; font-size:0; filter:drop-shadow(0 3px 2px rgba(0,0,0,.35)); }
 .location.combat-gate .location-icon.game-icon { width:34px; height:34px; }
-.location strong { font:700 .77rem/1.05 "Fraunces",serif; }
-.location small { color:#d4dfcc; font-size:.5rem; font-weight:700; }
-.location.combat-gate { width:136px; min-height:64px; color:#fff4cf; background:linear-gradient(150deg,rgba(49,54,51,.94),rgba(19,29,24,.92)); border-color:#d6b35c; box-shadow:0 6px 0 rgba(60,43,25,.7),0 12px 24px rgba(12,19,14,.4); }
-.location.combat-gate small { color:#c9d6bd; }
+.location strong { font:700 .66rem/1.05 "Fraunces",serif; }
+.location small { color:#d4dfcc; font-size:.43rem; font-weight:700; }
+.location.combat-gate { width:136px; min-height:64px; padding:7px 8px; color:#fff4cf; background:linear-gradient(150deg,rgba(49,54,51,.94),rgba(19,29,24,.92)); border-color:#d6b35c; box-shadow:0 6px 0 rgba(60,43,25,.7),0 12px 24px rgba(12,19,14,.4); }
+.location.combat-gate strong { font-size:.77rem; }
+.location.combat-gate small { font-size:.5rem; color:#c9d6bd; }
+.location:not(.combat-gate) .level-badge { top:-6px; right:-5px; width:20px; height:20px; border-width:1.5px; font-size:.54rem; }
 .level-badge { position:absolute; top:-8px; right:-7px; display:grid; width:25px; height:25px; place-items:center; border:2px solid #fff5d3; border-radius:50%; color:white; background:var(--forest-800); font-size:.64rem; font-weight:800; box-shadow:0 3px 8px rgba(0,0,0,.2); }
 .town-square { position:absolute; left:50%; top:56%; z-index:1; transform:translate(-50%,-50%); display:grid; place-items:center; padding:4px 7px; border-radius:9px; color:#fff4ce; background:rgba(26,43,31,.72); text-shadow:0 1px 2px #18291d; }
 .town-square span { font-size:2rem; }
