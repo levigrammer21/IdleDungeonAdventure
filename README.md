@@ -29,7 +29,7 @@ Adventure Town is a mobile-first, persistent idle RPG built around six permanent
 - Complete, individually named 12-item class sets in every Dungeon and Raid, with transparent rare-table rates
 - Account-bound pets, raid-boss eggs, Dungeon trinkets, equipping, repairs, and salvage
 - Firebase Google and email/password accounts with cloud saves
-- Firestore player marketplace, delayed seller payouts, and leaderboards
+- Firebase cloud saves and optional adventurer leaderboards
 - Building upgrades, milestones, town reports, save export, and installable PWA support
 
 The visible game version is `1.6.8`.
@@ -57,7 +57,7 @@ The Firebase API key in a web application is a public project identifier. Securi
 
 ## Economy security note
 
-The free-tier build supports a functional Firestore marketplace for trusted players. Combat and economy simulation run in the browser, so a determined player can manipulate their own client. Before opening a large public economy, move reward resolution, wallet changes, purchases, and leaderboard submissions into Cloud Functions on Firebase's Blaze plan.
+The current game has no online player marketplace. Firebase is used for cloud saves and leaderboard data; the Guild Hall, hero wallets, contracts, equipment ownership, and Guild Reputation are all part of the local game simulation.
 
 ## Custom artwork
 
@@ -75,4 +75,4 @@ Startup preloads the complete local art catalog behind a real progress screen. A
 
 ## Smithing progression
 
-The Blacksmith exposes the full normal weapon-and-armor ladder for all six classes. Starter recipes begin at Smithing 1 and Blacksmith 1; Weak, Average, Good, Great, Epic, Legendary, and Divine tiers unlock against the same established skill/building thresholds as their exact Mining and Woodcutting materials. Existing Starter and Good equipment keys are retained so older saves, equipped items, and market listings remain valid.
+The Blacksmith exposes the full normal weapon-and-armor ladder for all six classes. Starter recipes begin at Smithing 1 and Blacksmith 1; Weak, Average, Good, Great, Epic, Legendary, and Divine tiers unlock against the same established skill/building thresholds as their exact Mining and Woodcutting materials. Existing Starter and Good equipment keys are retained so older saves and equipped items remain valid.

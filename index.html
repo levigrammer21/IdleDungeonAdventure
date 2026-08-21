@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#243b2d">
-  <meta name="description" content="Adventure Town — a living, persistent idle RPG with six heroes, a player economy, dungeons, and raids.">
+  <meta name="description" content="Adventure Town — a living, persistent idle RPG with six independent heroes, a Guild economy, dungeons, and raids.">
   <title>Adventure Town</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="img/icon-192.png" type="image/png" sizes="192x192">
@@ -73,7 +73,7 @@
               <span class="level-badge" data-level-for="forest">1</span><span class="location-icon game-icon icon-forest" aria-hidden="true"></span><strong>Forest</strong><small>Stored wood</small>
             </button>
             <button class="location building market" data-action="open-view" data-view="market" style="--x:39;--y:44">
-              <span class="level-badge" data-level-for="market">1</span><span class="location-icon game-icon icon-market" aria-hidden="true"></span><strong>Marketplace</strong><small>Player trade</small>
+              <span class="level-badge" data-level-for="market">1</span><span class="location-icon game-icon icon-market" aria-hidden="true"></span><strong>Guild Hall</strong><small>Contracts &amp; treasury</small>
             </button>
             <button class="location building cook" data-action="open-building" data-building="cook" style="--x:34;--y:56">
               <span class="level-badge" data-level-for="cook">1</span><span class="location-icon" aria-hidden="true">🍳</span><strong>Kitchen</strong><small>Cook meals</small>
@@ -141,7 +141,7 @@
       </section>
 
       <section id="warehouseView" class="view" data-view-panel="warehouse">
-        <div class="section-heading"><div><span class="eyebrow">Everything earned comes here</span><h2>Warehouse</h2><p>Every ration, metal, wood, supply, and equipment find is stored here as its own item type.</p></div><div class="capacity-ring"><strong id="warehouseCount">0</strong><span id="warehouseCapacity">/60 slots</span></div></div>
+        <div class="section-heading"><div><span class="eyebrow">Shared Guild storage</span><h2>Warehouse</h2><p>Town resources and unassigned equipment live here. Personal loot stays with the hero who found it until you move or donate it.</p></div><div class="capacity-ring"><strong id="warehouseCount">0</strong><span id="warehouseCapacity">/60 slots</span></div></div>
         <div class="segmented" role="tablist" aria-label="Warehouse filters">
           <button class="active" data-action="warehouse-filter" data-filter="all">All</button>
           <button data-action="warehouse-filter" data-filter="resource">Resources</button>
@@ -156,21 +156,13 @@
       </section>
 
       <section id="marketView" class="view" data-view-panel="market">
-        <div class="section-heading"><div><span class="eyebrow">Trade time and specialization</span><h2>Marketplace</h2><p>Buy from and sell to other players for Gold. The town never sells unlimited Essence.</p></div><button class="primary-button" data-action="open-sell">Create listing</button></div>
-        <div id="marketStatus" class="market-status"></div>
-        <div class="market-grid">
-          <div><h3>Live Listings</h3><div id="marketListings" class="listing-list"></div></div>
-          <div><h3>Your Listings &amp; Payouts</h3><div id="myListings" class="listing-list"></div></div>
-        </div>
+        <div class="section-heading guild-heading"><div><span class="eyebrow">Your six heroes, one shared charter</span><h2>Guild Hall</h2><p>Manage contracts, taxes, hero stipends, Guild Reputation, personal inventories, and the records that define your company.</p></div></div>
+        <div id="guildHallContent" class="guild-hall"></div>
       </section>
 
       <section id="progressView" class="view" data-view-panel="progress">
         <div class="section-heading"><div><span class="eyebrow">A town worth remembering</span><h2>Progress &amp; Leaderboards</h2><p>Track long-term milestones without turning Adventure Town into PvP.</p></div></div>
         <div id="progressCards" class="progress-cards"></div>
-        <section class="hero-league-section">
-          <div class="hero-league-heading"><div><span class="eyebrow">Your roster, head to head</span><h3>Heroes' League</h3><p>Pick a category and record to see who leads your roster.</p></div><div class="segmented compact" role="tablist" aria-label="Hero leaderboard category"><button class="active" data-action="hero-league-metric" data-metric="overview">Overview</button><button data-action="hero-league-metric" data-metric="combat">Combat</button><button data-action="hero-league-metric" data-metric="bosses">Bosses</button><button data-action="hero-league-metric" data-metric="work">Work</button><button data-action="hero-league-metric" data-metric="legacy">Legacy</button></div></div>
-          <div id="heroLeague" class="hero-league"></div>
-        </section>
         <div class="progress-columns">
           <div><h3>Milestones</h3><div id="achievementList" class="achievement-list"></div></div>
           <div><h3>Adventurer Rankings</h3><div id="leaderboardList" class="leaderboard-list"></div></div>
@@ -184,7 +176,7 @@
       <button data-action="open-view" data-view="assign"><span class="game-icon icon-assign" aria-hidden="true"></span><small>Assign</small></button>
       <button data-action="open-view" data-view="combat"><span class="game-icon icon-combat" aria-hidden="true"></span><small>Combat</small></button>
       <button data-action="open-view" data-view="warehouse"><span class="game-icon icon-warehouse" aria-hidden="true"></span><small>Storage</small></button>
-      <button data-action="open-view" data-view="market"><span class="game-icon icon-market" aria-hidden="true"></span><small>Market</small></button>
+      <button data-action="open-view" data-view="market"><span class="game-icon icon-market" aria-hidden="true"></span><small>Guild</small></button>
       <button data-action="open-view" data-view="progress"><span class="game-icon icon-progress" aria-hidden="true"></span><small>Progress</small></button>
     </nav>
   </div>
@@ -201,7 +193,7 @@
   <dialog id="authDialog" class="modal auth-modal">
     <form method="dialog" class="modal-card" data-prevent-submit>
       <div class="modal-crest">🏰</div>
-      <span class="eyebrow">Cloud saves and the player economy</span>
+      <span class="eyebrow">Cloud saves for your Guild</span>
       <h2>Enter Adventure Town</h2>
       <p>Sign in to carry your six adventurers between devices, trade with players, and join the leaderboards.</p>
       <button type="button" id="googleSignIn" class="google-button" data-action="google-signin"><span>G</span> Continue with Google</button>
