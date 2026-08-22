@@ -1,4 +1,4 @@
-const VERSION = "2.3.1";
+const VERSION = "2.4.0";
 const SAVE_KEY = "adventure-town-save-v1";
 const SETTINGS_KEY = "adventure-town-settings-v1";
 const OFFLINE_LIMIT = 12 * 60 * 60;
@@ -674,6 +674,8 @@ if(typeof settings.soundEnabled!=="boolean")settings.soundEnabled=true;
 let currentUser = null;
 let firebaseApi = null;
 let leaderboard = [];
+let leaderboardCategory = "overall";
+let leaderboardMetric = "guildPower";
 let cloudUnsubscribe = null;
 let saveTimer = null;
 let cloudSaveTimer = null;
@@ -818,7 +820,7 @@ function freshState(){
     inventory:[], bonds:{}, guild:{reputation:0,itemsDonated:0,lifetimeTax:0,serviceRevenue:0,heroDonations:0}, smithOrder:null, combatRuns:[], notifications:[{id:uid(),time:Date.now(),title:"The town awakens",text:"Your six adventurers are ready. Every choice of how they spend their time will shape Briarwatch."}],
     partyChat:starterPartyChat(), chatMeta:{lastReadAt:0,ambientProgress:0,nextAmbientAt:55,lastSpeakerId:null,cooldowns:{},memories:[],idleSpots:{},lifeProgress:0},
     stockMarket:freshStockMarket(),
-    achievements:[], questBoard:freshQuestBoard(), questBoardDate:questDayKey(), stats:{expeditions:0,dungeons:0,raids:0,defeats:0,goldEarned:0,itemsFound:0,marketSales:0,offlineSeconds:0,questsCompleted:0},
+    achievements:[], questBoard:freshQuestBoard(), questBoardDate:questDayKey(), leaderboardSeason:null, stats:{expeditions:0,dungeons:0,raids:0,defeats:0,goldEarned:0,itemsFound:0,marketSales:0,offlineSeconds:0,questsCompleted:0,bestRaidScore:0,fastestRaidSeconds:0},
     pendingFractions:{food:0,metal:0,wood:0,kits:0}, settings:{autoSave:true,reducedMotion:false},
   };
 }
@@ -847,7 +849,7 @@ function migrate(raw){
   merged.notifications=Array.isArray(raw.notifications)?raw.notifications:base.notifications;
   merged.partyChat=(Array.isArray(raw.partyChat)?raw.partyChat:base.partyChat).filter(message=>message&&merged.heroes.some(hero=>hero.id===message.heroId)&&typeof message.text==="string").slice(-PARTY_CHAT_LIMIT);
   merged.chatMeta={...base.chatMeta,...(raw.chatMeta||{}),cooldowns:{...base.chatMeta.cooldowns,...(raw.chatMeta?.cooldowns||{})},memories:Array.isArray(raw.chatMeta?.memories)?raw.chatMeta.memories.slice(-20):[],idleSpots:{...(raw.chatMeta?.idleSpots||{})}};
-  merged.stockMarket=migrateStockMarket(raw.stockMarket,base.stockMarket);
+  merged.stockMarket=migrateStockMarket(raw.stockMarket,base.stockMarket);merged.leaderboardSeason=raw.leaderboardSeason&&typeof raw.leaderboardSeason==="object"?{...raw.leaderboardSeason}:null;
   merged.questBoard=raw.questBoardDate?migrateQuestBoard(raw.questBoard):freshQuestBoard();merged.questBoardDate=String(raw.questBoardDate||questDayKey());
   return merged;
 }
@@ -1049,14 +1051,14 @@ function queueCloudSave(){
 }
 async function scheduleCloudSave({manual=false}={}){
   if(!currentUser||!firebaseApi||!cloudReconciled)return false;
-  const user=currentUser,revision=Math.max(0,Number(state.cloudRevision)||0)+1,saveId=uid(),snapshot=JSON.parse(JSON.stringify(state));
+  ensureLeaderboardSeason();const user=currentUser,revision=Math.max(0,Number(state.cloudRevision)||0)+1,saveId=uid(),snapshot=JSON.parse(JSON.stringify(state));
   snapshot.cloudOwnerUid=user.uid;snapshot.cloudRevision=revision;snapshot.cloudSaveId=saveId;snapshot.updatedAt=Date.now();
   try{
     setSync("saving");lastCloudError="";const verified=await firebaseApi.saveGame(user.uid,snapshot);
     if(verified.cloudRevision!==revision||verified.cloudSaveId!==saveId)throw new Error("Firebase verified the wrong save revision.");
     state.cloudOwnerUid=user.uid;state.cloudRevision=revision;state.cloudSaveId=saveId;state.updatedAt=snapshot.updatedAt;lastCloudVerifiedAt=Date.now();
     saveLocal({touchUpdatedAt:false,queueCloud:false});
-    try{await firebaseApi.writeLeaderboard(user.uid,{displayName:user.displayName||user.email?.split("@")[0]||"Adventurer",totalLevel:snapshot.heroes.reduce((n,h)=>n+h.level,0),combatXP:snapshot.heroes.reduce((n,h)=>n+COMBAT_XP_TOTALS[h.level]+(h.xp||0),0),wealth:Math.floor(snapshot.resources.gold),raidWins:snapshot.stats.raids,updatedAt:Date.now()});}catch(err){console.warn("Leaderboard update failed after cloud save",err);}
+    try{const boardEntry=leaderboardPayload(user);await firebaseApi.writeLeaderboard(user.uid,boardEntry);const existing=leaderboard.findIndex(x=>x.id===user.uid),localEntry={id:user.uid,...boardEntry};if(existing>=0)leaderboard[existing]=localEntry;else leaderboard.push(localEntry);if(currentView==="progress")renderProgress();}catch(err){console.warn("Leaderboard update failed after cloud save",err);}
     setSync("online");if(manual)toast("☁️","Cloud save verified",`Firebase server confirmed revision ${revision}.`);return true;
   }catch(err){console.error("Cloud save failed",err);lastCloudError=friendlyError(err);setSync("error");if(manual)toast("⚠️","Cloud save failed",lastCloudError);return false;}
   finally{lastCloudSave=Date.now();}
@@ -1285,7 +1287,7 @@ function completeCombatCycle(run,cfg,offline=false){
   for(const h of party){h.sanity=clamp(h.sanity-heroSanityDrain(h,cfg),0,100);damageGear(h,cfg.category==="raid"?12:cfg.category==="dungeon"?7:3);if(cfg.category==="expedition")h.records.expeditions++;if(cfg.category==="dungeon"){h.records.dungeons++;h.records.dungeonBosses++;}if(cfg.category==="raid"){h.records.raids++;h.records.raidBosses++;}}growPartyBonds(party,cfg.category,offline);
   if(cfg.category==="expedition")state.stats.expeditions++;
   if(cfg.category==="dungeon"){state.stats.dungeons++;state.resources.essence+=Math.floor(cfg.essenceReward[0]+random()*(cfg.essenceReward[1]-cfg.essenceReward[0]+1));if(random()<(cfg.keyChance||0))state.resources.keys+=1;if(cfg.trinketPool?.length&&random()<(cfg.trinketChance||0))dropTrinket(cfg,party);}
-  let raidRareHit=false,dungeonRareHit=false,raidLoot=[];if(cfg.category==="raid"){state.stats.raids++;state.resources.essence+=Math.floor(cfg.essenceReward[0]+random()*(cfg.essenceReward[1]-cfg.essenceReward[0]+1));if(cfg.eggKey&&random()<(cfg.eggChance||0))dropEgg(cfg,party);raidLoot=party.map(h=>({heroId:h.id,...rollRaidLootForHero(cfg,h,raidScore.chance,party.length)}));raidRareHit=raidLoot.some(x=>x.rare);run.lastRaidScore={...raidScore,elapsed:run.cycleElapsed,hit:raidRareHit,individualChance:raidIndividualUniqueChance(raidScore.chance,party.length),loot:raidLoot};}
+  let raidRareHit=false,dungeonRareHit=false,raidLoot=[];if(cfg.category==="raid"){state.stats.raids++;state.resources.essence+=Math.floor(cfg.essenceReward[0]+random()*(cfg.essenceReward[1]-cfg.essenceReward[0]+1));if(cfg.eggKey&&random()<(cfg.eggChance||0))dropEgg(cfg,party);raidLoot=party.map(h=>({heroId:h.id,...rollRaidLootForHero(cfg,h,raidScore.chance,party.length)}));raidRareHit=raidLoot.some(x=>x.rare);run.lastRaidScore={...raidScore,elapsed:run.cycleElapsed,hit:raidRareHit,individualChance:raidIndividualUniqueChance(raidScore.chance,party.length),loot:raidLoot};state.stats.bestRaidScore=Math.max(Number(state.stats.bestRaidScore)||0,Math.floor(raidScore.score||0));const clearSeconds=Math.max(1,Number(run.cycleElapsed)||0);if(clearSeconds&&(!state.stats.fastestRaidSeconds||clearSeconds<state.stats.fastestRaidSeconds))state.stats.fastestRaidSeconds=clearSeconds;}
   if(cfg.category!=="raid"&&cfg.pool?.length){dungeonRareHit=cfg.category==="dungeon"&&random()<(cfg.itemChance||0);if(cfg.category==="dungeon"?dungeonRareHit:random()<(cfg.itemChance||0))dropSpecial(cfg,party);}
   const commonChest=(cfg.category==="dungeon"&&!dungeonRareHit)?awardCommonChest(cfg,party,offline):[];
   const chestResult=commonChest?.length?` Common chest: ${commonChest.join(", ")}.`:"",raidRollText=raidScore?` Individual loot: ${raidLootSummaryHTML(raidLoot)}.`:"",raidResult=raidScore?` Raid score: ${fmt(raidScore.score)} (${fmt(raidScore.combat)} combat + ${fmt(raidScore.skill)} skill, ×${raidScore.timeMultiplier.toFixed(2)} time). Team unique chance: ${chanceLabel(raidScore.chance)} · ${party.length} individual rolls at ${chanceLabel(raidIndividualUniqueChance(raidScore.chance,party.length))} each.${raidRareHit?" UNIQUE!":""}`:"";pushCombatEvent(run,`${cfg.short} cleared in ${formatDuration(run.cycleElapsed)}. Chest: ${fmt(gold)} Gold.${chestResult}${raidRollText}${raidResult}`,"loot","room",gold,null,offline);notify(`${cfg.short} completed`,raidScore?`${party.map(h=>h.name).join(", ")} scored ${fmt(raidScore.score)} points. Every hero rolled their own loot${raidRareHit?" — someone hit a unique!":"."}`:`${party.map(h=>h.name).join(", ")} opened the chest for ${fmt(gold)} Gold.`,cfg.icon);if(!offline)playSound("victory");postCombatClearChat(run,party,cfg,gold);
@@ -1471,12 +1473,121 @@ function renderWarehouse(){
   const itemCards=itemList.map(i=>{const d=itemData(i),gear=["weapon","armor"].includes(d.type),equippable=gear||["pet","trinket"].includes(d.type),stats=[d.attack?`+${d.attack} ATK`:"",d.defense?`+${d.defense} DEF`:"",d.element,d.effectText].filter(Boolean).join(" · ")||"A curious Guild treasure",rep=guildDonationRep(i),actions=[equippable?`<button data-action="equip-item" data-item="${i.id}">Equip now</button>`:"",`<button data-action="give-item" data-item="${i.id}">Give to hero</button>`,d.type==="egg"?`<button data-action="hatch-egg" data-item="${i.id}">Hatch egg</button>`:"",gear?`<button data-action="repair-item" data-item="${i.id}">Repair</button><button data-action="upgrade-item" data-item="${i.id}" ${d.upgrade>=5?"disabled":""}>${d.upgrade>=5?"+5 MAX":`Upgrade +${d.upgrade+1}`}</button>`:"",d.salvage?`<button data-action="salvage-item" data-item="${i.id}">Salvage +${d.salvage} ✨</button>`:d.tier==="Starter"&&gear?`<button data-action="salvage-item" data-item="${i.id}">Salvage +1 🔩</button>`:"",`<button data-action="donate-guild-item" data-source="warehouse" data-item="${i.id}">Donate +${rep} Rep</button>`].filter(Boolean).join("");return `<article class="item-card ${d.special?"special":""}"><div class="item-icon">${itemImage(d,"item-art")}</div><div><h4>${escapeHTML(d.name)}</h4><span class="item-meta">${d.tier} ${d.type} · ${d.className||"Any hero"}</span><p>${escapeHTML(stats)}${gear?`<br>Durability ${Math.floor(d.durability??100)}%`:""}</p></div><div class="item-actions">${actions}</div></article>`});
   const cards=[...resourceCards,...itemCards];$("#inventoryGrid").innerHTML=cards.length?cards.join(""):`<div class="empty-state"><span>📦</span>No matching items in shared storage.</div>`;
 }
+
+const PLAYER_LEADERBOARD_CATEGORIES={
+  overall:{label:"Overall",metrics:[
+    {key:"guildPower",icon:"⚔️",label:"Guild Power",detail:"Current combat strength across all six heroes"},
+    {key:"totalLevel",icon:"🏆",label:"Total Level",detail:"Combined Combat levels across the Guild"},
+    {key:"totalSkills",icon:"🛠️",label:"Work Levels",detail:"All six work skills across all six heroes"},
+    {key:"totalXP",icon:"✨",label:"Total XP",detail:"Combat and work experience combined"},
+    {key:"guildReputation",icon:"🏰",label:"Guild Reputation",detail:"Reputation earned through Guild progression"},
+  ]},
+  combat:{label:"Combat",metrics:[
+    {key:"monsterKills",icon:"☠️",label:"Monster Kills",detail:"Lifetime finishing blows from the entire Guild"},
+    {key:"bossKills",icon:"👑",label:"Boss Victories",detail:"Dungeon and Raid boss clears by heroes"},
+    {key:"damageDealt",icon:"💥",label:"Damage Dealt",detail:"Lifetime party damage"},
+    {key:"healingDone",icon:"💚",label:"Healing Done",detail:"Lifetime party healing"},
+    {key:"highestHeroLevel",icon:"🛡️",label:"Highest Hero",detail:"Highest individual Combat Level"},
+    {key:"nemeses",icon:"💀",label:"Nemeses Settled",detail:"Personal grudges successfully avenged"},
+  ]},
+  raids:{label:"Raids",metrics:[
+    {key:"raidWins",icon:"🐲",label:"Raid Clears",detail:"Lifetime successful Raid clears"},
+    {key:"bestRaidScore",icon:"🎯",label:"Best Raid Score",detail:"Highest performance-weighted Raid score"},
+    {key:"fastestRaidSeconds",icon:"⏱️",label:"Fastest Raid",detail:"Fastest completed Raid",order:"asc",format:"duration"},
+    {key:"dungeonWins",icon:"🗝️",label:"Dungeon Clears",detail:"Lifetime Dungeon victories"},
+    {key:"expeditionWins",icon:"🧭",label:"Expeditions",detail:"Lifetime Expedition victories"},
+  ]},
+  skills:{label:"Skills",metrics:[
+    {key:"highestSkillLevel",icon:"⭐",label:"Highest Skill",detail:"Best individual work-skill level"},
+    {key:"skillFarming",icon:"🌾",label:"Farming",detail:"Combined Farming levels"},
+    {key:"skillCooking",icon:"🍳",label:"Cooking",detail:"Combined Cooking levels"},
+    {key:"skillMining",icon:"⛏️",label:"Mining",detail:"Combined Mining levels"},
+    {key:"skillWoodcutting",icon:"🌲",label:"Woodcutting",detail:"Combined Woodcutting levels"},
+    {key:"skillSmithing",icon:"⚒️",label:"Smithing",detail:"Combined Smithing levels"},
+    {key:"skillPlundering",icon:"🏴‍☠️",label:"Plundering",detail:"Combined Plundering levels"},
+    {key:"workXP",icon:"📚",label:"Work XP",detail:"All lifetime work-skill experience"},
+  ]},
+  wealth:{label:"Wealth",metrics:[
+    {key:"wealth",icon:"💰",label:"Guild Wealth",detail:"Treasury plus all six hero wallets"},
+    {key:"treasuryGold",icon:"🏦",label:"Treasury",detail:"Gold controlled by the Guildmaster"},
+    {key:"heroGold",icon:"🪙",label:"Hero Gold",detail:"Combined personal Gold held by heroes"},
+    {key:"guildRevenue",icon:"📈",label:"Guild Revenue",detail:"Lifetime Gold recorded by Guild systems"},
+  ]},
+  legacy:{label:"Legacy",metrics:[
+    {key:"collectionScore",icon:"💎",label:"Collection Score",detail:"Rare finds, Raid gear, +5 gear, achievements, and settled Nemeses"},
+    {key:"itemsFound",icon:"🎁",label:"Rare Finds",detail:"Lifetime hero item discoveries"},
+    {key:"raidUniquesOwned",icon:"🌑",label:"Raid Gear Owned",detail:"Raid uniques currently owned or equipped"},
+    {key:"maxedGear",icon:"➕",label:"+5 Equipment",detail:"Fully upgraded weapons and armor currently owned"},
+    {key:"guildDonations",icon:"🏛️",label:"Guild Donations",detail:"Items donated to build Guild Reputation"},
+    {key:"questsCompleted",icon:"📜",label:"Contracts",detail:"Daily Guild Contracts completed"},
+    {key:"achievements",icon:"🏅",label:"Achievements",detail:"Milestones completed"},
+  ]},
+  monthly:{label:"This Month",metrics:[
+    {key:"monthlyRaidWins",icon:"🐲",label:"Raid Clears",detail:"Raid clears earned this calendar month"},
+    {key:"monthlyDungeonWins",icon:"🗝️",label:"Dungeon Clears",detail:"Dungeon clears earned this calendar month"},
+    {key:"monthlyMonsterKills",icon:"☠️",label:"Monster Kills",detail:"Kills earned this calendar month"},
+    {key:"monthlyGuildRevenue",icon:"🪙",label:"Guild Revenue",detail:"Guild revenue earned this calendar month"},
+    {key:"monthlyXP",icon:"✨",label:"XP Gained",detail:"Combat and work XP earned this calendar month"},
+  ]},
+};
+function leaderboardMonthKey(date=new Date()){return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}`;}
+function leaderboardLifetimeCounters(s=state){
+  const heroes=s.heroes||[],combatXP=heroes.reduce((n,h)=>n+(COMBAT_XP_TOTALS[clamp(h.level,1,100)]||0)+(h.xp||0),0),workXP=heroes.reduce((n,h)=>n+Object.values(h.skills||{}).reduce((sum,skill)=>sum+workSkillTotalXP(skill),0),0);
+  return {raids:Number(s.stats?.raids)||0,dungeons:Number(s.stats?.dungeons)||0,kills:heroes.reduce((n,h)=>n+(h.records?.kills||0),0),guildRevenue:Number(s.stats?.goldEarned)||0,totalXP:combatXP+workXP};
+}
+function ensureLeaderboardSeason(){
+  const key=leaderboardMonthKey(),current=leaderboardLifetimeCounters();
+  if(!state.leaderboardSeason||state.leaderboardSeason.month!==key)state.leaderboardSeason={month:key,base:{...current}};
+  else if(!state.leaderboardSeason.base)state.leaderboardSeason.base={...current};
+  return state.leaderboardSeason;
+}
+function publicGear(h,slot){const raw=h.equipment?.[slot];if(!raw)return null;const d=itemData(raw);return d?{name:String(d.name||"").slice(0,60),icon:d.icon||"",upgrade:Math.max(0,Math.min(5,Number(raw.upgrade)||0)),tier:String(d.tier||"").slice(0,30)}:null;}
+function leaderboardPayload(user){
+  ensureLeaderboardSeason();const heroes=state.heroes,totalLevel=heroes.reduce((n,h)=>n+h.level,0),skills=Object.keys(heroes[0]?.skills||{}),skillTotals=Object.fromEntries(skills.map(key=>[key,heroes.reduce((n,h)=>n+(h.skills[key]?.level||1),0)])),combatXP=heroes.reduce((n,h)=>n+(COMBAT_XP_TOTALS[h.level]||0)+(h.xp||0),0),workXP=heroes.reduce((n,h)=>n+heroWorkTotalXP(h),0),heroGold=heroes.reduce((n,h)=>n+(h.gold||0),0),current=leaderboardLifetimeCounters(),base=state.leaderboardSeason.base||current;
+  const profileHeroes=heroes.map(h=>{const best=Object.entries(h.skills).sort((a,b)=>b[1].level-a[1].level)[0];return {name:String(h.name||"").slice(0,24),className:h.className,level:h.level,power:Math.floor(heroPower(h)),stance:h.stance||"balanced",bestSkill:best?{name:WORK_SKILL_NAMES[best[0]]||best[0],level:best[1].level}:null,equipment:{weapon:publicGear(h,"weapon"),armor:publicGear(h,"armor"),pet:publicGear(h,"pet"),trinket:publicGear(h,"trinket")}};});
+  const owned=[...(state.inventory||[]),...heroes.flatMap(h=>[...(h.inventory||[]),...Object.values(h.equipment||{}).filter(Boolean)])],raidUniquesOwned=owned.filter(item=>ITEMS[item.key]?.raid).length,maxedGear=owned.filter(item=>["weapon","armor"].includes(ITEMS[item.key]?.type)&&(Number(item.upgrade)||0)>=5).length,itemsFound=heroes.reduce((n,h)=>n+(h.records.itemsFound||0),0)+(state.stats.itemsFound||0),nemeses=heroes.reduce((n,h)=>n+(h.nemesisHistory||0),0),collectionScore=itemsFound*10+raidUniquesOwned*100+maxedGear*40+(state.achievements||[]).length*50+nemeses*25;
+  return {schemaVersion:2,displayName:String(user.displayName||user.email?.split("@")[0]||"Adventurer").slice(0,32),updatedAt:Date.now(),monthKey:state.leaderboardSeason.month,
+    guildPower:Math.floor(heroes.reduce((n,h)=>n+heroPower(h),0)),totalLevel,totalSkills:Object.values(skillTotals).reduce((a,b)=>a+b,0),totalXP:combatXP+workXP,combatXP,workXP,
+    wealth:Math.floor((state.resources.gold||0)+heroGold),treasuryGold:Math.floor(state.resources.gold||0),heroGold:Math.floor(heroGold),guildRevenue:Math.floor(state.stats.goldEarned||0),guildReputation:Math.floor(state.guild.reputation||0),
+    raidWins:Math.floor(state.stats.raids||0),dungeonWins:Math.floor(state.stats.dungeons||0),expeditionWins:Math.floor(state.stats.expeditions||0),monsterKills:Math.floor(current.kills),bossKills:heroes.reduce((n,h)=>n+(h.records.raidBosses||0)+(h.records.dungeonBosses||0),0),damageDealt:Math.floor(heroes.reduce((n,h)=>n+(h.records.damageDealt||0),0)),healingDone:Math.floor(heroes.reduce((n,h)=>n+(h.records.healingDone||0),0)),nemeses,
+    bestRaidScore:Math.floor(state.stats.bestRaidScore||0),fastestRaidSeconds:Math.floor(state.stats.fastestRaidSeconds||0),highestHeroLevel:Math.max(...heroes.map(h=>h.level)),highestSkillLevel:Math.max(...heroes.flatMap(h=>Object.values(h.skills).map(s=>s.level))),
+    skillFarming:skillTotals.farming||0,skillCooking:skillTotals.cooking||0,skillMining:skillTotals.mining||0,skillWoodcutting:skillTotals.woodcutting||0,skillSmithing:skillTotals.smithing||0,skillPlundering:skillTotals.plundering||0,
+    collectionScore,itemsFound,raidUniquesOwned,maxedGear,guildDonations:Math.floor(state.guild.itemsDonated||0),questsCompleted:Math.floor(state.stats.questsCompleted||0),achievements:(state.achievements||[]).length,
+    monthlyRaidWins:Math.max(0,current.raids-(base.raids||0)),monthlyDungeonWins:Math.max(0,current.dungeons-(base.dungeons||0)),monthlyMonsterKills:Math.max(0,current.kills-(base.kills||0)),monthlyGuildRevenue:Math.max(0,current.guildRevenue-(base.guildRevenue||0)),monthlyXP:Math.max(0,current.totalXP-(base.totalXP||0)),
+    publicProfile:{guildRank:guildRank().name,heroes:profileHeroes}
+  };
+}
+function leaderboardValue(entry,key){const value=Number(entry?.[key]);return Number.isFinite(value)?value:0;}
+function leaderboardMetricConfig(){const category=PLAYER_LEADERBOARD_CATEGORIES[leaderboardCategory]||PLAYER_LEADERBOARD_CATEGORIES.overall;if(!category.metrics.some(x=>x.key===leaderboardMetric))leaderboardMetric=category.metrics[0].key;return category.metrics.find(x=>x.key===leaderboardMetric)||category.metrics[0];}
+function sortedLeaderboard(metric){const month=leaderboardMonthKey(),rows=leaderboard.filter(x=>leaderboardCategory!=="monthly"||x.monthKey===month);return [...rows].sort((a,b)=>{const av=leaderboardValue(a,metric.key),bv=leaderboardValue(b,metric.key);if(metric.order==="asc"){if(!av)return 1;if(!bv)return -1;return av-bv;}return bv-av;});}
+function leaderboardDisplayValue(entry,metric){const value=leaderboardValue(entry,metric.key);return metric.format==="duration"?(value?formatDuration(value):"—"):fmt(Math.floor(value));}
+function leaderboardPodium(rows,metric){return `<div class="player-podium">${rows.slice(0,3).map((entry,index)=>`<button class="player-podium-card rank-${index+1} ${entry.id===currentUser?.uid?"is-you":""}" data-action="open-player-profile" data-player="${entry.id||""}"><span class="podium-medal">${["🥇","🥈","🥉"][index]}</span><strong>${escapeHTML(entry.displayName||"Adventurer")}</strong><b>${leaderboardDisplayValue(entry,metric)}</b><small>${escapeHTML(metric.label)}</small></button>`).join("")}</div>`;}
+function leaderboardRows(rows,metric){return `<div class="player-ranking-list">${rows.slice(3,50).map((entry,index)=>`<button class="player-ranking-row ${entry.id===currentUser?.uid?"is-you":""}" data-action="open-player-profile" data-player="${entry.id||""}"><span class="rank">${index+4}</span><span class="board-avatar">${entry.publicProfile?.guildRank?"🛡️":"🏕️"}</span><span><strong>${escapeHTML(entry.displayName||"Adventurer")}${entry.id===currentUser?.uid?` <em>YOU</em>`:""}</strong><small>${escapeHTML(entry.publicProfile?.guildRank||`${fmt(entry.raidWins||0)} raid clears`)}</small></span><b>${leaderboardDisplayValue(entry,metric)}</b></button>`).join("")}</div>`;}
+function leaderboardRecordsHTML(){
+  if(!leaderboard.length)return `<div class="empty-state"><span>🌎</span>Real-player records will appear after signed-in Guilds sync.</div>`;
+  const max=(key)=>[...leaderboard].sort((a,b)=>leaderboardValue(b,key)-leaderboardValue(a,key))[0],fast=[...leaderboard].filter(x=>leaderboardValue(x,"fastestRaidSeconds")>0).sort((a,b)=>leaderboardValue(a,"fastestRaidSeconds")-leaderboardValue(b,"fastestRaidSeconds"))[0];
+  const records=[{icon:"⚔️",label:"Highest Guild Power",entry:max("guildPower"),key:"guildPower"},{icon:"🎯",label:"Best Raid Score",entry:max("bestRaidScore"),key:"bestRaidScore"},{icon:"⏱️",label:"Fastest Raid",entry:fast,key:"fastestRaidSeconds",duration:true},{icon:"💰",label:"Wealthiest Guild",entry:max("wealth"),key:"wealth"}];
+  return `<div class="world-record-grid">${records.filter(r=>r.entry).map(r=>`<button data-action="open-player-profile" data-player="${r.entry.id||""}"><span>${r.icon}</span><small>${r.label}</small><strong>${r.duration?formatDuration(leaderboardValue(r.entry,r.key)):fmt(leaderboardValue(r.entry,r.key))}</strong><em>${escapeHTML(r.entry.displayName||"Adventurer")}</em></button>`).join("")}</div>`;
+}
+function renderPlayerLeaderboard(){
+  const host=$("#leaderboardList");if(!host)return;const category=PLAYER_LEADERBOARD_CATEGORIES[leaderboardCategory]||PLAYER_LEADERBOARD_CATEGORIES.overall,metric=leaderboardMetricConfig(),rows=sortedLeaderboard(metric);
+  $("#playerLeaderboardTabs").innerHTML=Object.entries(PLAYER_LEADERBOARD_CATEGORIES).map(([key,c])=>`<button class="${key===leaderboardCategory?"active":""}" data-action="player-leaderboard-category" data-category="${key}">${escapeHTML(c.label)}</button>`).join("");
+  $("#playerLeaderboardMetrics").innerHTML=category.metrics.map(m=>`<button class="${m.key===metric.key?"active":""}" data-action="player-leaderboard-metric" data-metric="${m.key}"><span>${m.icon}</span><strong>${escapeHTML(m.label)}</strong><small>${escapeHTML(m.detail)}</small></button>`).join("");
+  const signedIn=currentUser?"Real Guilds · synced through Firebase":"Sign in to publish your Guild and inspect other players";
+  host.innerHTML=`<div class="player-board-head"><div><small>${escapeHTML(signedIn)}</small><h3>${metric.icon} ${escapeHTML(metric.label)}</h3><p>${escapeHTML(metric.detail)}</p></div><b>${rows.length} Guild${rows.length===1?"":"s"}</b></div>${rows.length?leaderboardPodium(rows,metric)+leaderboardRows(rows,metric):`<div class="empty-state"><span>🏆</span>No synced Guilds yet for this ranking.</div>`}`;
+  $("#worldRecords").innerHTML=leaderboardRecordsHTML();
+}
+function openPlayerProfile(playerId){
+  const entry=leaderboard.find(x=>x.id===playerId);if(!entry)return toast("🏆","Guild profile unavailable","That player has not published a v2.4 public profile yet.");const profile=entry.publicProfile,heroes=profile?.heroes||[];
+  const heroCards=heroes.map(h=>{const stance=COMBAT_STANCES[h.stance]||COMBAT_STANCES.balanced,gear=[h.equipment?.weapon,h.equipment?.armor,h.equipment?.pet,h.equipment?.trinket].filter(Boolean);return `<article class="public-hero-card"><div class="public-hero-head"><span>${{Warrior:"🛡️",Wizard:"✨",Archer:"🏹",Druid:"🌿",Assassin:"🗡️",Summoner:"🔮"}[h.className]||"⚔️"}</span><div><strong>${escapeHTML(h.name||"Hero")}</strong><small>${escapeHTML(h.className||"")} · Combat ${fmt(h.level||0)} · Power ${fmt(h.power||0)}</small></div><b>${stance.icon} ${escapeHTML(stance.name)}</b></div><div class="public-hero-meta"><span>⭐ ${escapeHTML(h.bestSkill?.name||"Skill")} ${fmt(h.bestSkill?.level||0)}</span>${gear.map(g=>`<span>${g.icon||"🎒"} ${escapeHTML(g.name||"Equipment")}${g.upgrade?` +${g.upgrade}`:""}</span>`).join("")||`<span>No public equipment</span>`}</div></article>`;}).join("");
+  openDrawer(`${entry.displayName||"Adventurer"}'s Guild`,profile?.guildRank||"Public Guild profile",`<div class="public-guild-summary"><div><small>Guild Power</small><strong>${fmt(entry.guildPower||0)}</strong></div><div><small>Total Level</small><strong>${fmt(entry.totalLevel||0)}</strong></div><div><small>Raid Clears</small><strong>${fmt(entry.raidWins||0)}</strong></div><div><small>Guild Rep</small><strong>${fmt(entry.guildReputation||0)}</strong></div></div><div class="drawer-section"><h3>Six Adventurers</h3>${heroCards||`<p class="tier-explainer">This Guild has a legacy leaderboard entry and has not published its new public roster yet.</p>`}</div><div class="drawer-section"><h3>Guild Record</h3><div class="guild-stat-grid"><div><small>Dungeons</small><strong>${fmt(entry.dungeonWins||0)}</strong></div><div><small>Monster kills</small><strong>${fmt(entry.monsterKills||0)}</strong></div><div><small>Best Raid score</small><strong>${fmt(entry.bestRaidScore||0)}</strong></div><div><small>Nemeses settled</small><strong>${fmt(entry.nemeses||0)}</strong></div><div><small>Rare finds</small><strong>${fmt(entry.itemsFound||0)}</strong></div><div><small>Guild wealth</small><strong>🪙 ${fmt(entry.wealth||0)}</strong></div></div></div><p class="loot-note">Public profiles show progression, equipped gear, stances, and records only. Inventories, email/account data, and cloud-save contents are never published here.</p>`);
+}
+
 function renderProgress(){
   const totalLevel=state.heroes.reduce((n,h)=>n+h.level,0),totalSkills=state.heroes.reduce((n,h)=>n+Object.values(h.skills).reduce((a,s)=>a+s.level,0),0);
-  $("#progressCards").innerHTML=[["⚔️",totalLevel,"Combined Combat Levels"],["🛠️",totalSkills,"Combined Work Levels"],["🐲",state.stats.raids,"Raid Victories"],["🪙",fmt(state.stats.goldEarned),"Lifetime Gold Earned"]].map(([i,v,l])=>`<article class="stat-card"><span>${i}</span><strong>${v}</strong><small>${l}</small></article>`).join("");
+  $("#progressCards").innerHTML=[["⚔️",totalLevel,"Combined Combat Levels"],["🛠️",totalSkills,"Combined Work Levels"],["🐲",state.stats.raids,"Raid Victories"],["🏰",fmt(state.guild.reputation||0),"Guild Reputation"]].map(([i,v,l])=>`<article class="stat-card"><span>${i}</span><strong>${v}</strong><small>${l}</small></article>`).join("");
   $("#achievementList").innerHTML=ACHIEVEMENTS.map(a=>{const yes=state.achievements.includes(a.id);return `<article class="achievement ${yes?"":"locked"}"><span>${yes?a.icon:"🔒"}</span><div><strong>${a.name}</strong><small>${a.description}</small></div><b>${yes?"Complete":"Locked"}</b></article>`}).join("");
-  const board=leaderboard.length?leaderboard:[{displayName:"Your town",totalLevel,raidWins:state.stats.raids,local:true}];$("#leaderboardList").innerHTML=board.map((x,i)=>`<article class="leaderboard-row"><span class="rank">${i+1}</span><span class="board-avatar">${i===0?"👑":"🛡️"}</span><div><strong>${escapeHTML(x.displayName||"Adventurer")}</strong><small>${x.raidWins||0} raid victories</small></div><b>Lv ${x.totalLevel||0}</b></article>`).join("");
-  renderHeroLeague();
+  renderPlayerLeaderboard();renderHeroLeague();
 }
 function heroWorkTotalLevel(hero){return Object.values(hero.skills).reduce((total,skill)=>total+skill.level,0);}
 function workSkillTotalXP(skill){let total=0,level=clamp(Math.floor(Number(skill.level)||1),1,100);for(let current=1;current<level;current++)total+=xpForLevel(current);return total+(level>=100?0:Math.max(0,Number(skill.xp)||0));}
@@ -1717,6 +1828,9 @@ document.addEventListener("click",async event=>{
   else if(a==="open-notifications")openNotifications();
   else if(a==="account")openAccount();
   else if(a==="open-auth"){closeDrawer();$("#authDialog").showModal();}
+  else if(a==="player-leaderboard-category"){leaderboardCategory=b.dataset.category;if(PLAYER_LEADERBOARD_CATEGORIES[leaderboardCategory])leaderboardMetric=PLAYER_LEADERBOARD_CATEGORIES[leaderboardCategory].metrics[0].key;renderPlayerLeaderboard();}
+  else if(a==="player-leaderboard-metric"){leaderboardMetric=b.dataset.metric;renderPlayerLeaderboard();}
+  else if(a==="open-player-profile")openPlayerProfile(b.dataset.player);
   else if(a==="set-stance"){const h=heroById(b.dataset.hero),stance=COMBAT_STANCES[b.dataset.stance];if(h&&stance){h.stance=b.dataset.stance;markDirty();toast(stance.icon,`${h.name}: ${stance.name}`,stance.detail);openHero(h.id);}}
   else if(a==="assign")assignHero(b.dataset.hero,b.dataset.assignment);
   else if(a==="open-task-assignment")openTaskAssignment(b.dataset.assignment,b.dataset.task);

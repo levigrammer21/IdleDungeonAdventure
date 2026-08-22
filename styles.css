@@ -1150,3 +1150,48 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .pack-capacity-note { margin:9px 0 0; color:var(--muted); font-size:.7rem; text-align:right; }
 @media (max-width:900px){.guild-roster-grid,.guild-stipend-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.guild-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:620px){.guild-roster-grid,.guild-stipend-grid{grid-template-columns:1fr}.guild-hero-card{grid-template-columns:44px 1fr auto}.guild-hero-portrait{width:44px;height:44px}.hero-pack-item{grid-template-columns:46px 1fr}.hero-pack-actions{grid-column:1/-1;grid-template-columns:repeat(3,1fr)}.guild-panel,.guild-hero-overview{padding:13px;border-radius:18px}}
+
+
+/* v2.4 World Leaderboards */
+.world-leaderboards { margin-bottom:22px; padding:14px; border:1px solid var(--line); border-radius:20px; background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(246,241,227,.9)); box-shadow:0 10px 28px rgba(39,55,41,.07); }
+.world-leaderboard-title { display:flex; justify-content:space-between; gap:12px; margin-bottom:12px; }
+.world-leaderboard-title h3,.world-records-heading h3 { margin:2px 0 4px; font:800 1.15rem "Fraunces",serif; color:var(--forest-900); }
+.world-leaderboard-title p { margin:0; color:var(--muted); font-size:.66rem; line-height:1.45; max-width:720px; }
+.player-leaderboard-tabs { display:flex; gap:6px; overflow-x:auto; padding:2px 0 8px; scrollbar-width:none; }
+.player-leaderboard-tabs::-webkit-scrollbar { display:none; }
+.player-leaderboard-tabs button { flex:0 0 auto; padding:7px 10px; border:1px solid var(--line); border-radius:999px; background:var(--paper); color:var(--forest-800); font-size:.6rem; font-weight:850; }
+.player-leaderboard-tabs button.active { color:white; border-color:var(--forest-700); background:var(--forest-700); }
+.player-leaderboard-metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(132px,1fr)); gap:7px; margin:4px 0 12px; }
+.player-leaderboard-metrics button { display:grid; grid-template-columns:auto 1fr; column-gap:7px; align-items:center; text-align:left; padding:9px; border:1px solid var(--line); border-radius:13px; background:rgba(255,255,255,.72); color:var(--forest-900); }
+.player-leaderboard-metrics button > span { grid-row:1 / 3; font-size:1.1rem; }
+.player-leaderboard-metrics button strong { font-size:.62rem; }
+.player-leaderboard-metrics button small { color:var(--muted); font-size:.5rem; line-height:1.25; }
+.player-leaderboard-metrics button.active { border-color:#a98535; background:#fff7d9; box-shadow:inset 0 0 0 1px rgba(169,133,53,.15); }
+.player-board-head { display:flex; align-items:end; justify-content:space-between; gap:12px; padding:11px 12px; border-radius:14px; background:#1f4632; color:white; }
+.player-board-head small,.player-board-head p { display:block; margin:0; color:#d5e2d8; font-size:.55rem; }
+.player-board-head h3 { margin:2px 0; font:800 1.05rem "Fraunces",serif; }
+.player-board-head > b { font-size:.58rem; white-space:nowrap; }
+.player-podium { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; align-items:end; margin:10px 0; }
+.player-podium-card { min-width:0; padding:12px 8px; border:1px solid var(--line); border-radius:15px; background:var(--paper); text-align:center; color:var(--forest-900); }
+.player-podium-card.rank-1 { padding-top:17px; border-color:#c49b35; background:linear-gradient(#fff8d8,#f5ebc5); }
+.player-podium-card.is-you,.player-ranking-row.is-you { outline:2px solid #7ea47f; outline-offset:1px; }
+.podium-medal { display:block; font-size:1.45rem; }
+.player-podium-card strong,.player-podium-card b,.player-podium-card small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.player-podium-card strong { margin-top:4px; font-size:.66rem; }
+.player-podium-card b { margin-top:5px; color:#8c6518; font:800 .88rem "Fraunces",serif; }
+.player-podium-card small { color:var(--muted); font-size:.5rem; }
+.player-ranking-list { display:grid; gap:6px; }
+.player-ranking-row { display:grid; grid-template-columns:28px 34px minmax(0,1fr) auto; gap:8px; align-items:center; width:100%; padding:8px; border:1px solid var(--line); border-radius:12px; background:var(--paper); color:var(--forest-900); text-align:left; }
+.player-ranking-row .rank { text-align:center; color:var(--muted); font:800 .72rem "Fraunces",serif; }
+.player-ranking-row .board-avatar { display:grid; width:32px; height:32px; place-items:center; border-radius:50%; background:#e5d7b8; }
+.player-ranking-row strong,.player-ranking-row small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.player-ranking-row strong { font-size:.64rem; }.player-ranking-row strong em { color:#648268; font-style:normal; font-size:.48rem; }
+.player-ranking-row small { color:var(--muted); font-size:.52rem; }.player-ranking-row > b { color:#8c6518; font-size:.64rem; }
+.world-records-heading { margin:17px 0 8px; }
+.world-record-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+.world-record-grid button { min-width:0; display:grid; gap:2px; padding:10px; border:1px solid var(--line); border-radius:13px; background:#f8f2de; color:var(--forest-900); text-align:left; }
+.world-record-grid button > span { font-size:1.1rem; }.world-record-grid small { color:var(--muted); font-size:.5rem; text-transform:uppercase; }.world-record-grid strong { font:800 .82rem "Fraunces",serif; }.world-record-grid em { overflow:hidden; color:#7a6230; font-size:.52rem; font-style:normal; text-overflow:ellipsis; white-space:nowrap; }
+.milestone-section { margin-top:20px; }.section-heading.compact { margin-bottom:10px; }
+.public-guild-summary { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; margin-bottom:16px; }.public-guild-summary > div { padding:10px; border:1px solid var(--line); border-radius:12px; background:white; }.public-guild-summary small,.public-guild-summary strong { display:block; }.public-guild-summary small { color:var(--muted); font-size:.5rem; text-transform:uppercase; }.public-guild-summary strong { margin-top:3px; font:800 .88rem "Fraunces",serif; }
+.public-hero-card { padding:10px; margin-bottom:7px; border:1px solid var(--line); border-radius:13px; background:white; }.public-hero-head { display:grid; grid-template-columns:30px minmax(0,1fr) auto; gap:7px; align-items:center; }.public-hero-head > span { font-size:1.2rem; }.public-hero-head strong,.public-hero-head small { display:block; }.public-hero-head strong { font-size:.68rem; }.public-hero-head small { color:var(--muted); font-size:.52rem; }.public-hero-head > b { font-size:.52rem; white-space:nowrap; }.public-hero-meta { display:flex; flex-wrap:wrap; gap:5px; margin-top:7px; }.public-hero-meta span { padding:4px 6px; border-radius:8px; background:#f3eedf; font-size:.5rem; }
+@media(max-width:700px){.world-record-grid{grid-template-columns:repeat(2,1fr)}.public-guild-summary{grid-template-columns:repeat(2,1fr)}.player-leaderboard-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.player-podium{gap:5px}.player-podium-card{padding-left:5px;padding-right:5px}.player-board-head{align-items:start}.player-ranking-row{grid-template-columns:24px 30px minmax(0,1fr) auto}.public-hero-head{grid-template-columns:28px minmax(0,1fr)}.public-hero-head>b{grid-column:2}}

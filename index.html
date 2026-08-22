@@ -162,10 +162,15 @@
       <section id="progressView" class="view" data-view-panel="progress">
         <div class="section-heading"><div><span class="eyebrow">A town worth remembering</span><h2>Progress &amp; Leaderboards</h2><p>Track long-term milestones without turning Adventure Town into PvP.</p></div></div>
         <div id="progressCards" class="progress-cards"></div>
-        <div class="progress-columns">
-          <div><h3>Milestones</h3><div id="achievementList" class="achievement-list"></div></div>
-          <div><h3>Adventurer Rankings</h3><div id="leaderboardList" class="leaderboard-list"></div></div>
-        </div>
+        <section class="world-leaderboards">
+          <div class="world-leaderboard-title"><div><span class="eyebrow">Real Guilds · real records</span><h3>🌎 World Leaderboards</h3><p>Compare Guild strength, combat records, Raids, skills, wealth, legacy, and this month's activity. Tap any Guild to inspect its public roster.</p></div></div>
+          <div id="playerLeaderboardTabs" class="player-leaderboard-tabs" role="tablist" aria-label="World leaderboard category"></div>
+          <div id="playerLeaderboardMetrics" class="player-leaderboard-metrics"></div>
+          <div id="leaderboardList" class="leaderboard-list"></div>
+          <div class="world-records-heading"><span class="eyebrow">Standing world records</span><h3>Record Board</h3></div>
+          <div id="worldRecords"></div>
+        </section>
+        <section class="milestone-section"><div class="section-heading compact"><div><span class="eyebrow">Your own story</span><h3>Milestones</h3></div></div><div id="achievementList" class="achievement-list"></div></section>
       </section>
     </main>
 
