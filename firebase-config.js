@@ -1,11 +1,11 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {
-  getAuth, GoogleAuthProvider, onAuthStateChanged, setPersistence,
-  browserLocalPersistence, signInWithRedirect, signInWithEmailAndPassword,
+  initializeAuth, GoogleAuthProvider, onAuthStateChanged,
+  indexedDBLocalPersistence, browserLocalPersistence, signInWithRedirect, signInWithEmailAndPassword,
   createUserWithEmailAndPassword, signOut
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {
-  getFirestore, doc, getDoc, setDoc,
+  getFirestore, doc, getDocFromServer, setDoc,
   collection, query, orderBy, limit, getDocs, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
@@ -19,10 +19,9 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+const auth = initializeAuth(app,{persistence:[indexedDBLocalPersistence,browserLocalPersistence]});
 const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
-setPersistence(auth, browserLocalPersistence).catch(console.warn);
 
 export function watchAuth(callback){ return onAuthStateChanged(auth, callback); }
 export function googleSignIn(){ return signInWithRedirect(auth, googleProvider); }
@@ -31,7 +30,8 @@ export function emailRegister(email,password){ return createUserWithEmailAndPass
 export function signOutUser(){ return signOut(auth); }
 
 export async function loadGame(uid){
-  const snap=await getDoc(doc(db,"players",uid));
+  if(!auth.currentUser || auth.currentUser.uid!==uid)throw new Error("Cloud load blocked: sign in again.");
+  const snap=await getDocFromServer(doc(db,"players",uid));
   return snap.exists()?snap.data().game:null;
 }
 
@@ -40,9 +40,11 @@ export async function saveGame(uid,game){
   const safeGame=JSON.parse(JSON.stringify(game));
   const ref=doc(db,"players",uid);
   await setDoc(ref,{game:safeGame,ownerId:uid,updatedAt:serverTimestamp()},{merge:true});
-  const verify=await getDoc(ref);
-  if(!verify.exists() || !verify.data()?.game)throw new Error("Cloud save verification failed: Firebase did not return the saved town.");
-  return {updatedAt:Number(verify.data().game?.updatedAt||0)};
+  const verify=await getDocFromServer(ref);
+  const verifiedGame=verify.exists()?verify.data()?.game:null;
+  if(!verifiedGame)throw new Error("Cloud save verification failed: Firebase did not return the saved town from the server.");
+  if(verifiedGame.cloudRevision!==safeGame.cloudRevision || verifiedGame.cloudSaveId!==safeGame.cloudSaveId)throw new Error("Cloud save verification failed: Firebase returned an older save revision.");
+  return {updatedAt:Number(verifiedGame.updatedAt||0),cloudRevision:Number(verifiedGame.cloudRevision||0),cloudSaveId:verifiedGame.cloudSaveId||""};
 }
 
 export async function writeLeaderboard(uid,data){

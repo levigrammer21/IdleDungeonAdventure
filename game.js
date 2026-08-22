@@ -1,4 +1,4 @@
-const VERSION = "2.3.0";
+const VERSION = "2.3.1";
 const SAVE_KEY = "adventure-town-save-v1";
 const SETTINGS_KEY = "adventure-town-settings-v1";
 const OFFLINE_LIMIT = 12 * 60 * 60;
@@ -680,6 +680,9 @@ let cloudSaveTimer = null;
 let lastCloudSave = 0;
 let startupHadLocalSave = false;
 let cloudReconciled = false;
+let cloudAuthResolved = false;
+let lastCloudVerifiedAt = 0;
+let lastCloudError = "";
 let quietSimulation = false;
 let currentView = "town";
 let warehouseFilter = "all";
@@ -805,7 +808,7 @@ function claimQuest(id){ensureDailyQuestBoard();const q=state.questBoard.find(q=
 
 function freshState(){
   return {
-    version:VERSION, combatXpCurve:1, townName:"Briarwatch", createdAt:Date.now(), updatedAt:Date.now(), lastTick:Date.now(), randomSeed:987654321,
+    version:VERSION, combatXpCurve:1, townName:"Briarwatch", townId:uid(), cloudOwnerUid:null, cloudRevision:0, cloudSaveId:null, createdAt:Date.now(), updatedAt:Date.now(), lastTick:Date.now(), randomSeed:987654321,
     resources:{gold:0,food:0,metal:0,wood:0,essence:0,keys:0,repairKits:0}, taxRate:15, resourceTiers:emptyResourceTiers(),
     buildings:{farm:1,cook:1,mine:1,forest:1,smith:1,warehouse:1,market:1,inn:1,tavern:1},
     heroes:HEROES.map((h,i)=>({ ...h, level:1,xp:0,sanity:100,hp:Math.round(50*(CLASS_COMBAT[h.className]?.hp||1)),assignment:"idle", recoveryUntil:0,workProgress:0,workTiers:{farm:"starter",cook:"starter",mine:"starter",forest:"starter"},records:{...HERO_RECORD_DEFAULTS},
@@ -824,6 +827,7 @@ function migrate(raw){
   const base=freshState();
   if(!raw || !raw.heroes) return base;
   const merged={...base,...raw,version:VERSION,resources:{...base.resources,...raw.resources},buildings:{...base.buildings,...raw.buildings},stats:{...base.stats,...raw.stats},pendingFractions:{...base.pendingFractions,...raw.pendingFractions}};
+  merged.townId=typeof raw.townId==="string"&&raw.townId?raw.townId:`legacy-${Number(raw.createdAt)||0}`;merged.cloudOwnerUid=typeof raw.cloudOwnerUid==="string"?raw.cloudOwnerUid:null;merged.cloudRevision=Math.max(0,Number(raw.cloudRevision)||0);merged.cloudSaveId=typeof raw.cloudSaveId==="string"?raw.cloudSaveId:null;
   merged.taxRate=clamp(Number(raw.taxRate??15),0,50);
   merged.resourceTiers=emptyResourceTiers();
   for(const [resource,tiers] of Object.entries(RESOURCE_TIERS)){
@@ -1033,9 +1037,9 @@ function toast(icon,title,text=""){
   $("#toastRegion").append(el); setTimeout(()=>el.remove(),4200);
 }
 
-function saveLocal({touchUpdatedAt=true}={}){
+function saveLocal({touchUpdatedAt=true,queueCloud=true}={}){
   if(touchUpdatedAt)state.updatedAt=Date.now(); state.lastTick=Math.min(Date.now(),lastSimulationAt||Date.now());try{localStorage.setItem(SAVE_KEY,JSON.stringify(state));}catch(err){console.warn("Device save unavailable",err);}
-  if(currentUser && firebaseApi && cloudReconciled) queueCloudSave();
+  if(queueCloud&&currentUser&&firebaseApi&&cloudReconciled) queueCloudSave();
 }
 function markDirty(){ clearTimeout(saveTimer); saveTimer=setTimeout(saveLocal,650); }
 function queueCloudSave(){
@@ -1045,9 +1049,16 @@ function queueCloudSave(){
 }
 async function scheduleCloudSave({manual=false}={}){
   if(!currentUser||!firebaseApi||!cloudReconciled)return false;
-  const user=currentUser,snapshot=JSON.parse(JSON.stringify(state));
-  try{setSync("saving");await firebaseApi.saveGame(user.uid,snapshot);await firebaseApi.writeLeaderboard(user.uid,{displayName:user.displayName||user.email?.split("@")[0]||"Adventurer",totalLevel:snapshot.heroes.reduce((n,h)=>n+h.level,0),combatXP:snapshot.heroes.reduce((n,h)=>n+COMBAT_XP_TOTALS[h.level]+(h.xp||0),0),wealth:Math.floor(snapshot.resources.gold),raidWins:snapshot.stats.raids,updatedAt:Date.now()});setSync("online");if(manual)toast("☁️","Cloud save verified","Firebase confirmed this town was saved.");return true;}
-  catch(err){console.error("Cloud save failed",err);setSync("error");if(manual)toast("⚠️","Cloud save failed",friendlyError(err));return false;}
+  const user=currentUser,revision=Math.max(0,Number(state.cloudRevision)||0)+1,saveId=uid(),snapshot=JSON.parse(JSON.stringify(state));
+  snapshot.cloudOwnerUid=user.uid;snapshot.cloudRevision=revision;snapshot.cloudSaveId=saveId;snapshot.updatedAt=Date.now();
+  try{
+    setSync("saving");lastCloudError="";const verified=await firebaseApi.saveGame(user.uid,snapshot);
+    if(verified.cloudRevision!==revision||verified.cloudSaveId!==saveId)throw new Error("Firebase verified the wrong save revision.");
+    state.cloudOwnerUid=user.uid;state.cloudRevision=revision;state.cloudSaveId=saveId;state.updatedAt=snapshot.updatedAt;lastCloudVerifiedAt=Date.now();
+    saveLocal({touchUpdatedAt:false,queueCloud:false});
+    try{await firebaseApi.writeLeaderboard(user.uid,{displayName:user.displayName||user.email?.split("@")[0]||"Adventurer",totalLevel:snapshot.heroes.reduce((n,h)=>n+h.level,0),combatXP:snapshot.heroes.reduce((n,h)=>n+COMBAT_XP_TOTALS[h.level]+(h.xp||0),0),wealth:Math.floor(snapshot.resources.gold),raidWins:snapshot.stats.raids,updatedAt:Date.now()});}catch(err){console.warn("Leaderboard update failed after cloud save",err);}
+    setSync("online");if(manual)toast("☁️","Cloud save verified",`Firebase server confirmed revision ${revision}.`);return true;
+  }catch(err){console.error("Cloud save failed",err);lastCloudError=friendlyError(err);setSync("error");if(manual)toast("⚠️","Cloud save failed",lastCloudError);return false;}
   finally{lastCloudSave=Date.now();}
 }
 
@@ -1630,8 +1641,8 @@ function changeTax(delta){const before=state.taxRate;state.taxRate=clamp((state.
 function donateHeroGold(id){const h=heroById(id);if(!h)return;if(state.resources.gold<100)return toast("🪙","Treasury needs 100 Gold");state.resources.gold-=100;h.gold=(h.gold||0)+100;state.guild.heroDonations=(state.guild.heroDonations||0)+100;notify("Guild stipend sent",`${h.name} received 100 Gold from the Guild treasury.`,"🎁");postHeroChat(h,h.id==="summoner"?"A hundred Gold? I promise to make at least one responsible decision with it.":"Guild stipend received. I will put it to use.","guild",{replyType:h.id==="summoner"?"rare":null,replyChance:.7});markDirty();renderAll();openView("market");}
 
 function openAccount(){
-  const cloud=!!currentUser,accountActions=cloud?`<button data-action="sync"><span>☁️ Save to cloud now</span><small>Sync this device</small></button><button data-action="sign-out"><span>🚪 Sign out</span><small>Device save remains</small></button>`:`<button data-action="open-auth"><span>☁️ Sign in for cloud saves</span><small>Device play is active</small></button>`;
-  openDrawer("Account & Town",cloud?(currentUser.email||"Cloud adventurer"):"Playing on this device",`<div class="drawer-section"><div class="info-grid"><div class="info-tile"><small>Save</small><strong>${cloud?"Firebase cloud + device":"This device"}</strong></div><div class="info-tile"><small>Version</small><strong>${VERSION}</strong></div><div class="info-tile"><small>Town created</small><strong>${new Date(state.createdAt).toLocaleDateString()}</strong></div><div class="info-tile"><small>Offline time</small><strong>${formatDuration(state.stats.offlineSeconds)}</strong></div></div></div><div class="action-list">${accountActions}<button data-action="export-save"><span>📤 Export save backup</span><small>Download JSON</small></button><button data-action="reset-game"><span>⚠️ Begin a new town</span><small>Starts with zero resources</small></button></div>`);
+  const cloud=!!currentUser,accountActions=cloud?`<button data-action="sync"><span>☁️ Save to cloud now</span><small>Force a server-verified save</small></button><button data-action="sign-out"><span>🚪 Sign out</span><small>Device save remains</small></button>`:`<button data-action="open-auth"><span>☁️ Sign in for cloud saves</span><small>Auto sign-in is used whenever Firebase still has your session</small></button>`,verified=lastCloudVerifiedAt?new Date(lastCloudVerifiedAt).toLocaleTimeString():"Not this session",uidText=currentUser?.uid?`${currentUser.uid.slice(0,6)}…${currentUser.uid.slice(-4)}`:"—";
+  openDrawer("Account & Town",cloud?(currentUser.email||"Cloud adventurer"):"Playing on this device",`<div class="drawer-section"><div class="info-grid"><div class="info-tile"><small>Save</small><strong>${cloud?(cloudReconciled?"Firebase + device":"Cloud reconciling…"):"This device"}</strong></div><div class="info-tile"><small>Auto sign-in</small><strong>${cloud?"Active":"No saved Firebase session"}</strong></div><div class="info-tile"><small>Cloud revision</small><strong>${fmt(state.cloudRevision||0)}</strong></div><div class="info-tile"><small>Last server verify</small><strong>${verified}</strong></div><div class="info-tile"><small>Account UID</small><strong>${uidText}</strong></div><div class="info-tile"><small>Version</small><strong>${VERSION}</strong></div><div class="info-tile"><small>Town created</small><strong>${new Date(state.createdAt).toLocaleDateString()}</strong></div><div class="info-tile"><small>Town ID</small><strong>${escapeHTML(String(state.townId||"—").slice(0,18))}</strong></div></div>${lastCloudError?`<div class="notice"><strong>⚠️ Last cloud error</strong><br><small>${escapeHTML(lastCloudError)}</small></div>`:""}<p class="tier-explainer">Clearing only the browser's HTTP cache should not sign you out. Clearing site data/storage removes the browser's saved Firebase login too, so you must sign in again—but the cloud town should restore immediately after authentication.</p></div><div class="action-list">${accountActions}<button data-action="export-save"><span>📤 Export save backup</span><small>Download JSON</small></button><button data-action="reset-game"><span>⚠️ Begin a new town</span><small>Starts with zero resources</small></button></div>`);
 }
 
 function upgradeBuilding(id){const b=BUILDINGS[id],cost=buildingUpgradeCost(id);if(state.resources.gold<cost.gold)return toast("🪙","Not enough Gold");if(state.resources.wood<cost.wood)return toast("🌲","Not enough Wood");if(state.resources.metal<cost.metal)return toast("⛏️","Not enough Metal");state.resources.gold-=cost.gold;spendQuestResource("wood",cost.wood);spendQuestResource("metal",cost.metal);state.buildings[id]++;notify(`${b.name} upgraded`,`Building Level ${state.buildings[id]} is now complete.`,b.icon);if(id==="cook"){const mira=heroById("druid"),orin=heroById("summoner");if(mira)postHeroChat(mira,"Finally. A Kitchen upgrade I did not have to threaten anyone for.","upgrade",{mapBubble:false});if(orin)postHeroChat(orin,"Does this mean larger portions?","reply");}const speaker=state.heroes.find(hero=>hero.assignment===id)||chatPick(state.heroes.filter(hero=>hero.assignment==="idle"));if(speaker)postHeroChat(speaker,`${b.name} Level ${state.buildings[id]} is complete. ${RESOURCE_ASSIGNMENTS[id]?"Check our exact tasks—higher materials may be available.":"The town feels a little stronger already."}`,"upgrade");markDirty();renderAll();if(id==="market")openView("market");else openBuilding(id);}
@@ -1646,17 +1657,31 @@ function repairItem(id){const i=state.inventory.find(x=>x.id===id);if(!i)return;
 function salvageItem(id){const idx=state.inventory.findIndex(x=>x.id===id),i=state.inventory[idx];if(!i)return;const d=itemData(i);if(d.salvage){state.resources.essence+=d.salvage;state.inventory.splice(idx,1);notify("Item salvaged",`${d.name} became ${d.salvage} Essence.`,"✨");markDirty();renderAll();return;}if(d.tier==="Starter"&&["weapon","armor"].includes(d.type)){state.resourceTiers.metal.starter=(state.resourceTiers.metal.starter||0)+1;recalculateTieredTotal("metal");state.inventory.splice(idx,1);notify("Item salvaged",`${d.name} became 1 Scrap Metal.`,"🔩");markDirty();renderAll();}}
 
 async function initializeFirebase(){
-  try{firebaseApi=await import("./firebase-config.js");firebaseApi.watchAuth(async user=>{
-    currentUser=user;renderSyncUser();
-    if(user){
-      setSync("saving");cloudReconciled=false;const cloud=await firebaseApi.loadGame(user.uid);
-      const shouldRestoreCloud=!!cloud&&(!startupHadLocalSave||Number(cloud.updatedAt||0)>Number(state.updatedAt||0));
-      if(shouldRestoreCloud){const restoredAt=Date.now();state=migrate(cloud);const away=Math.min(OFFLINE_LIMIT,Math.max(0,(restoredAt-(state.lastTick||restoredAt))/1000)),report=simulate(away,true);postOfflineProgressChat(report);lastSimulationAt=restoredAt;state.lastTick=restoredAt;saveLocal({touchUpdatedAt:false});notify("Cloud town restored","Your Firebase town was restored before this device was allowed to save over it.","☁️");showOffline(report);}
-      cloudReconciled=true;subscribeOnline();scheduleCloudSave();if($("#authDialog").open)$("#authDialog").close();
-    }else{cloudReconciled=false;setSync("device");unsubscribeOnline();}
-    renderAll();
-  });}
-  catch(err){console.warn("Firebase unavailable",err);setSync("error");}
+  try{
+    firebaseApi=await import("./firebase-config.js");
+    await new Promise((resolve,reject)=>{let first=true;const timeout=setTimeout(()=>{if(first){first=false;cloudAuthResolved=true;resolve();}},6000);
+      firebaseApi.watchAuth(async user=>{
+        currentUser=user;renderSyncUser();
+        try{
+          if(user){
+            setSync("saving");cloudReconciled=false;lastCloudError="";const cloud=await firebaseApi.loadGame(user.uid);
+            const cloudTownId=cloud?(cloud.townId||`legacy-${Number(cloud.createdAt)||0}`):null,sameTown=!!cloudTownId&&!!state.townId&&cloudTownId===state.townId;
+            const localBelongsToThisUser=!state.cloudOwnerUid||state.cloudOwnerUid===user.uid;
+            const localIsTrusted=!!startupHadLocalSave&&localBelongsToThisUser&&sameTown;
+            const shouldRestoreCloud=!!cloud&&(!localIsTrusted||Number(cloud.updatedAt||0)>=Number(state.updatedAt||0));
+            if(shouldRestoreCloud){
+              const restoredAt=Date.now();state=migrate(cloud);state.cloudOwnerUid=user.uid;const away=Math.min(OFFLINE_LIMIT,Math.max(0,(restoredAt-(state.lastTick||restoredAt))/1000)),report=simulate(away,true);postOfflineProgressChat(report);lastSimulationAt=restoredAt;state.lastTick=restoredAt;saveLocal({touchUpdatedAt:false,queueCloud:false});lastCloudVerifiedAt=Date.now();notify("Cloud town restored","Your Firebase town was restored before this device was allowed to save over it.","☁️");showOffline(report);
+            }else if(!cloud){state.cloudOwnerUid=user.uid;}
+            cloudReconciled=true;subscribeOnline();if(!cloud||!shouldRestoreCloud)scheduleCloudSave();if($("#authDialog").open)$("#authDialog").close();
+          }else{cloudReconciled=false;setSync("device");unsubscribeOnline();}
+        }catch(err){
+          console.error("Cloud reconciliation failed",err);lastCloudError=friendlyError(err);cloudReconciled=false;setSync("error");
+        }finally{
+          cloudAuthResolved=true;renderAll();if(first){first=false;clearTimeout(timeout);resolve();}
+        }
+      });
+    });
+  }catch(err){console.warn("Firebase unavailable",err);lastCloudError=friendlyError(err);cloudAuthResolved=true;setSync("error");}
 }
 function subscribeOnline(){unsubscribeOnline();firebaseApi.loadLeaderboard().then(x=>{leaderboard=x;renderProgress();}).catch(console.warn);}
 function unsubscribeOnline(){if(cloudUnsubscribe){cloudUnsubscribe();cloudUnsubscribe=null;}leaderboard=[];}
@@ -1722,14 +1747,14 @@ document.addEventListener("click",async event=>{
   else if(a==="upgrade-item")upgradeItem(b.dataset.item);
   else if(a==="salvage-item" && await confirmAction("Salvage this item?","The equipment will be permanently converted into salvage materials.","🔧"))salvageItem(b.dataset.item);
   else if(a==="clear-reports"){state.notifications=[];markDirty();closeDrawer();renderTown();}
-  else if(a==="sync"){saveLocal();if(currentUser&&firebaseApi&&cloudReconciled)await scheduleCloudSave({manual:true});else toast("⚠️","Cloud is not ready yet");}
+  else if(a==="sync"){saveLocal({queueCloud:false});if(currentUser&&firebaseApi&&cloudReconciled)await scheduleCloudSave({manual:true});else toast("⚠️","Cloud is not ready yet",lastCloudError||"Wait for account reconciliation to finish.");}
   else if(a==="export-save")exportSave();
   else if(a==="google-signin"){try{$("#authError").textContent="";await firebaseApi?.googleSignIn();}catch(err){$("#authError").textContent=friendlyError(err);}}
   else if(a==="email-signin"){try{$("#authError").textContent="";await firebaseApi?.emailSignIn($("#authEmail").value,$("#authPassword").value);}catch(err){$("#authError").textContent=friendlyError(err);}}
   else if(a==="email-register"){try{$("#authError").textContent="";await firebaseApi?.emailRegister($("#authEmail").value,$("#authPassword").value);}catch(err){$("#authError").textContent=friendlyError(err);}}
   else if(a==="device-play"){settings.authDismissed=true;localStorage.setItem(SETTINGS_KEY,JSON.stringify(settings));$("#authDialog").close();}
   else if(a==="sign-out"){await firebaseApi?.signOutUser();closeDrawer();toast("👋","Signed out","Your device save is still available.");}
-  else if(a==="reset-game" && await confirmAction("Begin a new town?","This replaces the current town on this device and, after syncing, in the cloud.","🏰")){state=freshState();saveLocal();closeDrawer();renderAll();}
+  else if(a==="reset-game" && await confirmAction("Begin a new town?","This replaces the current town on this device and, after syncing, in the cloud.","🏰")){state=freshState();if(currentUser)state.cloudOwnerUid=currentUser.uid;saveLocal();closeDrawer();renderAll();}
 });
 
 function showOffline(report){
@@ -1743,7 +1768,7 @@ function showOffline(report){
 
 let startupReleased=false;
 function releaseStartup(report,failedAssets=[]){
-  if(startupReleased)return;startupReleased=true;const screen=$("#loadingScreen"),app=$("#app"),text=$("#loadingText");if(text)text.textContent=failedAssets.length?"The town is ready. Remaining artwork will finish in the background.":"The town is ready.";if(app)app.hidden=false;setTimeout(()=>{screen?.classList.add("fade");setTimeout(()=>screen?.remove(),500);if(!settings.authDismissed)setTimeout(()=>$("#authDialog")?.showModal(),450);showOffline(report);},180);
+  if(startupReleased)return;startupReleased=true;const screen=$("#loadingScreen"),app=$("#app"),text=$("#loadingText");if(text)text.textContent=failedAssets.length?"The town is ready. Remaining artwork will finish in the background.":"The town is ready.";if(app)app.hidden=false;setTimeout(()=>{screen?.classList.add("fade");setTimeout(()=>screen?.remove(),500);if(!settings.authDismissed&&!currentUser)setTimeout(()=>$("#authDialog")?.showModal(),450);showOffline(report);},180);
 }
 function registerServiceWorker(){
   if(!("serviceWorker" in navigator))return;const registration=navigator.serviceWorker.register("./service-worker.js");Promise.race([registration,new Promise((_,reject)=>setTimeout(()=>reject(new Error("Service worker registration timed out")),3500))]).catch(err=>console.warn("Offline cache will retry later",err));
@@ -1752,7 +1777,7 @@ async function init(){
   let report=null;const watchdog=setTimeout(()=>{if(startupReleased)return;console.warn("Startup artwork budget reached; opening the town.");try{if(!state)state=freshState();renderAll();releaseStartup(report,["startup-time-budget"]);warmRemainingAssets();}catch(err){console.error("Startup recovery failed",err);}},9000);
   try{
     const raw=storedJSON(SAVE_KEY,null);startupHadLocalSave=!!raw;state=migrate(raw);const now=Date.now(),elapsed=Math.min(OFFLINE_LIMIT,Math.max(0,(now-(state.lastTick||now))/1000));report=simulate(elapsed,true);postOfflineProgressChat(report);lastSimulationAt=now;state.lastTick=now;saveLocal({touchUpdatedAt:false});
-    initializeFirebase();registerServiceWorker();
+    await initializeFirebase();registerServiceWorker();
     const failedAssets=await preloadAssetBatch(STARTUP_ASSETS,{showProgress:true,timeoutMs:3500,concurrency:6});renderAll();releaseStartup(report,failedAssets);warmRemainingAssets();
   }catch(err){
     console.error("Adventure Town startup recovered from an error",err);if(!state)state=freshState();try{renderAll();releaseStartup(report,["startup-error"]);warmRemainingAssets();}catch(renderError){console.error("Adventure Town could not render",renderError);const text=$("#loadingText");if(text)text.textContent="The town could not open. Please refresh once; your device save is still intact.";}
